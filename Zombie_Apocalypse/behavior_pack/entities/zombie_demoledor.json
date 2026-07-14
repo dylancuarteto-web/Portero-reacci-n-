@@ -29,6 +29,9 @@
         "height": 1.9
       },
       "minecraft:nameable": {},
+      "minecraft:scale": {
+        "value": 1.15
+      },
       "minecraft:health": {
         "value": 34,
         "max": 34
