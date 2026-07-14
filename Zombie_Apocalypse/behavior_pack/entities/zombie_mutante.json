@@ -121,7 +121,6 @@
         "duration": 1.0,
         "attack_time": 0.5,
         "knockback_damage": 4,
-        "knockback_strength": 4,
         "knockback_range": 5,
         "cooldown_time": 12,
         "knockback_filters": {

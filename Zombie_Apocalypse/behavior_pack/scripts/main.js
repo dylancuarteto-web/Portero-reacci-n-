@@ -21,15 +21,20 @@ import { initConstructor } from "./ia/constructor.js";
 import { initGeneral } from "./ia/general.js";
 import { initEspeciales } from "./ia/especiales.js";
 import { initWatchdog } from "./ia/watchdog.js";
+import { system } from "@minecraft/server";
 
-initDesesperacion();
-initSpawner();
-initCombate();
-initGuia();
-initMinero();
-initConstructor();
-initGeneral();
-initEspeciales();
-initWatchdog();
-
-console.log("[Zombie Apocalypse] Scripts cargados.");
+// Todo se inicializa dentro de system.run(): así corre en el primer tick y no
+// en "early execution", donde las funciones nativas (BlockPermutation.resolve,
+// etc.) no están permitidas.
+system.run(() => {
+  initDesesperacion();
+  initSpawner();
+  initCombate();
+  initGuia();
+  initMinero();
+  initConstructor();
+  initGeneral();
+  initEspeciales();
+  initWatchdog();
+  console.log("[Zombie Apocalypse] Scripts cargados.");
+});
