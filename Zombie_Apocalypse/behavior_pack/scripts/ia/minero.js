@@ -12,7 +12,14 @@
 import { system, BlockPermutation } from "@minecraft/server";
 import { entidadesCercaDeJugadores, jugadorMasCercano, costeBloque, esValido } from "../util.js";
 
-const AIRE = BlockPermutation.resolve("minecraft:air");
+// Init diferido: BlockPermutation.resolve() es una función nativa y NO puede
+// llamarse en "early execution" (al importar el módulo). Se resuelve la
+// primera vez que corre una pasada, ya dentro del bucle de ticks.
+let AIRE;
+function aire() {
+  if (!AIRE) AIRE = BlockPermutation.resolve("minecraft:air");
+  return AIRE;
+}
 
 // Parámetros por tipo: radio de trabajo y cooldown base entre operaciones.
 const EXCAVADORES = new Map([
@@ -105,7 +112,7 @@ function pasadaDeExcavacion() {
         if (!b || b.isAir || b.isLiquid) continue;
         const coste = costeBloque(b.typeId);
         if (coste < 0) continue; // fuera de la lista permitida: NO se toca
-        b.setPermutation(AIRE);
+        b.setPermutation(aire());
         rotos++;
         presupuesto--;
         peorCoste = Math.max(peorCoste, coste);
