@@ -1,0 +1,107 @@
+## Zombie Apocalypse — Español (México)
+## Todo el texto del addon vive aquí (nada hardcodeado en los scripts).
+
+## --- Nombres de entidades e ítems ---
+entity.za:zombie_normal.name=Zombie Normal
+item.spawn_egg.entity.za:zombie_normal.name=Generar Zombie Normal
+entity.za:zombie_corredor.name=Zombie Corredor
+item.spawn_egg.entity.za:zombie_corredor.name=Generar Zombie Corredor
+entity.za:zombie_bebe_corredor.name=Zombie Bebé Corredor
+item.spawn_egg.entity.za:zombie_bebe_corredor.name=Generar Zombie Bebé Corredor
+entity.za:zombie_espadachin.name=Zombie Espadachín
+item.spawn_egg.entity.za:zombie_espadachin.name=Generar Zombie Espadachín
+entity.za:zombie_hacha.name=Zombie Hacha
+item.spawn_egg.entity.za:zombie_hacha.name=Generar Zombie Hacha
+entity.za:zombie_arquero.name=Zombie Arquero
+item.spawn_egg.entity.za:zombie_arquero.name=Generar Zombie Arquero
+entity.za:zombie_trepador.name=Zombie Trepador
+item.spawn_egg.entity.za:zombie_trepador.name=Generar Zombie Trepador
+entity.za:zombie_explosivo.name=Zombie Explosivo
+item.spawn_egg.entity.za:zombie_explosivo.name=Generar Zombie Explosivo
+entity.za:zombie_constructor.name=Zombie Constructor
+item.spawn_egg.entity.za:zombie_constructor.name=Generar Zombie Constructor
+entity.za:zombie_congelador.name=Zombie Congelador
+item.spawn_egg.entity.za:zombie_congelador.name=Generar Zombie Congelador
+entity.za:zombie_toxico.name=Zombie Tóxico
+item.spawn_egg.entity.za:zombie_toxico.name=Generar Zombie Tóxico
+entity.za:zombie_minero.name=Zombie Minero
+item.spawn_egg.entity.za:zombie_minero.name=Generar Zombie Minero
+entity.za:zombie_demoledor.name=Zombie Demoledor
+item.spawn_egg.entity.za:zombie_demoledor.name=Generar Zombie Demoledor
+entity.za:zombie_caballero.name=Zombie Caballero
+item.spawn_egg.entity.za:zombie_caballero.name=Generar Zombie Caballero
+entity.za:zombie_tanque.name=Zombie Tanque
+item.spawn_egg.entity.za:zombie_tanque.name=Generar Zombie Tanque
+entity.za:zombie_incendiario.name=Zombie Incendiario
+item.spawn_egg.entity.za:zombie_incendiario.name=Generar Zombie Incendiario
+entity.za:zombie_chaman.name=Zombie Chamán
+item.spawn_egg.entity.za:zombie_chaman.name=Generar Zombie Chamán
+entity.za:zombie_invocador.name=Zombie Invocador
+item.spawn_egg.entity.za:zombie_invocador.name=Generar Zombie Invocador
+entity.za:zombie_enderman.name=Zombie Enderman
+item.spawn_egg.entity.za:zombie_enderman.name=Generar Zombie Enderman
+entity.za:zombie_general.name=General Zombie
+item.spawn_egg.entity.za:zombie_general.name=Generar General Zombie
+entity.za:zombie_domador.name=Zombie Domador
+item.spawn_egg.entity.za:zombie_domador.name=Generar Zombie Domador
+entity.za:zombie_mutante.name=Zombie Mutante
+item.spawn_egg.entity.za:zombie_mutante.name=Generar Zombie Mutante
+item.za:guia_supervivencia=Guía de Supervivencia
+item.za:guia_supervivencia.name=Guía de Supervivencia
+
+## --- HUD y mensajes ---
+za.hud.desesperacion=§6DESESPERACIÓN: §c%s §6/ 99
+za.msg.bienvenida=§7Despiertas con un papel arrugado en el bolsillo. Léelo. §o(Guía de Supervivencia)§r
+za.msg.guia_recibida=§eHas recibido la §6Guía de Supervivencia§e. Úsala (clic derecho) para leerla.
+za.msg.tier_up=§4La horda se impacienta... §7(Desesperación: %s)
+za.msg.dia=§6Sobreviviste otro día. La horda lo sabe. §c(+2 Desesperación)
+za.msg.muerte=§8La muerte alivia la desesperación. §7(-10)
+za.msg.oculto=§8Llevas demasiado tiempo escondido. La horda te huele. §c(+1)
+za.msg.fortificado=§8Tu fortaleza no pasa desapercibida. §c(+1)
+za.msg.kills=§7La horda nota tus muertes. §c(+1 Desesperación)
+za.msg.general_muerto=§6¡El General ha caído! La horda pierde coordinación.
+za.msg.chaman_revive=§5¡El Chamán usa su tótem y se niega a morir!
+za.msg.descubierto=§aNuevo registro en la Guía: §f%s
+za.msg.mutante=§4§lLA TIERRA TIEMBLA. ALGO ENORME SE ACERCA.
+
+## --- Guía de Supervivencia (formularios) ---
+za.guia.titulo=GUÍA DE SUPERVIVENCIA
+za.guia.intro=§7Papel manchado de sangre. La letra es apurada, de alguien que sabía que no le quedaba tiempo.§r\n\n§8"Si estás leyendo esto, todavía respiras. Bien. Sigue así."
+za.guia.btn.quepasa=¿Qué está pasando?
+za.guia.btn.desesperacion=Sistema de Desesperación
+za.guia.btn.zombies=Tipos de Zombie
+za.guia.btn.consejos=Consejos de supervivencia
+za.guia.btn.volver=< Volver
+za.guia.quepasa=§l§4¿QUÉ ESTÁ PASANDO?§r\n\n§7No sé cuándo empezó. Solo sé que ya no son los zombies torpes de antes. Estos vienen §fcon un plan§7.\n\nCada uno tiene un trabajo: unos te distraen, otros rompen tus muros, otros cavan por debajo, y hay unos que dirigen a los demás.\n\nCuanto más sobrevivas, más te querrán muerto. Lo llaman §cDesesperación§7: la horda se impacienta contigo.\n\nNinguna base es eterna. Ningún muro es definitivo. Pero siempre, §fsiempre§7, hay una salida.§r
+za.guia.desp=§l§6EL SISTEMA DE DESESPERACIÓN§r\n\n§7La horda te observa. Un número del §f1 al 99§7 mide cuánto te quiere muerta o muerto.\n\n§eSube por:§r\n§7- Cada día que sobrevives §8(+2)§r\n§7- Cada 10 zombies que matas §8(+1)§r\n§7- Fortificarte demasiado §8(+1 de vez en cuando)§r\n§7- Esconderte bajo tierra mucho tiempo §8(+1 de vez en cuando)§r\n\n§cBaja por:§r\n§7- Morir §8(-10)§7. Es la única forma. Que duela.\n\n§7A mayor Desesperación, peores criaturas aparecen. Mira la esquina de tu pantalla.§r
+za.guia.desp.actual=§eTu Desesperación actual: §c%s
+za.guia.consejos=§l§aCONSEJOS DE SUPERVIVENCIA§r\n\n§6REGLA DE ORO:§r §f"Si estás matando zombies normales mientras un Chamán sigue vivo, estás perdiendo."§r\n\n§7- Chamán, Invocador y General mueren §fPRIMERO§7. Siempre.\n- Al Explosivo lo matas §fde lejos§7 o abrirá tu muro por ti.\n- Muro sin techo = puerta abierta (Trepador).\n- Búnker sin salida = tumba (Minero).\n- Torre sin cobertura = diana (Arquero).\n- Madera = leña (Incendiario). Construye con piedra.\n- Ten §fsiempre§7 una ruta de escape. La base perfecta no existe: la retirada a tiempo sí.\n- La leche corta veneno y lentitud. Lleva un cubo.\n- Si el suelo tiembla... corre. No mires atrás.§r
+za.guia.zombies.titulo=TIPOS DE ZOMBIE
+za.guia.zombies.intro=§7Cada criatura que veas de cerca queda registrada aquí. Las que no has visto siguen siendo un misterio... por ahora.§r
+za.guia.desconocido=§8??? (sin descubrir)
+za.guia.ficha.desconocida=§8Aún no te has encontrado con esta criatura.\n\n§o"Lo que no conoces es lo que te mata."§r
+
+## --- Fichas de zombies ---
+za.guia.ficha.zombie_normal=§l§4ZOMBIE NORMAL§r\n§8--------------------------------§r\n§cVida:§r 20    §bVelocidad:§r Normal\n§6Daño:§r 3    §5Aparece en Desesperación:§r 1+\n\n§l§eSU TRABAJO§r\n§7Es la masa. No hace nada especial, pero llega en números y te rodea. Su función es ocuparte mientras los especialistas hacen su trabajo.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Cualquier arma sirve. El peligro no es uno: son quince. No dejes que te rodeen.§r
+za.guia.ficha.zombie_corredor=§l§4ZOMBIE CORREDOR§r\n§8--------------------------------§r\n§cVida:§r 12    §bVelocidad:§r Muy rápida\n§6Daño:§r 2    §5Aparece en Desesperación:§r 11+\n\n§l§eSU TRABAJO§r\n§7Te alcanza. Su único propósito es que dejes de pensar que huir es una opción. Llega primero y te frena para que la horda te alcance.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Muere en 2 golpes. Mátalo antes de que te trabe. No lo ignores por pegar poco: el problema es que te detiene.§r
+za.guia.ficha.zombie_bebe_corredor=§l§4ZOMBIE BEBÉ CORREDOR§r\n§8--------------------------------§r\n§cVida:§r 8    §bVelocidad:§r Muy rápida\n§6Daño:§r 2    §5Aparece en Desesperación:§r 11+\n\n§l§eSU TRABAJO§r\n§7Como el Corredor pero peor: es pequeño, se mete por huecos de 1 bloque y cuesta pegarle porque tu mira apunta arriba.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Ataca hacia abajo. Bloquea los huecos de 1x1 de tu base: están hechos para él.§r
+za.guia.ficha.zombie_espadachin=§l§4ZOMBIE ESPADACHÍN§r\n§8--------------------------------§r\n§cVida:§r 24    §bVelocidad:§r Normal\n§6Daño:§r 6    §5Aparece en Desesperación:§r 21+\n\n§l§eSU TRABAJO§r\n§7Daño real. A diferencia del Normal, este sí te mata rápido si te descuidas. Ocasionalmente bloquea tu golpe y reduce el daño recibido.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Escudo. Pega, retrocede, pega. No lo tanquees a cambio de golpes.§r
+za.guia.ficha.zombie_hacha=§l§4ZOMBIE HACHA§r\n§8--------------------------------§r\n§cVida:§r 22    §bVelocidad:§r Rápida\n§6Daño:§r 8    §5Aparece en Desesperación:§r 21+\n\n§l§eSU TRABAJO§r\n§7Pega durísimo (el golpe más fuerte de su rango), pero lento. Un riesgo enorme si te agarra sin espacio para esquivar.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7No intercambies golpes con él. Su ataque es lento: golpea y sal. Mantén distancia.§r
+za.guia.ficha.zombie_arquero=§l§4ZOMBIE ARQUERO§r\n§8--------------------------------§r\n§cVida:§r 16    §bVelocidad:§r Normal\n§6Daño:§r 4    §5Aparece en Desesperación:§r 31+\n\n§l§eSU TRABAJO§r\n§7Te dispara flechas a distancia. Rompe la estrategia de subirte a una torre y sentirte seguro. Te obliga a tener techo y cobertura.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Cúbrete. Es frágil (16 de vida): si logras acercarte, muere fácil. Prioriza matarlo antes que a los Normales.§r
+za.guia.ficha.zombie_trepador=§l§4ZOMBIE TREPADOR§r\n§8--------------------------------§r\n§cVida:§r 18    §bVelocidad:§r Rápida\n§6Daño:§r 4    §5Aparece en Desesperación:§r 31+\n\n§l§eSU TRABAJO§r\n§7Sube paredes verticales. Anula los muros lisos. Entra por arriba mientras tú miras la puerta.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Techa tu base. Un muro sin techo es una invitación. Los salientes (bloques que sobresalen) también lo frenan.§r
+za.guia.ficha.zombie_explosivo=§l§4ZOMBIE EXPLOSIVO§r\n§8--------------------------------§r\n§cVida:§r 14    §bVelocidad:§r Normal\n§6Daño:§r 3    §5Aparece en Desesperación:§r 31+\n\n§l§eSU TRABAJO§r\n§7Explota al morir. Es una trampa: matarlo ES activarlo. En una horda, matar uno cerca de ti te hace daño y abre un agujero en tu muro.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Mátalo de lejos, con arco. Nunca cuerpo a cuerpo. Nunca junto a tu muro: la explosión rompe tu propia base.§r
+za.guia.ficha.zombie_constructor=§l§4ZOMBIE CONSTRUCTOR§r\n§8--------------------------------§r\n§cVida:§r 26    §bVelocidad:§r Lenta\n§6Daño:§r 3    §5Aparece en Desesperación:§r 41+\n\n§l§eSU TRABAJO§r\n§7Coloca bloques. Si tu base es alta, construye una rampa hasta ti. Si hay un foso, hace un puente. Convierte tu defensa vertical en un camino.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Mátalo rápido: es lento y pega poco, pero cada segundo vivo es un bloque más cerca. Rompe los bloques de musgo que deja.§r
+za.guia.ficha.zombie_congelador=§l§4ZOMBIE CONGELADOR§r\n§8--------------------------------§r\n§cVida:§r 20    §bVelocidad:§r Lenta\n§6Daño:§r 2    §5Aparece en Desesperación:§r 41+\n\n§l§eSU TRABAJO§r\n§7No te mata: te frena. Te aplica Lentitud II para que los demás te alcancen. Es un habilitador, no un asesino.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7La leche quita el efecto. Mátalo a distancia. Si te congela en campo abierto, lo que viene detrás te mata.§r
+za.guia.ficha.zombie_toxico=§l§4ZOMBIE TÓXICO§r\n§8--------------------------------§r\n§cVida:§r 18    §bVelocidad:§r Normal\n§6Daño:§r 2    §5Aparece en Desesperación:§r 41+\n\n§l§eSU TRABAJO§r\n§7Su veneno no te mata (te deja en 1 de vida) pero te desgasta justo antes de que llegue algo que sí mata. Trabaja en equipo.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7La leche corta el veneno. El peligro no es él: es el Tanque que llega mientras tienes 4 de vida.§r
+za.guia.ficha.zombie_minero=§l§4ZOMBIE MINERO§r\n§8--------------------------------§r\n§cVida:§r 28    §bVelocidad:§r Lenta\n§6Daño:§r 4    §5Aparece en Desesperación:§r 51+\n\n§l§eSU TRABAJO§r\n§7EL MÁS IMPORTANTE. Detecta que estás encerrado o bajo tierra y, si no hay camino hacia ti, EXCAVA UN TÚNEL 2x2 directo. Los demás zombies entran detrás de él. No se detiene nunca.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Los bloques duros (obsidiana) lo frenan muchísimo, pero no para siempre. Encerrarte en un búnker de tierra NO funciona: es exactamente para lo que fue diseñado.§r
+za.guia.ficha.zombie_demoledor=§l§4ZOMBIE DEMOLEDOR§r\n§8--------------------------------§r\n§cVida:§r 34    §bVelocidad:§r Lenta\n§6Daño:§r 7    §5Aparece en Desesperación:§r 51+\n\n§l§eSU TRABAJO§r\n§7Como el Minero, pero contra tus muros y más rápido. Va directo a la pared: no busca la puerta.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Obsidiana. Y matarlo antes de que llegue al muro: pega fuerte pero es lento.§r
+za.guia.ficha.zombie_caballero=§l§4ZOMBIE CABALLERO§r\n§8--------------------------------§r\n§cVida:§r 40    §bVelocidad:§r Lenta\n§6Daño:§r 6    §5Aparece en Desesperación:§r 61+\n\n§l§eSU TRABAJO§r\n§7Absorbe daño. Va al frente con armadura de hierro y aguanta tus golpes mientras el resto te rodea. Es un escudo con patas.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Su armadura reduce daño físico, no todo: fuego, veneno y caídas la ignoran. No gastes tu espada en él si hay 20 más detrás.§r
+za.guia.ficha.zombie_tanque=§l§4ZOMBIE TANQUE§r\n§8--------------------------------§r\n§cVida:§r 60    §bVelocidad:§r Lenta\n§6Daño:§r 10    §5Aparece en Desesperación:§r 61+\n\n§l§eSU TRABAJO§r\n§7Castiga la pelea cercana. Si te quedas parado peleando, te borra (10 de daño por golpe). Su lentitud es su debilidad y su trampa.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Kiting: camina hacia atrás y mátalo con arco. NUNCA pelees con él en un pasillo cerrado. Si te acorrala, ya perdiste.§r
+za.guia.ficha.zombie_incendiario=§l§4ZOMBIE INCENDIARIO§r\n§8--------------------------------§r\n§cVida:§r 20    §bVelocidad:§r Normal\n§6Daño:§r 4    §5Aparece en Desesperación:§r 61+\n\n§l§eSU TRABAJO§r\n§7Te prende fuego, y prende fuego a tu base. Anula las defensas de madera. Si construiste con tablas, acabas de perder.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7El agua te apaga. Construye con piedra, no con madera. Es inmune al fuego: no intentes quemarlo.§r
+za.guia.ficha.zombie_chaman=§l§4ZOMBIE CHAMÁN§r\n§8--------------------------------§r\n§cVida:§r 22    §bVelocidad:§r Normal\n§6Daño:§r 2    §5Aparece en Desesperación:§r 71+\n\n§l§eSU TRABAJO§r\n§7Buffea a los demás: da Velocidad y Fuerza a los zombies cercanos. Y puede revivir UNA vez (tótem). No pelea: potencia.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7PRIORIDAD MÁXIMA. Mátalo primero, siempre, con arco (se queda atrás). La primera vez que lo mates, revive: mátalo dos veces.§r
+za.guia.ficha.zombie_invocador=§l§4ZOMBIE INVOCADOR§r\n§8--------------------------------§r\n§cVida:§r 20    §bVelocidad:§r Lenta\n§6Daño:§r 2    §5Aparece en Desesperación:§r 71+\n\n§l§eSU TRABAJO§r\n§7Invoca zombies normales durante el combate. La horda nunca se acaba mientras él viva. Convierte una pelea ganada en una que no termina.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Mátalo primero. Matar a sus invocados es perder el tiempo: es una llave abierta. Cierra la llave.§r
+za.guia.ficha.zombie_enderman=§l§4ZOMBIE ENDERMAN§r\n§8--------------------------------§r\n§cVida:§r 20    §bVelocidad:§r Rápida\n§6Daño:§r 5    §5Aparece en Desesperación:§r 71+\n\n§l§eSU TRABAJO§r\n§7Se teletransporta detrás de ti. Anula muros, puertas, fosos, todo. No necesita ruta. Su trabajo es recordarte que ninguna base es 100% segura.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Es frágil, pero no puedes evitar que entre: solo puedes estar listo. Espalda contra la pared. Si oyes el teleport, date la vuelta.§r
+za.guia.ficha.zombie_general=§l§4GENERAL ZOMBIE§r\n§8--------------------------------§r\n§cVida:§r 50    §bVelocidad:§r Normal\n§6Daño:§r 8    §5Aparece en Desesperación:§r 81+\n\n§l§eSU TRABAJO§r\n§7Coordina la horda. Mientras vive, todos los zombies cercanos son más rápidos, más fuertes y te persiguen desde mucho más lejos. Es el cerebro.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Mátalo y la horda se degrada. Matar 1 General vale más que matar 20 normales. Pero está blindado y pega fuerte: necesitas preparación, no valentía.§r
+za.guia.ficha.zombie_domador=§l§4ZOMBIE DOMADOR§r\n§8--------------------------------§r\n§cVida:§r 26    §bVelocidad:§r Rápida\n§6Daño:§r 5    §5Aparece en Desesperación:§r 81+\n\n§l§eSU TRABAJO§r\n§7Aparece con una jauría de lobos. Los lobos te rodean y no puedes pelear con 4 a la vez. Él se queda atrás mientras te desgastan.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7Los lobos siguen al Domador: mátalo a ÉL y la jauría pierde sentido. Pelear con los lobos primero es exactamente lo que quiere.§r
+za.guia.ficha.zombie_mutante=§l§4ZOMBIE MUTANTE§r\n§8--------------------------------§r\n§cVida:§r 150    §bVelocidad:§r Normal\n§6Daño:§r 14    §5Aparece en Desesperación:§r 91+\n\n§l§eSU TRABAJO§r\n§7BOSS. Destruye bloques, te manda a volar con un rugido de knockback masivo y sobrevive a casi todo. No es un enemigo: es un evento.§r\n\n§l§aCÓMO CONTRARRESTARLO§r\n§7No lo pelees de frente. Necesitas armadura encantada, pociones, terreno preparado y ruta de escape. Pelea lejos de precipicios y lava. Las trampas hacen más que tu espada.§r
+

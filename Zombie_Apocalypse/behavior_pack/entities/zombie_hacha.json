@@ -1,0 +1,130 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "za:zombie_hacha",
+      "is_spawnable": true,
+      "is_summonable": true
+    },
+    "component_groups": {
+      "za:coordinado": {
+        "minecraft:follow_range": {
+          "value": 48
+        }
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "za_zombie",
+          "zombie",
+          "undead",
+          "monster",
+          "mob",
+          "za_zombie_hacha"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.6,
+        "height": 1.9
+      },
+      "minecraft:nameable": {},
+      "minecraft:health": {
+        "value": 22,
+        "max": 22
+      },
+      "minecraft:movement": {
+        "value": 0.26
+      },
+      "minecraft:attack": {
+        "damage": 8
+      },
+      "minecraft:follow_range": {
+        "value": 24
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:navigation.walk": {
+        "can_walk": true,
+        "can_pass_doors": true,
+        "can_break_doors": true,
+        "avoid_water": true
+      },
+      "minecraft:annotation.break_door": {
+        "break_time": 20.0
+      },
+      "minecraft:jump.static": {},
+      "minecraft:physics": {},
+      "minecraft:pushable": {
+        "is_pushable": true,
+        "is_pushable_by_piston": true
+      },
+      "minecraft:despawn": {
+        "despawn_from_distance": {
+          "min_distance": 32,
+          "max_distance": 64
+        }
+      },
+      "minecraft:loot": {
+        "table": "loot_tables/entities/za_zombie.json"
+      },
+      "minecraft:experience_reward": {
+        "on_death": "query.last_hit_by_player ? 5 : 0"
+      },
+      "minecraft:behavior.hurt_by_target": {
+        "priority": 1
+      },
+      "minecraft:behavior.nearest_attackable_target": {
+        "priority": 2,
+        "must_see": false,
+        "reselect_targets": true,
+        "within_radius": 35.0,
+        "entity_types": [
+          {
+            "filters": {
+              "test": "is_family",
+              "subject": "other",
+              "value": "player"
+            },
+            "max_dist": 35
+          }
+        ]
+      },
+      "minecraft:behavior.random_stroll": {
+        "priority": 6,
+        "speed_multiplier": 0.8
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 7,
+        "look_distance": 8.0
+      },
+      "minecraft:behavior.random_look_around": {
+        "priority": 8
+      },
+      "minecraft:behavior.melee_box_attack": {
+        "priority": 3,
+        "track_target": true,
+        "speed_multiplier": 1.0,
+        "cooldown_time": 2.0
+      },
+      "minecraft:equipment": {
+        "table": "loot_tables/entities/za_gear_hacha.json"
+      }
+    },
+    "events": {
+      "za:coordinar": {
+        "add": {
+          "component_groups": [
+            "za:coordinado"
+          ]
+        }
+      },
+      "za:descoordinar": {
+        "remove": {
+          "component_groups": [
+            "za:coordinado"
+          ]
+        }
+      }
+    }
+  }
+}

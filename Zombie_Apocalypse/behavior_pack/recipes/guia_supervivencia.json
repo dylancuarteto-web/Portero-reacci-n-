@@ -1,0 +1,15 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shapeless": {
+    "description": { "identifier": "za:recipe_guia_supervivencia" },
+    "tags": ["crafting_table"],
+    "unlock": [
+      { "item": "minecraft:rotten_flesh" }
+    ],
+    "ingredients": [
+      { "item": "minecraft:paper" },
+      { "item": "minecraft:rotten_flesh" }
+    ],
+    "result": { "item": "za:guia_supervivencia" }
+  }
+}
