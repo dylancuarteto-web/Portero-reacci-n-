@@ -1,0 +1,56 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "za:zombie_espadachin",
+      "materials": {
+        "default": "zombie"
+      },
+      "textures": {
+        "default": "textures/entity/zombie_apocalypse/zombie_espadachin"
+      },
+      "geometry": {
+        "default": "geometry.zombie"
+      },
+      "animations": {
+        "humanoid_base_pose": "animation.humanoid.base_pose",
+        "look_at_target_default": "animation.humanoid.look_at_target.default",
+        "look_at_target_gliding": "animation.humanoid.look_at_target.gliding",
+        "look_at_target_swimming": "animation.humanoid.look_at_target.swimming",
+        "move": "animation.humanoid.move",
+        "riding.arms": "animation.humanoid.riding.arms",
+        "riding.legs": "animation.humanoid.riding.legs",
+        "holding": "animation.humanoid.holding",
+        "brandish_spear": "animation.humanoid.brandish_spear",
+        "charging": "animation.humanoid.charging",
+        "attack.positions": "animation.humanoid.attack.positions",
+        "attack.rotations": "animation.humanoid.attack.rotations",
+        "sneaking": "animation.humanoid.sneaking",
+        "bob": "animation.humanoid.bob",
+        "damage_nearby_mobs": "animation.humanoid.damage_nearby_mobs",
+        "bow_and_arrow": "animation.humanoid.bow_and_arrow",
+        "use_item_progress": "animation.humanoid.use_item_progress",
+        "swimming": "animation.humanoid.swimming",
+        "swimming.legs": "animation.humanoid.swimming.legs",
+        "use_item_intro": "animation.humanoid.use_item_intro",
+        "fishing_rod": "animation.humanoid.fishing_rod",
+        "celebrating": "animation.humanoid.celebrating",
+        "zombie_attack_bare_hand": "animation.zombie.attack_bare_hand",
+        "root": "controller.animation.humanoid.root"
+      },
+      "scripts": {
+        "animate": [
+          "root"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.za_zombie"
+      ],
+      "spawn_egg": {
+        "base_color": "#5E7C4A",
+        "overlay_color": "#C0C0C0"
+      },
+      "enable_attachables": true
+    }
+  }
+}

@@ -1,0 +1,107 @@
+## Zombie Apocalypse — English (US)
+## Todo el texto del addon vive aquí (nada hardcodeado en los scripts).
+
+## --- Entity & item names ---
+entity.za:zombie_normal.name=Normal Zombie
+item.spawn_egg.entity.za:zombie_normal.name=Spawn Normal Zombie
+entity.za:zombie_corredor.name=Runner Zombie
+item.spawn_egg.entity.za:zombie_corredor.name=Spawn Runner Zombie
+entity.za:zombie_bebe_corredor.name=Baby Runner Zombie
+item.spawn_egg.entity.za:zombie_bebe_corredor.name=Spawn Baby Runner Zombie
+entity.za:zombie_espadachin.name=Swordsman Zombie
+item.spawn_egg.entity.za:zombie_espadachin.name=Spawn Swordsman Zombie
+entity.za:zombie_hacha.name=Axe Zombie
+item.spawn_egg.entity.za:zombie_hacha.name=Spawn Axe Zombie
+entity.za:zombie_arquero.name=Archer Zombie
+item.spawn_egg.entity.za:zombie_arquero.name=Spawn Archer Zombie
+entity.za:zombie_trepador.name=Climber Zombie
+item.spawn_egg.entity.za:zombie_trepador.name=Spawn Climber Zombie
+entity.za:zombie_explosivo.name=Explosive Zombie
+item.spawn_egg.entity.za:zombie_explosivo.name=Spawn Explosive Zombie
+entity.za:zombie_constructor.name=Builder Zombie
+item.spawn_egg.entity.za:zombie_constructor.name=Spawn Builder Zombie
+entity.za:zombie_congelador.name=Freezer Zombie
+item.spawn_egg.entity.za:zombie_congelador.name=Spawn Freezer Zombie
+entity.za:zombie_toxico.name=Toxic Zombie
+item.spawn_egg.entity.za:zombie_toxico.name=Spawn Toxic Zombie
+entity.za:zombie_minero.name=Miner Zombie
+item.spawn_egg.entity.za:zombie_minero.name=Spawn Miner Zombie
+entity.za:zombie_demoledor.name=Wrecker Zombie
+item.spawn_egg.entity.za:zombie_demoledor.name=Spawn Wrecker Zombie
+entity.za:zombie_caballero.name=Knight Zombie
+item.spawn_egg.entity.za:zombie_caballero.name=Spawn Knight Zombie
+entity.za:zombie_tanque.name=Tank Zombie
+item.spawn_egg.entity.za:zombie_tanque.name=Spawn Tank Zombie
+entity.za:zombie_incendiario.name=Arsonist Zombie
+item.spawn_egg.entity.za:zombie_incendiario.name=Spawn Arsonist Zombie
+entity.za:zombie_chaman.name=Shaman Zombie
+item.spawn_egg.entity.za:zombie_chaman.name=Spawn Shaman Zombie
+entity.za:zombie_invocador.name=Summoner Zombie
+item.spawn_egg.entity.za:zombie_invocador.name=Spawn Summoner Zombie
+entity.za:zombie_enderman.name=Enderman Zombie
+item.spawn_egg.entity.za:zombie_enderman.name=Spawn Enderman Zombie
+entity.za:zombie_general.name=Zombie General
+item.spawn_egg.entity.za:zombie_general.name=Spawn Zombie General
+entity.za:zombie_domador.name=Tamer Zombie
+item.spawn_egg.entity.za:zombie_domador.name=Spawn Tamer Zombie
+entity.za:zombie_mutante.name=Mutant Zombie
+item.spawn_egg.entity.za:zombie_mutante.name=Spawn Mutant Zombie
+item.za:guia_supervivencia=Survival Guide
+item.za:guia_supervivencia.name=Survival Guide
+
+## --- HUD & messages ---
+za.hud.desesperacion=§6DESPERATION: §c%s §6/ 99
+za.msg.bienvenida=§7You wake up with a crumpled paper in your pocket. Read it. §o(Survival Guide)§r
+za.msg.guia_recibida=§eYou received the §6Survival Guide§e. Use it (right click) to read it.
+za.msg.tier_up=§4The horde grows impatient... §7(Desperation: %s)
+za.msg.dia=§6You survived another day. The horde knows. §c(+2 Desperation)
+za.msg.muerte=§8Death eases the desperation. §7(-10)
+za.msg.oculto=§8You have been hiding too long. The horde can smell you. §c(+1)
+za.msg.fortificado=§8Your fortress does not go unnoticed. §c(+1)
+za.msg.kills=§7The horde notices your kills. §c(+1 Desperation)
+za.msg.general_muerto=§6The General has fallen! The horde loses coordination.
+za.msg.chaman_revive=§5The Shaman uses its totem and refuses to die!
+za.msg.descubierto=§aNew entry in the Guide: §f%s
+za.msg.mutante=§4§lTHE GROUND SHAKES. SOMETHING HUGE IS COMING.
+
+## --- Survival Guide (forms) ---
+za.guia.titulo=SURVIVAL GUIDE
+za.guia.intro=§7Blood-stained paper. Hurried handwriting, from someone who knew they were out of time.§r\n\n§8"If you are reading this, you are still breathing. Good. Keep it that way."
+za.guia.btn.quepasa=What is happening?
+za.guia.btn.desesperacion=Desperation System
+za.guia.btn.zombies=Zombie Types
+za.guia.btn.consejos=Survival tips
+za.guia.btn.volver=< Back
+za.guia.quepasa=§l§4WHAT IS HAPPENING?§r\n\n§7I do not know when it started. I only know these are not the clumsy zombies from before. These come §fwith a plan§7.\n\nEach one has a job: some distract you, some break your walls, some dig underneath, and some command the others.\n\nThe longer you survive, the more they want you dead. They call it §cDesperation§7: the horde grows impatient with you.\n\nNo base lasts forever. No wall is final. But there is always, §falways§7, a way out.§r
+za.guia.desp=§l§6THE DESPERATION SYSTEM§r\n\n§7The horde is watching. A number from §f1 to 99§7 measures how badly they want you dead.\n\n§eIt rises from:§r\n§7- Every day you survive §8(+2)§r\n§7- Every 10 zombies you kill §8(+1)§r\n§7- Over-fortifying your base §8(+1 occasionally)§r\n§7- Hiding underground too long §8(+1 occasionally)§r\n\n§cIt drops from:§r\n§7- Dying §8(-10)§7. The only way. It should hurt.\n\n§7Higher Desperation brings worse creatures. Watch the corner of your screen.§r
+za.guia.desp.actual=§eYour current Desperation: §c%s
+za.guia.consejos=§l§aSURVIVAL TIPS§r\n\n§6GOLDEN RULE:§r §f"If you are killing normal zombies while a Shaman is still alive, you are losing."§r\n\n§7- Shaman, Summoner and General die §fFIRST§7. Always.\n- Kill the Explosive one §ffrom afar§7 or it will open your wall for you.\n- Wall without roof = open door (Climber).\n- Bunker without exit = grave (Miner).\n- Tower without cover = target (Archer).\n- Wood = firewood (Arsonist). Build with stone.\n- §fAlways§7 keep an escape route. The perfect base does not exist: a timely retreat does.\n- Milk cures poison and slowness. Carry a bucket.\n- If the ground shakes... run. Do not look back.§r
+za.guia.zombies.titulo=ZOMBIE TYPES
+za.guia.zombies.intro=§7Every creature you see up close gets recorded here. The ones you have not seen remain a mystery... for now.§r
+za.guia.desconocido=§8??? (undiscovered)
+za.guia.ficha.desconocida=§8You have not encountered this creature yet.\n\n§o"What you do not know is what kills you."§r
+
+## --- Zombie datasheets ---
+za.guia.ficha.zombie_normal=§l§4NORMAL ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 20    §bSpeed:§r Normal\n§6Damage:§r 3    §5Appears at Desperation:§r 1+\n\n§l§eITS JOB§r\n§7The mass. Nothing special, but it comes in numbers and surrounds you. Its job is to keep you busy while the specialists work.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Any weapon works. The danger is not one: it is fifteen. Do not get surrounded.§r
+za.guia.ficha.zombie_corredor=§l§4RUNNER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 12    §bSpeed:§r Very fast\n§6Damage:§r 2    §5Appears at Desperation:§r 11+\n\n§l§eITS JOB§r\n§7It catches you. Its only purpose is to make you stop thinking running is an option. It arrives first and pins you until the horde arrives.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Dies in 2 hits. Kill it before it locks you down. Do not ignore it for its low damage: the problem is it stops you.§r
+za.guia.ficha.zombie_bebe_corredor=§l§4BABY RUNNER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 8    §bSpeed:§r Very fast\n§6Damage:§r 2    §5Appears at Desperation:§r 11+\n\n§l§eITS JOB§r\n§7Like the Runner but worse: small, fits through 1-block gaps, and hard to hit because your aim points high.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Attack downwards. Seal the 1x1 gaps in your base: they were made for it.§r
+za.guia.ficha.zombie_espadachin=§l§4SWORDSMAN ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 24    §bSpeed:§r Normal\n§6Damage:§r 6    §5Appears at Desperation:§r 21+\n\n§l§eITS JOB§r\n§7Real damage. Unlike the Normal, this one kills you fast if you get careless. Sometimes blocks your hit, reducing damage taken.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Shield up. Hit, step back, hit. Do not trade blows with it.§r
+za.guia.ficha.zombie_hacha=§l§4AXE ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 22    §bSpeed:§r Fast\n§6Damage:§r 8    §5Appears at Desperation:§r 21+\n\n§l§eITS JOB§r\n§7Hits extremely hard (highest damage of its tier) but slowly. A huge risk if it corners you.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Do not trade hits. Its attack is slow: hit and step out. Keep your distance.§r
+za.guia.ficha.zombie_arquero=§l§4ARCHER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 16    §bSpeed:§r Normal\n§6Damage:§r 4    §5Appears at Desperation:§r 31+\n\n§l§eITS JOB§r\n§7Shoots arrows from range. Breaks the 'I climb a tower and I am safe' strategy. Forces you to build a roof and cover.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Take cover. It is fragile (16 HP): close the distance and it dies fast. Kill it before the Normals.§r
+za.guia.ficha.zombie_trepador=§l§4CLIMBER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 18    §bSpeed:§r Fast\n§6Damage:§r 4    §5Appears at Desperation:§r 31+\n\n§l§eITS JOB§r\n§7Climbs vertical walls. Nullifies smooth walls. Comes in from above while you watch the door.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Roof your base. A wall without a roof is an invitation. Overhangs also stop it.§r
+za.guia.ficha.zombie_explosivo=§l§4EXPLOSIVE ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 14    §bSpeed:§r Normal\n§6Damage:§r 3    §5Appears at Desperation:§r 31+\n\n§l§eITS JOB§r\n§7Explodes on death. It is a trap: killing it IS triggering it. In a horde, killing one near you hurts you AND opens a hole in your wall.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Kill it from afar with a bow. Never in melee. Never next to your wall: the blast breaks your own base.§r
+za.guia.ficha.zombie_constructor=§l§4BUILDER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 26    §bSpeed:§r Slow\n§6Damage:§r 3    §5Appears at Desperation:§r 41+\n\n§l§eITS JOB§r\n§7Places blocks. If your base is high, it builds a ramp to you. If there is a moat, it bridges it. Turns your vertical defense into a road.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Kill it fast: slow and weak, but every second alive is one block closer. Break the mossy blocks it leaves behind.§r
+za.guia.ficha.zombie_congelador=§l§4FREEZER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 20    §bSpeed:§r Slow\n§6Damage:§r 2    §5Appears at Desperation:§r 41+\n\n§l§eITS JOB§r\n§7It does not kill you: it slows you. Applies Slowness II so the others catch you. An enabler, not a killer.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Milk removes the effect. Kill it at range. Frozen in the open, whatever comes behind it kills you.§r
+za.guia.ficha.zombie_toxico=§l§4TOXIC ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 18    §bSpeed:§r Normal\n§6Damage:§r 2    §5Appears at Desperation:§r 41+\n\n§l§eITS JOB§r\n§7Its poison cannot kill you (leaves you at 1 HP) but wears you down right before something lethal arrives. A team player.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Milk cuts the poison. The danger is not him: it is the Tank arriving while you sit at 4 HP.§r
+za.guia.ficha.zombie_minero=§l§4MINER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 28    §bSpeed:§r Slow\n§6Damage:§r 4    §5Appears at Desperation:§r 51+\n\n§l§eITS JOB§r\n§7THE MOST IMPORTANT ONE. Detects you are sealed in or underground and, if there is no path to you, DIGS A DIRECT 2x2 TUNNEL. The rest of the horde follows through it. It never stops.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Hard blocks (obsidian) slow it massively, but not forever. A dirt bunker does NOT work: it is exactly what this thing was designed for.§r
+za.guia.ficha.zombie_demoledor=§l§4WRECKER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 34    §bSpeed:§r Slow\n§6Damage:§r 7    §5Appears at Desperation:§r 51+\n\n§l§eITS JOB§r\n§7Like the Miner, but against your walls and faster. Goes straight for the wall: it does not look for the door.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Obsidian. And kill it before it reaches the wall: hits hard but moves slowly.§r
+za.guia.ficha.zombie_caballero=§l§4KNIGHT ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 40    §bSpeed:§r Slow\n§6Damage:§r 6    §5Appears at Desperation:§r 61+\n\n§l§eITS JOB§r\n§7Damage sponge. Walks in front wearing iron armor and eats your hits while the rest surround you. A shield with legs.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Its armor reduces physical damage only: fire, poison and falls ignore it. Do not waste your sword on it with 20 more behind.§r
+za.guia.ficha.zombie_tanque=§l§4TANK ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 60    §bSpeed:§r Slow\n§6Damage:§r 10    §5Appears at Desperation:§r 61+\n\n§l§eITS JOB§r\n§7Punishes close combat. Stand and fight and it erases you (10 damage per hit). Its slowness is its weakness AND its trap.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Kite it: walk backwards and use a bow. NEVER fight it in a closed corridor. If it corners you, you already lost.§r
+za.guia.ficha.zombie_incendiario=§l§4ARSONIST ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 20    §bSpeed:§r Normal\n§6Damage:§r 4    §5Appears at Desperation:§r 61+\n\n§l§eITS JOB§r\n§7Sets you on fire, and sets your base on fire. Nullifies wooden defenses. If you built with planks, you just lost.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Water puts you out. Build with stone, not wood. It is fire-immune: do not try to burn it.§r
+za.guia.ficha.zombie_chaman=§l§4SHAMAN ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 22    §bSpeed:§r Normal\n§6Damage:§r 2    §5Appears at Desperation:§r 71+\n\n§l§eITS JOB§r\n§7Buffs the others: gives nearby zombies Speed and Strength. And it can revive ONCE (totem). It does not fight: it empowers.§r\n\n§l§aHOW TO COUNTER IT§r\n§7TOP PRIORITY. Kill it first, always, with a bow (it stays in the back). The first time you kill it, it revives: kill it twice.§r
+za.guia.ficha.zombie_invocador=§l§4SUMMONER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 20    §bSpeed:§r Slow\n§6Damage:§r 2    §5Appears at Desperation:§r 71+\n\n§l§eITS JOB§r\n§7Summons normal zombies mid-fight. The horde never ends while it lives. Turns a fight you were winning into one that never ends.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Kill it first. Killing its summons is wasted time: it is an open faucet. Close the faucet.§r
+za.guia.ficha.zombie_enderman=§l§4ENDERMAN ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 20    §bSpeed:§r Fast\n§6Damage:§r 5    §5Appears at Desperation:§r 71+\n\n§l§eITS JOB§r\n§7Teleports behind you. Nullifies walls, doors, moats, everything. Needs no path. Its job is reminding you no base is 100% safe.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Fragile, but you cannot stop it from getting in: you can only be ready. Back against a wall. Hear the teleport? Turn around.§r
+za.guia.ficha.zombie_general=§l§4ZOMBIE GENERAL§r\n§8--------------------------------§r\n§cHealth:§r 50    §bSpeed:§r Normal\n§6Damage:§r 8    §5Appears at Desperation:§r 81+\n\n§l§eITS JOB§r\n§7Coordinates the horde. While it lives, every nearby zombie is faster, stronger, and chases you from much farther away. It is the brain.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Kill it and the horde degrades. Killing 1 General is worth more than killing 20 normals. But it is armored and hits hard: bring preparation, not bravery.§r
+za.guia.ficha.zombie_domador=§l§4TAMER ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 26    §bSpeed:§r Fast\n§6Damage:§r 5    §5Appears at Desperation:§r 81+\n\n§l§eITS JOB§r\n§7Arrives with a pack of wolves. The wolves surround you; you cannot fight 4 at once. He stays back while they wear you down.§r\n\n§l§aHOW TO COUNTER IT§r\n§7The wolves follow the Tamer: kill HIM and the pack loses its purpose. Fighting the wolves first is exactly what he wants.§r
+za.guia.ficha.zombie_mutante=§l§4MUTANT ZOMBIE§r\n§8--------------------------------§r\n§cHealth:§r 150    §bSpeed:§r Normal\n§6Damage:§r 14    §5Appears at Desperation:§r 91+\n\n§l§eITS JOB§r\n§7BOSS. Breaks blocks, launches you with a massive knockback roar and survives almost everything. It is not an enemy: it is an event.§r\n\n§l§aHOW TO COUNTER IT§r\n§7Do not fight it head-on. You need enchanted armor, potions, prepared terrain and an escape route. Fight away from cliffs and lava. Traps do more than your sword.§r
+

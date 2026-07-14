@@ -1,0 +1,59 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+
+    "controller.animation.za.acciones": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "transitions": [
+            { "minar": "q.property('za:accion') == 1" },
+            { "construir": "q.property('za:accion') == 2" },
+            { "totem": "q.property('za:accion') == 3" },
+            { "pearl": "q.property('za:accion') == 4" }
+          ]
+        },
+        "minar": {
+          "animations": ["za_minar"],
+          "blend_transition": 0.15,
+          "transitions": [{ "default": "q.property('za:accion') != 1" }]
+        },
+        "construir": {
+          "animations": ["za_construir"],
+          "blend_transition": 0.15,
+          "transitions": [{ "default": "q.property('za:accion') != 2" }]
+        },
+        "totem": {
+          "animations": ["za_totem"],
+          "blend_transition": 0.15,
+          "transitions": [{ "default": "q.property('za:accion') != 3" }]
+        },
+        "pearl": {
+          "animations": ["za_pearl"],
+          "blend_transition": 0.1,
+          "transitions": [
+            { "default": "q.property('za:accion') != 4 || q.all_animations_finished" }
+          ]
+        }
+      }
+    },
+
+    "controller.animation.za.trepar": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "transitions": [
+            { "trepando": "!q.is_on_ground && !q.is_in_water && !q.is_jumping" }
+          ]
+        },
+        "trepando": {
+          "animations": ["za_trepar_anim"],
+          "blend_transition": 0.2,
+          "transitions": [
+            { "default": "q.is_on_ground || q.is_in_water" }
+          ]
+        }
+      }
+    }
+  }
+}

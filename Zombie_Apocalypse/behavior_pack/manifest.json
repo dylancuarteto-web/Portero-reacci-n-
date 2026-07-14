@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Zombie Apocalypse [BP]",
+    "description": "22 zombies especializados, sistema de Desesperacion y Guia de Supervivencia. Behavior Pack + Script API.",
+    "uuid": "a12168f7-6640-4b33-934b-6f5eff45689b",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 90]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "9ffaf156-d3ce-4b74-93a1-2bb20aeec8b2",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "efebc4d3-9ec6-4863-abec-6447fd893691",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    { "module_name": "@minecraft/server", "version": "2.0.0" },
+    { "module_name": "@minecraft/server-ui", "version": "2.0.0" },
+    { "uuid": "41dae8f3-5a5e-4834-85aa-9c7a0d5be847", "version": [1, 0, 0] }
+  ]
+}

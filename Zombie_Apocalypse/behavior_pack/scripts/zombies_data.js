@@ -1,0 +1,26 @@
+// GENERADO desde la tabla maestra — NO editar a mano los ids.
+// Tabla de spawn: id, nivel de desesperación mínimo y peso relativo.
+export const ZOMBIES = [
+  { key: "zombie_normal", id: "za:zombie_normal", desp: 1, weight: 30 },
+  { key: "zombie_corredor", id: "za:zombie_corredor", desp: 11, weight: 14 },
+  { key: "zombie_bebe_corredor", id: "za:zombie_bebe_corredor", desp: 11, weight: 10 },
+  { key: "zombie_espadachin", id: "za:zombie_espadachin", desp: 21, weight: 12 },
+  { key: "zombie_hacha", id: "za:zombie_hacha", desp: 21, weight: 10 },
+  { key: "zombie_arquero", id: "za:zombie_arquero", desp: 31, weight: 8 },
+  { key: "zombie_trepador", id: "za:zombie_trepador", desp: 31, weight: 8 },
+  { key: "zombie_explosivo", id: "za:zombie_explosivo", desp: 31, weight: 6 },
+  { key: "zombie_constructor", id: "za:zombie_constructor", desp: 41, weight: 6 },
+  { key: "zombie_congelador", id: "za:zombie_congelador", desp: 41, weight: 7 },
+  { key: "zombie_toxico", id: "za:zombie_toxico", desp: 41, weight: 7 },
+  { key: "zombie_minero", id: "za:zombie_minero", desp: 51, weight: 6 },
+  { key: "zombie_demoledor", id: "za:zombie_demoledor", desp: 51, weight: 5 },
+  { key: "zombie_caballero", id: "za:zombie_caballero", desp: 61, weight: 6 },
+  { key: "zombie_tanque", id: "za:zombie_tanque", desp: 61, weight: 4 },
+  { key: "zombie_incendiario", id: "za:zombie_incendiario", desp: 61, weight: 5 },
+  { key: "zombie_chaman", id: "za:zombie_chaman", desp: 71, weight: 3 },
+  { key: "zombie_invocador", id: "za:zombie_invocador", desp: 71, weight: 3 },
+  { key: "zombie_enderman", id: "za:zombie_enderman", desp: 71, weight: 4 },
+  { key: "zombie_general", id: "za:zombie_general", desp: 81, weight: 2 },
+  { key: "zombie_domador", id: "za:zombie_domador", desp: 81, weight: 3 },
+  { key: "zombie_mutante", id: "za:zombie_mutante", desp: 91, weight: 0 },
+];
