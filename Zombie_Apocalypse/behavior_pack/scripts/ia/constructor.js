@@ -13,8 +13,19 @@ import { system, world, BlockPermutation } from "@minecraft/server";
 import { entidadesCercaDeJugadores, jugadorMasCercano, esValido } from "../util.js";
 
 const BLOQUE_MARCADO = "minecraft:mossy_cobblestone";
-const AIRE = BlockPermutation.resolve("minecraft:air");
-const MOSSY = BlockPermutation.resolve(BLOQUE_MARCADO);
+
+// Init diferido: BlockPermutation.resolve() no puede usarse en "early
+// execution" (al importar el módulo). Se resuelven en el primer uso, ya
+// dentro del bucle de ticks.
+let AIRE, MOSSY;
+function aire() {
+  if (!AIRE) AIRE = BlockPermutation.resolve("minecraft:air");
+  return AIRE;
+}
+function mossy() {
+  if (!MOSSY) MOSSY = BlockPermutation.resolve(BLOQUE_MARCADO);
+  return MOSSY;
+}
 
 const VIDA_BLOQUE_TICKS = 2400;  // 2 minutos y el bloque desaparece
 const MAX_GLOBAL_POR_PASADA = 4; // presupuesto de bloques colocados por pasada
@@ -33,7 +44,7 @@ function colocar(dim, x, y, z) {
   try {
     const b = dim.getBlock({ x, y, z });
     if (!b || !b.isAir) return false;
-    b.setPermutation(MOSSY);
+    b.setPermutation(mossy());
     colocados.push({ dim: dim.id, x, y, z, tick: system.currentTick });
     if (colocados.length > MAX_REGISTRO) {
       // Tope alcanzado: limpiar ya el más viejo para no crecer sin límite.
@@ -51,7 +62,7 @@ function limpiarEntrada(entrada) {
   try {
     const dim = world.getDimension(entrada.dim);
     const b = dim.getBlock({ x: entrada.x, y: entrada.y, z: entrada.z });
-    if (b && b.typeId === BLOQUE_MARCADO) b.setPermutation(AIRE);
+    if (b && b.typeId === BLOQUE_MARCADO) b.setPermutation(aire());
   } catch { }
 }
 

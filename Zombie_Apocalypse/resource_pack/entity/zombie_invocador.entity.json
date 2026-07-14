@@ -14,33 +14,18 @@
       },
       "animations": {
         "humanoid_base_pose": "animation.humanoid.base_pose",
-        "look_at_target_default": "animation.humanoid.look_at_target.default",
-        "look_at_target_gliding": "animation.humanoid.look_at_target.gliding",
-        "look_at_target_swimming": "animation.humanoid.look_at_target.swimming",
+        "look_at_target": "animation.humanoid.look_at_target.default",
         "move": "animation.humanoid.move",
-        "riding.arms": "animation.humanoid.riding.arms",
-        "riding.legs": "animation.humanoid.riding.legs",
+        "attack_bare_hand": "animation.zombie.attack_bare_hand",
         "holding": "animation.humanoid.holding",
-        "brandish_spear": "animation.humanoid.brandish_spear",
-        "charging": "animation.humanoid.charging",
-        "attack.positions": "animation.humanoid.attack.positions",
-        "attack.rotations": "animation.humanoid.attack.rotations",
-        "sneaking": "animation.humanoid.sneaking",
-        "bob": "animation.humanoid.bob",
-        "damage_nearby_mobs": "animation.humanoid.damage_nearby_mobs",
-        "bow_and_arrow": "animation.humanoid.bow_and_arrow",
-        "use_item_progress": "animation.humanoid.use_item_progress",
-        "swimming": "animation.humanoid.swimming",
-        "swimming.legs": "animation.humanoid.swimming.legs",
-        "use_item_intro": "animation.humanoid.use_item_intro",
-        "fishing_rod": "animation.humanoid.fishing_rod",
-        "celebrating": "animation.humanoid.celebrating",
-        "zombie_attack_bare_hand": "animation.zombie.attack_bare_hand",
-        "root": "controller.animation.humanoid.root"
+        "bow_and_arrow": "animation.humanoid.bow_and_arrow"
       },
       "scripts": {
         "animate": [
-          "root"
+          "humanoid_base_pose",
+          "look_at_target",
+          "move",
+          "attack_bare_hand"
         ]
       },
       "render_controllers": [

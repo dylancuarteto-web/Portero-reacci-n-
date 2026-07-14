@@ -115,6 +115,9 @@
         "priority": 3,
         "track_target": true,
         "speed_multiplier": 1.0
+      },
+      "minecraft:equipment": {
+        "table": "loot_tables/entities/za_gear_minero.json"
       }
     },
     "events": {
