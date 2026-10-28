@@ -1,0 +1,52 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "lacobra:espada_cobra",
+      "menu_category": {
+        "category": "equipment",
+        "group": "minecraft:itemGroup.name.sword"
+      }
+    },
+    "components": {
+      "minecraft:icon": "lacobra_espada_cobra",
+      "minecraft:display_name": {
+        "value": "item.lacobra.espada_cobra"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:glint": true,
+      "minecraft:hand_equipped": true,
+      "minecraft:durability": {
+        "max_durability": 2200,
+        "damage_chance": {
+          "min": 100,
+          "max": 100
+        }
+      },
+      "minecraft:damage": {
+        "value": 10
+      },
+      "minecraft:enchantable": {
+        "slot": "sword",
+        "value": 15
+      },
+      "minecraft:repairable": {
+        "repair_items": [
+          {
+            "items": [
+              "lacobra:escama_cobra"
+            ],
+            "repair_amount": 550
+          }
+        ]
+      },
+      "minecraft:can_destroy_in_creative": false,
+      "minecraft:tags": {
+        "tags": [
+          "minecraft:is_sword"
+        ]
+      },
+      "lacobra:espada": {}
+    }
+  }
+}

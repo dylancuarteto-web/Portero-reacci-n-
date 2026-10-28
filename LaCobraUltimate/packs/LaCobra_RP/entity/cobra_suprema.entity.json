@@ -1,0 +1,29 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "lacobra:cobra_suprema",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/cobra_suprema"
+      },
+      "geometry": {
+        "default": "geometry.lacobra.cobra_suprema"
+      },
+      "animations": {
+        "coil": "animation.lacobra.suprema.coil"
+      },
+      "scripts": {
+        "animate": [
+          "coil"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.lacobra.default"
+      ],
+      "enable_attachables": false
+    }
+  }
+}

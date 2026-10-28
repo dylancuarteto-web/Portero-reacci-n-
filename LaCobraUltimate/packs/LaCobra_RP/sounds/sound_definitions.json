@@ -1,0 +1,295 @@
+{
+  "format_version": "1.20.20",
+  "sound_definitions": {
+    "lacobra.instinto_on": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/instinto_on",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.instinto_off": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/instinto_off",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.golpe_especial": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/golpe_especial",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.carga": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/carga",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.remate_lanzar": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/remate_lanzar",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.veneno_lanzar": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/veneno_lanzar",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.veneno_golpe": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/veneno_golpe",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.dominio_on": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/dominio_on",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.dominio_pulso": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/dominio_pulso",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.suprema_carga": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/suprema_carga",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.suprema_transformacion": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/suprema_transformacion",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.suprema_final": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/suprema_final",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.totem": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/totem",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.guardian_zap": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/guardian_zap",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.atajada": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/atajada",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.balon_patada": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/balon_patada",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.balon_golpe": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/balon_golpe",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.sin_energia": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/sin_energia",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.menu": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/menu",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.listo": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/listo",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 24
+    },
+    "lacobra.impacto": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/impacto",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 48
+    },
+    "lacobra.onda": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/onda",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 48
+    },
+    "lacobra.invocacion": {
+      "category": "player",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/invocacion",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 48
+    },
+    "lacobra.jefe_siseo": {
+      "category": "hostile",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/jefe_siseo",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 64
+    },
+    "lacobra.jefe_rugido": {
+      "category": "hostile",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/jefe_rugido",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 64
+    },
+    "lacobra.jefe_herido": {
+      "category": "hostile",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/jefe_herido",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 64
+    },
+    "lacobra.jefe_muerte": {
+      "category": "hostile",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/jefe_muerte",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 64
+    },
+    "lacobra.jefe_mordida": {
+      "category": "hostile",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/jefe_mordida",
+          "volume": 1.0
+        }
+      ],
+      "max_distance": 64
+    },
+    "lacobra.esbirro_siseo": {
+      "category": "hostile",
+      "sounds": [
+        {
+          "name": "sounds/lacobra/esbirro_siseo",
+          "volume": 0.7
+        }
+      ],
+      "max_distance": 20
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:runa_instinto"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "nEn",
+      "ENE",
+      "nEn"
+    ],
+    "key": {
+      "n": {
+        "item": "minecraft:gold_nugget"
+      },
+      "E": {
+        "item": "lacobra:escama_cobra"
+      },
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:nucleo_energia"
+      }
+    ],
+    "result": {
+      "item": "lacobra:runa_instinto",
+      "count": 1
+    }
+  }
+}

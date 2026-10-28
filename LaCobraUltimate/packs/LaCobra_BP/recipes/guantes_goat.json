@@ -1,0 +1,35 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:guantes_goat"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "L L",
+      "ENE"
+    ],
+    "key": {
+      "L": {
+        "item": "minecraft:leather"
+      },
+      "E": {
+        "item": "lacobra:escama_cobra"
+      },
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:nucleo_energia"
+      }
+    ],
+    "result": {
+      "item": "lacobra:guantes_goat",
+      "count": 1
+    }
+  }
+}

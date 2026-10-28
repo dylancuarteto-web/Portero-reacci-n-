@@ -1,0 +1,30 @@
+{
+  "entity_sounds": {
+    "entities": {
+      "lacobra:serpiente_legendaria": {
+        "volume": 1.0,
+        "pitch": [
+          0.9,
+          1.1
+        ],
+        "events": {
+          "ambient": "lacobra.jefe_siseo",
+          "hurt": "lacobra.jefe_herido",
+          "death": "lacobra.jefe_muerte"
+        }
+      },
+      "lacobra:serpiente_esbirro": {
+        "volume": 0.8,
+        "pitch": [
+          1.1,
+          1.4
+        ],
+        "events": {
+          "ambient": "lacobra.esbirro_siseo",
+          "hurt": "lacobra.esbirro_siseo",
+          "death": "lacobra.veneno_golpe"
+        }
+      }
+    }
+  }
+}

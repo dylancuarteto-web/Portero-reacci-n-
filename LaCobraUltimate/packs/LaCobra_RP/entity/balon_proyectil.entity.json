@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "lacobra:balon_proyectil",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/balon_dorado"
+      },
+      "geometry": {
+        "default": "geometry.lacobra.esfera"
+      },
+      "animations": {
+        "spin": "animation.lacobra.esfera.spin",
+        "trail": "animation.lacobra.fx.trail_ball"
+      },
+      "scripts": {
+        "animate": [
+          "spin",
+          "trail"
+        ],
+        "scale": "1.1"
+      },
+      "render_controllers": [
+        "controller.render.lacobra.default"
+      ],
+      "particle_effects": {
+        "ball_trail": "lacobra:ball_trail"
+      },
+      "enable_attachables": false
+    }
+  }
+}

@@ -1,0 +1,656 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.lacobra.boss.idle": {
+      "loop": true,
+      "bones": {
+        "neck": {
+          "rotation": [
+            "math.sin(query.life_time * 70 - 0) * 4",
+            "math.sin(query.life_time * 45 - 0) * 7",
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            "math.sin(query.life_time * 90 - 30) * 3",
+            "math.sin(query.life_time * 60 - 40) * 5",
+            0
+          ]
+        },
+        "body2": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 40 - 0) * 3"
+          ]
+        },
+        "hood": {
+          "scale": [
+            "1 + math.sin(query.life_time * 100) * 0.05",
+            1,
+            1
+          ]
+        },
+        "tongue": {
+          "scale": [
+            1,
+            1,
+            "math.mod(query.life_time, 2.6) < 0.35 ? 1 : 0.05"
+          ]
+        },
+        "tail0": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 80 - 0) * 6",
+            0
+          ]
+        },
+        "tail1": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 80 - 40) * 6",
+            0
+          ]
+        },
+        "tail2": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 80 - 80) * 6",
+            0
+          ]
+        },
+        "tail3": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 80 - 120) * 6",
+            0
+          ]
+        },
+        "tail4": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 80 - 160) * 6",
+            0
+          ]
+        },
+        "tail5": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 80 - 200) * 6",
+            0
+          ]
+        }
+      }
+    },
+    "animation.lacobra.boss.move": {
+      "loop": true,
+      "bones": {
+        "tail0": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 420 - 0) * 16",
+            0
+          ]
+        },
+        "tail1": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 420 - 55) * 16",
+            0
+          ]
+        },
+        "tail2": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 420 - 110) * 16",
+            0
+          ]
+        },
+        "tail3": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 420 - 165) * 16",
+            0
+          ]
+        },
+        "tail4": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 420 - 220) * 16",
+            0
+          ]
+        },
+        "tail5": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 420 - 275) * 16",
+            0
+          ]
+        },
+        "base": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 420 - -40) * 5",
+            0
+          ]
+        },
+        "body1": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 420 - 0) * 4"
+          ]
+        }
+      }
+    },
+    "animation.lacobra.boss.aura": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.1,
+      "particle_effects": {
+        "0.0": {
+          "effect": "aura"
+        }
+      }
+    },
+    "animation.lacobra.boss.hurt": {
+      "animation_length": 0.3,
+      "bones": {
+        "body1": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.1": [
+              -8,
+              0,
+              4
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "neck": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.1": [
+              -12,
+              0,
+              0
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.1": [
+              25,
+              0,
+              0
+            ],
+            "0.3": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.boss.bite": {
+      "animation_length": 0.6,
+      "bones": {
+        "neck": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              -15,
+              0,
+              0
+            ],
+            "0.3": [
+              32,
+              0,
+              0
+            ],
+            "0.6": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "head": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              -10,
+              0,
+              0
+            ],
+            "0.3": [
+              15,
+              0,
+              0
+            ],
+            "0.6": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              40,
+              0,
+              0
+            ],
+            "0.32": [
+              0,
+              0,
+              0
+            ],
+            "0.6": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "body2": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              12,
+              0,
+              0
+            ],
+            "0.6": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.boss.special": {
+      "animation_length": 1.2,
+      "bones": {
+        "body1": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.4": [
+              -14,
+              0,
+              0
+            ],
+            "0.7": [
+              10,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "neck": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.4": [
+              -20,
+              0,
+              0
+            ],
+            "0.7": [
+              20,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "head": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.4": [
+              -25,
+              0,
+              0
+            ],
+            "0.7": [
+              10,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.3": [
+              45,
+              0,
+              0
+            ],
+            "0.9": [
+              45,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "hood": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.4": [
+              1.35,
+              1.15,
+              1
+            ],
+            "0.9": [
+              1.35,
+              1.15,
+              1
+            ],
+            "1.2": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.boss.roar": {
+      "animation_length": 2.0,
+      "bones": {
+        "body1": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              -18,
+              0,
+              0
+            ],
+            "1.6": [
+              -18,
+              0,
+              0
+            ],
+            "2.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "neck": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              -15,
+              0,
+              0
+            ],
+            "1.0": [
+              -15,
+              12,
+              0
+            ],
+            "1.4": [
+              -15,
+              -12,
+              0
+            ],
+            "2.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.4": [
+              50,
+              0,
+              0
+            ],
+            "1.7": [
+              50,
+              0,
+              0
+            ],
+            "2.0": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "hood": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.5": [
+              1.5,
+              1.2,
+              1
+            ],
+            "1.7": [
+              1.5,
+              1.2,
+              1
+            ],
+            "2.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "crown": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.6": [
+              1.3,
+              1.3,
+              1.3
+            ],
+            "2.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.boss.death": {
+      "animation_length": 2.0,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "body1": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.6": [
+              -20,
+              0,
+              0
+            ],
+            "1.6": [
+              55,
+              0,
+              25
+            ]
+          }
+        },
+        "neck": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.2": [
+              35,
+              0,
+              0
+            ]
+          }
+        },
+        "jaw": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              50,
+              0,
+              0
+            ],
+            "1.6": [
+              30,
+              0,
+              0
+            ]
+          }
+        },
+        "hood": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "1.6": [
+              0.6,
+              0.8,
+              1
+            ]
+          }
+        },
+        "root": {
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.0": [
+              0,
+              0,
+              0
+            ],
+            "2.0": [
+              0,
+              -6,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

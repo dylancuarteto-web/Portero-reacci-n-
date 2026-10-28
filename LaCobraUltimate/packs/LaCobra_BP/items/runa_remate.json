@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "lacobra:runa_remate",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": "lacobra_runa_remate",
+      "minecraft:display_name": {
+        "value": "item.lacobra.runa_remate"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:glint": true,
+      "lacobra:runa": {
+        "habilidad": "remate"
+      }
+    }
+  }
+}

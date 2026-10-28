@@ -1,0 +1,66 @@
+{
+  "resource_pack_name": "lacobra",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "lacobra_amuleto_cobra": {
+      "textures": "textures/items/amuleto_cobra"
+    },
+    "lacobra_balon_dorado": {
+      "textures": "textures/items/balon_dorado"
+    },
+    "lacobra_botas_cobra": {
+      "textures": "textures/items/botas_cobra"
+    },
+    "lacobra_casco_cobra": {
+      "textures": "textures/items/casco_cobra"
+    },
+    "lacobra_colmillo_legendario": {
+      "textures": "textures/items/colmillo_legendario"
+    },
+    "lacobra_escama_cobra": {
+      "textures": "textures/items/escama_cobra"
+    },
+    "lacobra_esencia_suprema": {
+      "textures": "textures/items/esencia_suprema"
+    },
+    "lacobra_espada_cobra": {
+      "textures": "textures/items/espada_cobra"
+    },
+    "lacobra_guantes_goat": {
+      "textures": "textures/items/guantes_goat"
+    },
+    "lacobra_idolo_serpiente": {
+      "textures": "textures/items/idolo_serpiente"
+    },
+    "lacobra_libro_tactico": {
+      "textures": "textures/items/libro_tactico"
+    },
+    "lacobra_nucleo_energia": {
+      "textures": "textures/items/nucleo_energia"
+    },
+    "lacobra_pantalones_cobra": {
+      "textures": "textures/items/pantalones_cobra"
+    },
+    "lacobra_pechera_cobra": {
+      "textures": "textures/items/pechera_cobra"
+    },
+    "lacobra_runa_dominio": {
+      "textures": "textures/items/runa_dominio"
+    },
+    "lacobra_runa_instinto": {
+      "textures": "textures/items/runa_instinto"
+    },
+    "lacobra_runa_remate": {
+      "textures": "textures/items/runa_remate"
+    },
+    "lacobra_runa_suprema": {
+      "textures": "textures/items/runa_suprema"
+    },
+    "lacobra_runa_veneno": {
+      "textures": "textures/items/runa_veneno"
+    },
+    "lacobra_totem_cobra": {
+      "textures": "textures/items/totem_cobra"
+    }
+  }
+}

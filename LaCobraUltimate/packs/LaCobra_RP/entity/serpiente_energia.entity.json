@@ -1,0 +1,46 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "lacobra:serpiente_energia",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "veneno": "textures/entity/serpiente_veneno",
+        "guardiana": "textures/entity/serpiente_guardiana"
+      },
+      "geometry": {
+        "default": "geometry.lacobra.serpiente"
+      },
+      "animations": {
+        "slither": "animation.lacobra.serpiente.slither_fast",
+        "appear": "animation.lacobra.fx.appear",
+        "trail_v": "animation.lacobra.fx.trail_serpent",
+        "trail_g": "animation.lacobra.fx.trail_guard",
+        "vanish": "animation.lacobra.fx.vanish"
+      },
+      "scripts": {
+        "animate": [
+          "slither",
+          "appear",
+          {
+            "trail_v": "query.property('lacobra:variante') == 0"
+          },
+          {
+            "trail_g": "query.property('lacobra:variante') == 1"
+          }
+        ],
+        "scale": "1.3"
+      },
+      "render_controllers": [
+        "controller.render.lacobra.serpiente"
+      ],
+      "particle_effects": {
+        "serpent_trail": "lacobra:serpent_trail",
+        "guard_trail": "lacobra:guard_trail"
+      },
+      "enable_attachables": false
+    }
+  }
+}

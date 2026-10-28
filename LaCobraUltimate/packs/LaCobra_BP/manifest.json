@@ -1,0 +1,33 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "§6La Cobra §5Ultimate §f[BP]",
+    "description": "Habilidades, objetos, jefe y sistema de energía de La Cobra. Script API estable.",
+    "uuid": "ce9a4262-cbb3-4675-9d49-aaf156b4d1a5",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 100]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "d778ef46-078d-4b0f-8a5d-a0ab3a399e80",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "0baa7f78-2062-4508-ba71-1128b8e8d682",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    { "module_name": "@minecraft/server", "version": "2.10.0" },
+    { "module_name": "@minecraft/server-ui", "version": "2.2.0" },
+    { "uuid": "07494565-21a3-43c0-ad53-e3efcca16149", "version": [1, 0, 0] }
+  ],
+  "metadata": {
+    "authors": ["La Cobra Ultimate Team"],
+    "product_type": "addon"
+  }
+}

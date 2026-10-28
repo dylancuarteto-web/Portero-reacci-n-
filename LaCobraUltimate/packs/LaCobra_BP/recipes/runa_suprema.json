@@ -1,0 +1,36 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:runa_suprema"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "CNC",
+      "NXN",
+      "CNC"
+    ],
+    "key": {
+      "C": {
+        "item": "lacobra:colmillo_legendario"
+      },
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      },
+      "X": {
+        "item": "lacobra:esencia_suprema"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:esencia_suprema"
+      }
+    ],
+    "result": {
+      "item": "lacobra:runa_suprema",
+      "count": 1
+    }
+  }
+}

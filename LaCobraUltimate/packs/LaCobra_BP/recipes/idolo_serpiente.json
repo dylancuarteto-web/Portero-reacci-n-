@@ -1,0 +1,36 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:idolo_serpiente"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "NBN",
+      "BYB",
+      "NBN"
+    ],
+    "key": {
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      },
+      "B": {
+        "item": "minecraft:gold_block"
+      },
+      "Y": {
+        "item": "minecraft:ender_eye"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:nucleo_energia"
+      }
+    ],
+    "result": {
+      "item": "lacobra:idolo_serpiente",
+      "count": 1
+    }
+  }
+}

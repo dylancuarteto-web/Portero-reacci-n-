@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "lacobra:escupitajo",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/escupitajo"
+      },
+      "geometry": {
+        "default": "geometry.lacobra.esfera"
+      },
+      "animations": {
+        "spin": "animation.lacobra.esfera.spin",
+        "trail": "animation.lacobra.fx.trail_venom"
+      },
+      "scripts": {
+        "animate": [
+          "spin",
+          "trail"
+        ],
+        "scale": "0.9"
+      },
+      "render_controllers": [
+        "controller.render.lacobra.default"
+      ],
+      "particle_effects": {
+        "venom_trail": "lacobra:venom_trail"
+      },
+      "enable_attachables": false
+    }
+  }
+}

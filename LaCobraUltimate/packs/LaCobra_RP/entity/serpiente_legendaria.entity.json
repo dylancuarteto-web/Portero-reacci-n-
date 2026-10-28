@@ -1,0 +1,51 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "lacobra:serpiente_legendaria",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "f1": "textures/entity/serpiente_legendaria_f1",
+        "f2": "textures/entity/serpiente_legendaria_f2",
+        "f3": "textures/entity/serpiente_legendaria_f3"
+      },
+      "geometry": {
+        "default": "geometry.lacobra.serpiente_legendaria"
+      },
+      "animations": {
+        "idle": "animation.lacobra.boss.idle",
+        "move": "animation.lacobra.boss.move",
+        "hurt": "animation.lacobra.boss.hurt",
+        "death": "animation.lacobra.boss.death",
+        "bite": "animation.lacobra.boss.bite",
+        "special": "animation.lacobra.boss.special",
+        "roar": "animation.lacobra.boss.roar",
+        "aura": "animation.lacobra.boss.aura",
+        "ctrl": "controller.animation.lacobra.boss"
+      },
+      "scripts": {
+        "animate": [
+          "idle",
+          {
+            "move": "query.modified_move_speed > 0.05"
+          },
+          "aura",
+          "ctrl"
+        ],
+        "scale": "1.0"
+      },
+      "render_controllers": [
+        "controller.render.lacobra.boss"
+      ],
+      "particle_effects": {
+        "aura": "lacobra:boss_aura"
+      },
+      "spawn_egg": {
+        "base_color": "#1A1022",
+        "overlay_color": "#E8AA1E"
+      }
+    }
+  }
+}

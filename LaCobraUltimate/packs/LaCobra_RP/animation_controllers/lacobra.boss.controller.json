@@ -1,0 +1,40 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.lacobra.boss": {
+      "initial_state": "default",
+      "states": {
+        "default": {
+          "transitions": [
+            {
+              "death": "!query.is_alive"
+            },
+            {
+              "hurt": "query.hurt_time > 0"
+            }
+          ]
+        },
+        "hurt": {
+          "animations": [
+            "hurt"
+          ],
+          "blend_transition": 0.1,
+          "transitions": [
+            {
+              "death": "!query.is_alive"
+            },
+            {
+              "default": "query.all_animations_finished && query.hurt_time == 0"
+            }
+          ]
+        },
+        "death": {
+          "animations": [
+            "death"
+          ],
+          "blend_transition": 0.2
+        }
+      }
+    }
+  }
+}

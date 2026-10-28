@@ -1,0 +1,39 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:espada_cobra"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      " N ",
+      "EDE",
+      " B "
+    ],
+    "key": {
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      },
+      "E": {
+        "item": "lacobra:escama_cobra"
+      },
+      "D": {
+        "item": "minecraft:diamond_sword"
+      },
+      "B": {
+        "item": "minecraft:blaze_rod"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:nucleo_energia"
+      }
+    ],
+    "result": {
+      "item": "lacobra:espada_cobra",
+      "count": 1
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "lacobra:circulo_magico",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/circulo_magico"
+      },
+      "geometry": {
+        "default": "geometry.lacobra.circulo"
+      },
+      "animations": {
+        "spin": "animation.lacobra.circulo.spin"
+      },
+      "scripts": {
+        "animate": [
+          "spin"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.lacobra.default"
+      ],
+      "enable_attachables": false
+    }
+  }
+}

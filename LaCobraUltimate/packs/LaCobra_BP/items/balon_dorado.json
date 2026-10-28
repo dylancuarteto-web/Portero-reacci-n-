@@ -1,0 +1,32 @@
+{
+  "format_version": "1.21.90",
+  "minecraft:item": {
+    "description": {
+      "identifier": "lacobra:balon_dorado",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": "lacobra_balon_dorado",
+      "minecraft:display_name": {
+        "value": "item.lacobra.balon_dorado"
+      },
+      "minecraft:max_stack_size": 16,
+      "minecraft:throwable": {
+        "do_swing_animation": true,
+        "launch_power_scale": 1.0,
+        "max_launch_power": 1.6
+      },
+      "minecraft:projectile": {
+        "projectile_entity": "lacobra:balon_proyectil",
+        "minimum_critical_power": 1.2
+      },
+      "minecraft:cooldown": {
+        "category": "lacobra_balon",
+        "duration": 0.6
+      },
+      "lacobra:balon": {}
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "lacobra:serpiente_esbirro",
+      "is_spawnable": true,
+      "is_summonable": true
+    },
+    "component_groups": {
+      "lacobra:despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "lacobra_minion",
+          "monster",
+          "mob",
+          "serpiente"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.7,
+        "height": 0.5
+      },
+      "minecraft:health": {
+        "value": 20,
+        "max": 20
+      },
+      "minecraft:attack": {
+        "damage": 4,
+        "effect_name": "poison",
+        "effect_duration": 3
+      },
+      "minecraft:movement": {
+        "value": 0.32
+      },
+      "minecraft:navigation.walk": {
+        "can_path_over_water": true,
+        "avoid_damage_blocks": true
+      },
+      "minecraft:movement.basic": {},
+      "minecraft:jump.static": {},
+      "minecraft:follow_range": {
+        "value": 24,
+        "max": 24
+      },
+      "minecraft:physics": {},
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0
+      },
+      "minecraft:nameable": {},
+      "minecraft:loot": {
+        "table": "loot_tables/entities/serpiente_esbirro.json"
+      },
+      "minecraft:experience_reward": {
+        "on_death": "query.last_hit_by_player ? 8 : 0"
+      },
+      "minecraft:ambient_sound_interval": {
+        "value": 4,
+        "range": 6,
+        "event_name": "ambient"
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:behavior.float": {
+        "priority": 0
+      },
+      "minecraft:behavior.hurt_by_target": {
+        "priority": 1
+      },
+      "minecraft:behavior.nearest_attackable_target": {
+        "priority": 2,
+        "must_see": true,
+        "within_radius": 24,
+        "entity_types": [
+          {
+            "filters": {
+              "test": "is_family",
+              "subject": "other",
+              "value": "player"
+            },
+            "max_dist": 24
+          }
+        ]
+      },
+      "minecraft:behavior.melee_attack": {
+        "priority": 3,
+        "speed_multiplier": 1.3,
+        "track_target": true
+      },
+      "minecraft:behavior.random_stroll": {
+        "priority": 6,
+        "speed_multiplier": 0.9
+      },
+      "minecraft:behavior.look_at_player": {
+        "priority": 7,
+        "look_distance": 8
+      },
+      "minecraft:timer": {
+        "looping": false,
+        "time": 120,
+        "randomInterval": false,
+        "time_down_event": {
+          "event": "lacobra:despawn",
+          "target": "self"
+        }
+      }
+    },
+    "events": {
+      "lacobra:despawn": {
+        "add": {
+          "component_groups": [
+            "lacobra:despawn"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["packs/LaCobra_BP/scripts/**/*.js", "tools/globals.d.ts"]
+}

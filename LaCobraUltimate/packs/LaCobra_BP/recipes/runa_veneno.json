@@ -1,0 +1,39 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:runa_veneno"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "nEn",
+      "PNP",
+      "nEn"
+    ],
+    "key": {
+      "n": {
+        "item": "minecraft:gold_nugget"
+      },
+      "E": {
+        "item": "lacobra:escama_cobra"
+      },
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      },
+      "P": {
+        "item": "minecraft:spider_eye"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:nucleo_energia"
+      }
+    ],
+    "result": {
+      "item": "lacobra:runa_veneno",
+      "count": 1
+    }
+  }
+}

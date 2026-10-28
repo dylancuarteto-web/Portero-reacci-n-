@@ -1,0 +1,159 @@
+# Registro de pruebas automáticas — La Cobra Ultimate
+# Simulador del Script API (tools/test). Fecha: 2026-10-28T22:31:34.641Z
+
+## Registro de componentes y comandos
+  [OK]    componente lacobra:espada registrado
+  [OK]    componente lacobra:balon registrado
+  [OK]    componente lacobra:guantes registrado
+  [OK]    componente lacobra:totem registrado
+  [OK]    componente lacobra:idolo registrado
+  [OK]    componente lacobra:libro registrado
+  [OK]    componente lacobra:runa registrado
+  [OK]    6 comandos personalizados registrados
+  [OK]    enum de habilidades registrado
+
+## Energía inicial, HUD y bienvenida
+  [OK]    energía inicial 100
+  [OK]    mensaje de bienvenida la primera vez
+  [OK]    la barra de energía aparece al empuñar un objeto de La Cobra
+
+## Habilidad A: Instinto de la Cobra
+  [OK]    consume 15 de energía
+  [OK]    aplica velocidad II
+  [OK]    sonido de activación
+  [OK]    una segunda activación inmediata se rechaza sin gastar energía
+  [OK]    mensaje claro al rechazar
+  [OK]    genera partículas de aura mientras está activo
+  [OK]    golpe con Instinto: +3 de daño validado en servidor
+  [OK]    no aplica el bono dos veces en el mismo golpe
+  [OK]    el Instinto termina tras 8 s
+  [OK]    sonido de finalización
+  [OK]    no quedan tareas del Instinto
+
+## Habilidad B: Remate Legendario
+  [OK]    entra en estado de carga
+  [OK]    no se puede lanzar otra habilidad durante la carga
+  [OK]    lanza un proyectil real con velocidad tras 1.2 s de carga
+  [OK]    el proyectil tiene propietario (validación de daño)
+  [OK]    sale del estado de carga
+  [OK]    daño de área al zombi
+  [OK]    no daña aldeanos
+  [OK]    no daña jugadores con PvP desactivado
+  [OK]    empuje de la onda expansiva
+  [OK]    onda expansiva con radio
+  [OK]    sonido de impacto
+  [OK]    con PvP activado sí daña a otros jugadores
+
+## Remate interrumpido: devolución de energía
+  [OK]    la energía se devuelve si la carga se interrumpe
+  [OK]    estado de carga limpiado
+  [OK]    no se lanza ninguna esfera tras morir
+
+## Habilidad C: Veneno Serpentino
+  [OK]    sin objetivo: se rechaza sin gastar energía ni enfriamiento
+  [OK]    mensaje: no hay objetivo
+  [OK]    con objetivo consume 20
+  [OK]    aparece la serpiente de energía
+  [OK]    la serpiente persigue y alcanza al objetivo (12 ticks)
+  [OK]    daño moderado + lentitud + veneno
+  [OK]    la serpiente desaparece al terminar
+  [OK]    si el objetivo desaparece la serpiente se desvanece
+  [OK]    no quedan tareas de Veneno
+
+## Habilidad D: Dominio Absoluto
+  [OK]    consume 40
+  [OK]    crea el círculo mágico
+  [OK]    mejoras temporales al jugador
+  [OK]    no se acumula: segunda activación rechazada
+  [OK]    el círculo sigue al jugador
+  [OK]    debilita enemigos cercanos
+  [OK]    no afecta a animales pacíficos
+  [OK]    onda expansiva final
+  [OK]    el círculo se elimina al terminar
+  [OK]    estado del Dominio limpiado
+
+## Habilidad definitiva: La Cobra Suprema
+  [OK]    requiere 100 de energía
+  [OK]    consume 100 y comienza la secuencia
+  [OK]    aparece la serpiente gigante
+  [OK]    transformación: aparece el espíritu de La Cobra
+  [OK]    animación de transformación del jugador
+  [OK]    gran onda: daño real dentro del radio
+  [OK]    fuera del radio no recibe daño
+  [OK]    vibración de cámara moderada
+  [OK]    secuencia terminada
+  [OK]    mensaje especial de finalización
+  [OK]    todas las entidades de efecto eliminadas
+
+## Cobra Suprema interrumpida al salir del mundo
+  [OK]    efectos activos durante la secuencia
+  [OK]    limpieza total al salir el jugador
+  [OK]    tareas canceladas
+  [OK]    la energía se guarda al salir
+
+## Regeneración de energía
+  [OK]    regenera ~2/s (10 en 5 s)
+
+## Progresión: runas necesarias para el menú y la espada
+  [OK]    el Libro Táctico abre un menú con 6 botones táctiles
+  [OK]    sin la runa la habilidad está bloqueada
+  [OK]    con la runa en el inventario el menú lanza la habilidad
+  [OK]    en creativo la espada lanza la habilidad seleccionada
+
+## Tótem de La Cobra
+  [OK]    consume un tótem
+  [OK]    efectos defensivos temporales
+  [OK]    aparece la serpiente guardiana
+  [OK]    no se puede reactivar mientras está activo
+  [OK]    la guardiana ataca a enemigos cercanos
+  [OK]    la guardiana desaparece al terminar
+  [OK]    enfriamiento de 60 s respetado
+  [OK]    un golpe letal se cancela si llevas el Tótem en la mano
+  [OK]    el Tótem se consume y te salva
+
+## Guantes del GOAT
+  [OK]    pasiva: -40% de daño de proyectiles con los guantes en la mano secundaria
+  [OK]    Atajada del GOAT: detiene proyectiles cercanos
+  [OK]    durante la Atajada los proyectiles no hacen daño
+  [OK]    enfriamiento de la Atajada respetado
+
+## Balón Dorado
+  [OK]    ¡GOLAZO! energía extra al acertar
+  [OK]    el balón hace 5 de daño (calculado por el servidor)
+  [OK]    el balón se puede recuperar en supervivencia
+  [OK]    en creativo no se duplica el balón
+
+## Jefe: La Serpiente Legendaria
+  [OK]    en Pacífico no se invoca ni se consume el ídolo
+  [OK]    el Ídolo se consume
+  [OK]    el ritual invoca al jefe
+  [OK]    el círculo del ritual se elimina
+  [OK]    no se puede invocar un segundo jefe cerca
+  [OK]    fase 2 al 66% de vida
+  [OK]    rugido al cambiar de fase
+  [OK]    fase 2 invoca esbirros con límite (4)
+  [OK]    ataques de veneno
+  [OK]    fase 3 al 33% de vida
+  [OK]    los ataques especiales de fase 3 dañan al jugador
+  [OK]    animación de mordida al atacar
+  [OK]    al morir el jefe desaparecen sus esbirros
+  [OK]    mensaje de victoria
+
+## Escupitajo del jefe
+  [OK]    escupitajo: 6 de daño + lentitud
+  [OK]    los guantes reducen el daño del escupitajo
+
+## Comandos de prueba
+  [OK]    /lacobra:energia
+  [OK]    /lacobra:kit entrega todos los objetos
+  [OK]    /lacobra:estado
+
+## Robustez del planificador
+  [OK]    una tarea que lanza un error se cierra (no se repite cada tick)
+
+## Integridad: recursos usados por los scripts
+  [OK]    todas las partículas, sonidos, animaciones, entidades y eventos usados existen
+  [OK]    no quedan tareas activas al final
+  [OK]    no quedan entidades de efecto
+
+Resultado: 117 correctas, 0 fallidas

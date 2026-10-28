@@ -1,0 +1,86 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "lacobra:serpiente_energia",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "properties": {
+        "lacobra:variante": {
+          "type": "int",
+          "range": [
+            0,
+            1
+          ],
+          "default": 0,
+          "client_sync": true
+        }
+      }
+    },
+    "component_groups": {
+      "lacobra:despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "lacobra_fx",
+          "inanimate"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.1,
+        "height": 0.1
+      },
+      "minecraft:health": {
+        "value": 1,
+        "max": 1
+      },
+      "minecraft:damage_sensor": {
+        "triggers": {
+          "cause": "all",
+          "deals_damage": "no"
+        }
+      },
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:breathable": {
+        "breathes_water": true,
+        "breathes_air": true,
+        "total_supply": 15,
+        "suffocate_time": 0
+      },
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:timer": {
+        "looping": false,
+        "time": 25,
+        "randomInterval": false,
+        "time_down_event": {
+          "event": "lacobra:despawn",
+          "target": "self"
+        }
+      }
+    },
+    "events": {
+      "lacobra:despawn": {
+        "add": {
+          "component_groups": [
+            "lacobra:despawn"
+          ]
+        }
+      },
+      "lacobra:guardiana": {
+        "set_property": {
+          "lacobra:variante": 1
+        }
+      }
+    }
+  }
+}

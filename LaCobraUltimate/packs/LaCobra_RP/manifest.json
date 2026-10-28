@@ -1,0 +1,24 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "§6La Cobra §5Ultimate §f[RP]",
+    "description": "Texturas, modelos, animaciones, partículas y sonidos originales de La Cobra.",
+    "uuid": "07494565-21a3-43c0-ad53-e3efcca16149",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 100]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "741db729-66a0-4735-9db7-c15c3ff950f2",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    { "uuid": "ce9a4262-cbb3-4675-9d49-aaf156b4d1a5", "version": [1, 0, 0] }
+  ],
+  "metadata": {
+    "authors": ["La Cobra Ultimate Team"],
+    "product_type": "addon"
+  }
+}

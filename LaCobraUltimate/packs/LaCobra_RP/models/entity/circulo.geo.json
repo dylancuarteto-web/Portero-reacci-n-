@@ -1,0 +1,119 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.lacobra.circulo",
+        "texture_width": 256,
+        "texture_height": 128,
+        "visible_bounds_width": 10,
+        "visible_bounds_height": 2,
+        "visible_bounds_offset": [
+          0,
+          0.5,
+          0
+        ]
+      },
+      "bones": [
+        {
+          "name": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "inner",
+          "parent": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -24,
+                0.15,
+                -24
+              ],
+              "size": [
+                48,
+                0,
+                48
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    128,
+                    128
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    0,
+                    0
+                  ],
+                  "uv_size": [
+                    128,
+                    128
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "outer",
+          "parent": "root",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -36,
+                0.1,
+                -36
+              ],
+              "size": [
+                72,
+                0,
+                72
+              ],
+              "uv": {
+                "up": {
+                  "uv": [
+                    128,
+                    0
+                  ],
+                  "uv_size": [
+                    128,
+                    128
+                  ]
+                },
+                "down": {
+                  "uv": [
+                    128,
+                    0
+                  ],
+                  "uv_size": [
+                    128,
+                    128
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

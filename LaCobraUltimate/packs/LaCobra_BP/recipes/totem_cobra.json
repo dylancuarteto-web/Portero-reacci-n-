@@ -1,0 +1,39 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:totem_cobra"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "EGE",
+      "NTN",
+      "EGE"
+    ],
+    "key": {
+      "E": {
+        "item": "lacobra:escama_cobra"
+      },
+      "G": {
+        "item": "minecraft:gold_ingot"
+      },
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      },
+      "T": {
+        "item": "minecraft:totem_of_undying"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:nucleo_energia"
+      }
+    ],
+    "result": {
+      "item": "lacobra:totem_cobra",
+      "count": 1
+    }
+  }
+}

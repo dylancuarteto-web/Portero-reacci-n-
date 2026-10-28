@@ -1,0 +1,497 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.lacobra.serpiente.slither": {
+      "loop": true,
+      "bones": {
+        "seg0": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 300 - 0) * 18",
+            0
+          ]
+        },
+        "seg1": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 300 - 55) * 18",
+            0
+          ]
+        },
+        "seg2": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 300 - 110) * 18",
+            0
+          ]
+        },
+        "seg3": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 300 - 165) * 18",
+            0
+          ]
+        },
+        "seg4": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 300 - 220) * 18",
+            0
+          ]
+        },
+        "seg5": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 300 - 275) * 18",
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            "math.sin(query.life_time * 200 - 0) * 4",
+            "math.sin(query.life_time * 300 - -50) * 8",
+            0
+          ]
+        }
+      }
+    },
+    "animation.lacobra.serpiente.slither_fast": {
+      "loop": true,
+      "bones": {
+        "seg0": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 720 - 0) * 24",
+            0
+          ]
+        },
+        "seg1": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 720 - 60) * 24",
+            0
+          ]
+        },
+        "seg2": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 720 - 120) * 24",
+            0
+          ]
+        },
+        "seg3": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 720 - 180) * 24",
+            0
+          ]
+        },
+        "seg4": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 720 - 240) * 24",
+            0
+          ]
+        },
+        "seg5": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 720 - 300) * 24",
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 720 - -60) * 10",
+            0
+          ]
+        }
+      }
+    },
+    "animation.lacobra.esfera.spin": {
+      "loop": true,
+      "bones": {
+        "ball": {
+          "rotation": [
+            "query.life_time * 720",
+            "query.life_time * 300",
+            0
+          ]
+        }
+      }
+    },
+    "animation.lacobra.fx.appear": {
+      "animation_length": 0.3,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "root": {
+          "scale": {
+            "0.0": [
+              0.05,
+              0.05,
+              0.05
+            ],
+            "0.3": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.fx.vanish": {
+      "animation_length": 0.5,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "root": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.5": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.circulo.spin": {
+      "loop": true,
+      "bones": {
+        "inner": {
+          "rotation": [
+            0,
+            "query.life_time * 55",
+            0
+          ]
+        },
+        "outer": {
+          "rotation": [
+            0,
+            "-query.life_time * 35",
+            0
+          ]
+        },
+        "root": {
+          "scale": "math.min(query.life_time * 2.5, 1) * (query.property('lacobra:tam') == 2 ? 1.9 : 1.0)"
+        }
+      }
+    },
+    "animation.lacobra.circulo.vanish": {
+      "animation_length": 0.5,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "inner": {
+          "rotation": [
+            0,
+            "query.anim_time * 400",
+            0
+          ]
+        },
+        "root": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.5": [
+              0.01,
+              1,
+              0.01
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.suprema.coil": {
+      "loop": true,
+      "bones": {
+        "coil": {
+          "rotation": [
+            0,
+            "query.life_time * 120",
+            0
+          ]
+        },
+        "root": {
+          "scale": "math.min(0.2 + query.life_time * 0.8, 1) * (1 + math.sin(query.life_time * 500) * 0.03)",
+          "position": [
+            0,
+            "math.max(0, 1 - query.life_time) * -20",
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            "math.sin(query.life_time * 240 - 0) * 6",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.lacobra.suprema.vanish": {
+      "animation_length": 1.0,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "root": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "1.0": [
+              0.01,
+              2.0,
+              0.01
+            ]
+          },
+          "position": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.0": [
+              0,
+              20,
+              0
+            ]
+          }
+        },
+        "coil": {
+          "rotation": [
+            0,
+            "query.anim_time * 720",
+            0
+          ]
+        }
+      }
+    },
+    "animation.lacobra.avatar.rise": {
+      "animation_length": 4.5,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "root": {
+          "position": {
+            "0.0": [
+              0,
+              -32,
+              0
+            ],
+            "1.0": [
+              0,
+              0,
+              0
+            ]
+          },
+          "scale": {
+            "0.0": [
+              0.4,
+              0.4,
+              0.4
+            ],
+            "1.0": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "rightArm": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.2": [
+              -170,
+              0,
+              -15
+            ],
+            "3.0": [
+              -170,
+              0,
+              -15
+            ],
+            "3.4": [
+              -60,
+              0,
+              -40
+            ],
+            "4.5": [
+              -60,
+              0,
+              -40
+            ]
+          }
+        },
+        "leftArm": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.2": [
+              -170,
+              0,
+              15
+            ],
+            "3.0": [
+              -170,
+              0,
+              15
+            ],
+            "3.4": [
+              -60,
+              0,
+              40
+            ],
+            "4.5": [
+              -60,
+              0,
+              40
+            ]
+          }
+        },
+        "head": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "1.2": [
+              -20,
+              0,
+              0
+            ],
+            "3.0": [
+              -20,
+              0,
+              0
+            ],
+            "3.4": [
+              10,
+              0,
+              0
+            ]
+          }
+        },
+        "rightLeg": {
+          "rotation": {
+            "0.0": [
+              0,
+              0,
+              0
+            ],
+            "3.0": [
+              0,
+              0,
+              0
+            ],
+            "3.3": [
+              30,
+              0,
+              0
+            ],
+            "3.5": [
+              -75,
+              0,
+              0
+            ],
+            "4.5": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.avatar.vanish": {
+      "animation_length": 0.8,
+      "loop": "hold_on_last_frame",
+      "bones": {
+        "root": {
+          "scale": {
+            "0.0": [
+              1,
+              1,
+              1
+            ],
+            "0.8": [
+              0.01,
+              1.6,
+              0.01
+            ]
+          }
+        }
+      }
+    },
+    "animation.lacobra.fx.trail_orb": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.1,
+      "particle_effects": {
+        "0.0": {
+          "effect": "orb_trail"
+        }
+      }
+    },
+    "animation.lacobra.fx.trail_ball": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.1,
+      "particle_effects": {
+        "0.0": {
+          "effect": "ball_trail"
+        }
+      }
+    },
+    "animation.lacobra.fx.trail_venom": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.1,
+      "particle_effects": {
+        "0.0": {
+          "effect": "venom_trail"
+        }
+      }
+    },
+    "animation.lacobra.fx.trail_serpent": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.1,
+      "particle_effects": {
+        "0.0": {
+          "effect": "serpent_trail"
+        }
+      }
+    },
+    "animation.lacobra.fx.trail_guard": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.1,
+      "particle_effects": {
+        "0.0": {
+          "effect": "guard_trail"
+        }
+      }
+    },
+    "animation.lacobra.fx.trail_avatar": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.1,
+      "particle_effects": {
+        "0.0": {
+          "effect": "avatar"
+        }
+      }
+    }
+  }
+}

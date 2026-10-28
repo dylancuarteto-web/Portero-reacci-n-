@@ -1,0 +1,31 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shapeless": {
+    "description": {
+      "identifier": "lacobra:libro_tactico"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "ingredients": [
+      {
+        "item": "minecraft:book"
+      },
+      {
+        "item": "lacobra:escama_cobra"
+      },
+      {
+        "item": "minecraft:gold_ingot"
+      }
+    ],
+    "unlock": [
+      {
+        "item": "lacobra:escama_cobra"
+      }
+    ],
+    "result": {
+      "item": "lacobra:libro_tactico",
+      "count": 1
+    }
+  }
+}

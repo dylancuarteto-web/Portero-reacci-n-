@@ -1,0 +1,39 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "lacobra:runa_dominio"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "GEG",
+      "ONO",
+      "GEG"
+    ],
+    "key": {
+      "G": {
+        "item": "minecraft:gold_ingot"
+      },
+      "E": {
+        "item": "lacobra:escama_cobra"
+      },
+      "N": {
+        "item": "lacobra:nucleo_energia"
+      },
+      "O": {
+        "item": "minecraft:crying_obsidian"
+      }
+    },
+    "unlock": [
+      {
+        "item": "lacobra:nucleo_energia"
+      }
+    ],
+    "result": {
+      "item": "lacobra:runa_dominio",
+      "count": 1
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "lacobra:avatar_cobra",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/avatar_cobra"
+      },
+      "geometry": {
+        "default": "geometry.lacobra.avatar"
+      },
+      "animations": {
+        "rise": "animation.lacobra.avatar.rise",
+        "glow": "animation.lacobra.fx.trail_avatar"
+      },
+      "scripts": {
+        "animate": [
+          "rise",
+          "glow"
+        ],
+        "scale": "2.4"
+      },
+      "render_controllers": [
+        "controller.render.lacobra.default"
+      ],
+      "particle_effects": {
+        "avatar": "lacobra:avatar_glow"
+      },
+      "enable_attachables": false
+    }
+  }
+}

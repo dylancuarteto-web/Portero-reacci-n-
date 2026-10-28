@@ -1,0 +1,65 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "lacobra:balon_proyectil",
+      "is_spawnable": false,
+      "is_summonable": true,
+      "runtime_identifier": "minecraft:snowball"
+    },
+    "component_groups": {
+      "lacobra:despawn": {
+        "minecraft:instant_despawn": {}
+      }
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "lacobra_projectile",
+          "inanimate"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.35,
+        "height": 0.35
+      },
+      "minecraft:projectile": {
+        "on_hit": {
+          "remove_on_hit": {}
+        },
+        "power": 1.6,
+        "gravity": 0.04,
+        "inertia": 1.0,
+        "liquid_inertia": 0.8,
+        "uncertainty_base": 0,
+        "uncertainty_multiplier": 0
+      },
+      "minecraft:physics": {},
+      "minecraft:conditional_bandwidth_optimization": {
+        "default_values": {
+          "max_optimized_distance": 80.0,
+          "max_dropped_ticks": 7,
+          "use_motion_prediction_hints": true
+        }
+      },
+      "minecraft:timer": {
+        "looping": false,
+        "time": 8,
+        "randomInterval": false,
+        "time_down_event": {
+          "event": "lacobra:despawn",
+          "target": "self"
+        }
+      }
+    },
+    "events": {
+      "lacobra:despawn": {
+        "add": {
+          "component_groups": [
+            "lacobra:despawn"
+          ]
+        }
+      }
+    }
+  }
+}
