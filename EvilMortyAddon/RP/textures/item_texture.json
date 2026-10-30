@@ -1,0 +1,15 @@
+{
+  "resource_pack_name": "evilmorty",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "evilmorty_parche": {
+      "textures": "textures/items/evilmorty/parche"
+    },
+    "evilmorty_mano_laser": {
+      "textures": "textures/items/evilmorty/mano_laser"
+    },
+    "evilmorty_control": {
+      "textures": "textures/items/evilmorty/control"
+    }
+  }
+}

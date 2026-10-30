@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "evilmorty:escudo_domo",
+      "materials": {
+        "default": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/evilmorty/escudo_domo"
+      },
+      "geometry": {
+        "default": "geometry.evilmorty.escudo_domo"
+      },
+      "animations": {
+        "idle": "animation.evilmorty.escudo_domo.idle"
+      },
+      "scripts": {
+        "animate": [
+          "idle"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

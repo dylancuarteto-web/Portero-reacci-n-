@@ -1,0 +1,38 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.evilmorty_parche": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "worn_*": "context.item_slot == 'head'"
+        },
+        {
+          "held_*": "context.item_slot != 'head'"
+        }
+      ]
+    },
+    "controller.render.evilmorty_rayo": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "brillo": "Material.glow"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    }
+  }
+}

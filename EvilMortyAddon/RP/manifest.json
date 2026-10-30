@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Evil Morty - Parche Resources",
+    "description": "pack.description",
+    "uuid": "5371af94-0923-45d0-bea9-264a3044d167",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "ba95b4af-de43-4cee-a6d3-8e84fe08c824",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

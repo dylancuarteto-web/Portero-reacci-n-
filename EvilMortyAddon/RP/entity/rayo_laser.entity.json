@@ -1,0 +1,29 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "evilmorty:rayo_laser",
+      "materials": {
+        "default": "entity_emissive_alpha",
+        "glow": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/evilmorty/rayo_laser"
+      },
+      "geometry": {
+        "default": "geometry.evilmorty.rayo_laser"
+      },
+      "animations": {
+        "idle": "animation.evilmorty.rayo_laser.idle"
+      },
+      "scripts": {
+        "animate": [
+          "idle"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.evilmorty_rayo"
+      ]
+    }
+  }
+}

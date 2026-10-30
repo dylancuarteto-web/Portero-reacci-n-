@@ -1,0 +1,58 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Evil Morty - Parche",
+    "description": "pack.description",
+    "uuid": "615e04d9-5f89-4836-a5e6-427d47a652c8",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "b2a84e68-cc31-4994-914b-6dcb15cfcdcf",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "6f80a7f5-aa2d-4cfb-ad4e-36a1d6e655b9",
+      "version": [
+        1,
+        0,
+        0
+      ],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "5371af94-0923-45d0-bea9-264a3044d167",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.11.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.3.0"
+    }
+  ]
+}

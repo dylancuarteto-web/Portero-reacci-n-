@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:attachable": {
+    "description": {
+      "identifier": "evilmorty:parche",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/models/evilmorty/parche"
+      },
+      "geometry": {
+        "default": "geometry.evilmorty.parche"
+      },
+      "animations": {
+        "idle": "animation.evilmorty.parche.idle"
+      },
+      "scripts": {
+        "animate": [
+          "idle"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.evilmorty_parche"
+      ]
+    }
+  }
+}

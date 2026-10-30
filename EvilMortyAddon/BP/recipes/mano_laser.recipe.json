@@ -1,0 +1,38 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "evilmorty:mano_laser_receta"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "IRI",
+      "IDI",
+      " G "
+    ],
+    "key": {
+      "I": {
+        "item": "minecraft:iron_ingot"
+      },
+      "R": {
+        "item": "minecraft:redstone_block"
+      },
+      "D": {
+        "item": "minecraft:diamond"
+      },
+      "G": {
+        "item": "minecraft:glowstone_dust"
+      }
+    },
+    "unlock": [
+      {
+        "item": "minecraft:diamond"
+      }
+    ],
+    "result": {
+      "item": "evilmorty:mano_laser"
+    }
+  }
+}

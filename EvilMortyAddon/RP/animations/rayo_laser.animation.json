@@ -1,0 +1,22 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.evilmorty.rayo_laser.idle": {
+      "loop": true,
+      "bones": {
+        "rayo": {
+          "rotation": [
+            "query.property('evilmorty:pitch')",
+            "query.property('evilmorty:yaw') - query.body_y_rotation",
+            0
+          ],
+          "scale": [
+            "(1 + query.property('evilmorty:nivel') * 0.3) * (1 + math.sin(query.life_time * 2400) * 0.12)",
+            "(1 + query.property('evilmorty:nivel') * 0.3) * (1 + math.sin(query.life_time * 2400) * 0.12)",
+            "query.property('evilmorty:longitud')"
+          ]
+        }
+      }
+    }
+  }
+}

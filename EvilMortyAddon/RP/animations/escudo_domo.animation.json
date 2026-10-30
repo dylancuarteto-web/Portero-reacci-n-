@@ -1,0 +1,18 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.evilmorty.escudo_domo.idle": {
+      "loop": true,
+      "bones": {
+        "domo": {
+          "rotation": [
+            0,
+            "query.life_time * 25",
+            0
+          ],
+          "scale": "math.min(query.life_time * 4, 1) * (1 + math.sin(query.life_time * 140) * 0.015)"
+        }
+      }
+    }
+  }
+}

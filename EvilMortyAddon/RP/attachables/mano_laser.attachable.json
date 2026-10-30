@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:attachable": {
+    "description": {
+      "identifier": "evilmorty:mano_laser",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/models/evilmorty/mano_laser"
+      },
+      "geometry": {
+        "default": "geometry.evilmorty.mano_laser"
+      },
+      "animations": {
+        "idle": "animation.evilmorty.mano_laser.idle"
+      },
+      "scripts": {
+        "animate": [
+          "idle"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.item_default"
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Evil Morty - Parche",
+    "namespace": "evilmorty",
+    "fanMade": "Proyecto fan-made no oficial; sin afiliación con Rick and Morty ni sus propietarios. Recursos originales."
+  },
+  "compatibility": {
+    "minimumBedrock": "26.60",
+    "latestStableVerifiedAtBuild": "26.60",
+    "snapshotDate": "2026-10-30",
+    "policy": "Build única modern-stable para Bedrock 26.60; sin perfil legacy."
+  },
+  "scriptApi": {
+    "enabled": true,
+    "modules": {
+      "@minecraft/server": "2.11.0",
+      "@minecraft/server-ui": "2.3.0"
+    },
+    "reason": "Escudo (cancelar daño, proyectiles), láser (raycast y daño), predicción y menú requieren Script API. Ambas versiones son las estables publicadas en npm el 2026-10-27 junto a Bedrock 26.60."
+  },
+  "audio": {
+    "included": false,
+    "note": "El usuario añadirá archivos de sonido manualmente."
+  }
+}

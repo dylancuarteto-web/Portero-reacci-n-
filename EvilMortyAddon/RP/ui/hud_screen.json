@@ -1,0 +1,36 @@
+{
+  "namespace": "hud",
+  "root_panel": {
+    "modifications": [
+      {
+        "array_name": "controls",
+        "operation": "insert_front",
+        "value": [
+          {
+            "evilmorty_ojo@hud.evilmorty_ojo": {}
+          }
+        ]
+      }
+    ]
+  },
+  "evilmorty_ojo": {
+    "type": "image",
+    "texture": "textures/ui/evilmorty/ojo_hud",
+    "size": [
+      "100%",
+      "100%"
+    ],
+    "layer": 1,
+    "alpha": 0.95,
+    "bindings": [
+      {
+        "binding_name": "#hud_title_text_string"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not ((#hud_title_text_string - 'evilmorty:ojo_on') = #hud_title_text_string))",
+        "target_property_name": "#visible"
+      }
+    ]
+  }
+}

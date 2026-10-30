@@ -1,0 +1,21 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.evilmorty.parche.idle": {
+      "loop": true,
+      "animation_length": 2.0,
+      "bones": {
+        "worn_lens": {
+          "scale": [
+            "1.0 + math.sin(query.anim_time * 180) * 0.03",
+            "1.0 + math.sin(query.anim_time * 180) * 0.03",
+            "1.0"
+          ]
+        },
+        "worn_led": {
+          "scale": "math.mod(query.anim_time, 1.0) < 0.5 ? 1.0 : 0.2"
+        }
+      }
+    }
+  }
+}
