@@ -13,10 +13,43 @@
       ],
       "part_visibility": [
         {
-          "worn_*": "context.item_slot == 'head'"
+          "*": true
         },
         {
-          "held_*": "context.item_slot != 'head'"
+          "parche": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "anillo": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "lente": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "led": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "correa": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "hebilla": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "modulo": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "antena": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "antena_punta": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "cable": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+        },
+        {
+          "sostenido": "c.item_slot == 'main_hand' || c.item_slot == 'off_hand'"
+        },
+        {
+          "sostenido_lente": "c.item_slot == 'main_hand' || c.item_slot == 'off_hand'"
         }
       ]
     },

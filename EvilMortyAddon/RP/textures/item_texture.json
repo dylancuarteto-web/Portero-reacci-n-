@@ -7,9 +7,6 @@
     },
     "evilmorty_mano_laser": {
       "textures": "textures/items/evilmorty/mano_laser"
-    },
-    "evilmorty_control": {
-      "textures": "textures/items/evilmorty/control"
     }
   }
 }

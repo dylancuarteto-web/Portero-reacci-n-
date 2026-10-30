@@ -1,7 +1,11 @@
 pack.description=Fan-made no oficial. Parche de Evil Morty: escudo, mano láser, visión predictiva. Bedrock 26.60.
 item.evilmorty.parche.name=Parche de Evil Morty
+evilmorty.msg.parche_en_linea=§6PARCHE EN LÍNEA§r · Agáchate mirando arriba para abrir el menú
+evilmorty.ui.estado_nocturna=Visión nocturna:
+evilmorty.ui.nocturna_on=Activar visión nocturna
+evilmorty.ui.nocturna_off=Desactivar visión nocturna
+evilmorty.ui.ayuda=§7Agáchate mirando arriba: este menú · Dos veces seguidas: escudo on/off · Comando: /evilmorty:parche
 item.evilmorty.mano_laser.name=Mano de Rayo Láser
-item.evilmorty.control.name=Control del Parche
 entity.evilmorty:escudo_domo.name=Escudo Protector
 entity.evilmorty:rayo_laser.name=Rayo Láser
 evilmorty.msg.necesita_parche=Ponte el Parche de Evil Morty en la cabeza.

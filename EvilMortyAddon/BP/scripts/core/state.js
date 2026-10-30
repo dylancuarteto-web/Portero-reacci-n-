@@ -7,6 +7,7 @@ const states = new Map();
 const PREFS = {
   vision: "evilmorty:vision",
   ojo: "evilmorty:ojo",
+  nocturna: "evilmorty:nocturna",
   modoEscudo: "evilmorty:modo_escudo",
 };
 
@@ -25,6 +26,8 @@ export function getState(player) {
       modoEscudo: modo === "destruir" ? "destruir" : "reflejar",
       vision: readBool(player, PREFS.vision, true),
       ojo: readBool(player, PREFS.ojo, true),
+      nocturna: readBool(player, PREFS.nocturna, true),
+      gestoPendiente: undefined,
       llevaParche: false,
       ojoMostrado: false,
       laserListo: 0,
@@ -38,6 +41,7 @@ export function getState(player) {
 export function savePrefs(player, state) {
   player.setDynamicProperty(PREFS.vision, state.vision);
   player.setDynamicProperty(PREFS.ojo, state.ojo);
+  player.setDynamicProperty(PREFS.nocturna, state.nocturna);
   player.setDynamicProperty(PREFS.modoEscudo, state.modoEscudo);
 }
 

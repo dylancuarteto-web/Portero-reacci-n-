@@ -1,7 +1,11 @@
 pack.description=Unofficial fan-made. Evil Morty's eyepatch: shield, laser hand, predictive vision. Bedrock 26.60.
 item.evilmorty.parche.name=Evil Morty's Eyepatch
+evilmorty.msg.parche_en_linea=§6EYEPATCH ONLINE§r · Crouch while looking up to open the menu
+evilmorty.ui.estado_nocturna=Night vision:
+evilmorty.ui.nocturna_on=Turn night vision on
+evilmorty.ui.nocturna_off=Turn night vision off
+evilmorty.ui.ayuda=§7Crouch looking up: this menu · Twice in a row: shield on/off · Command: /evilmorty:parche
 item.evilmorty.mano_laser.name=Laser Beam Hand
-item.evilmorty.control.name=Eyepatch Remote
 entity.evilmorty:escudo_domo.name=Protective Shield
 entity.evilmorty:rayo_laser.name=Laser Beam
 evilmorty.msg.necesita_parche=Wear Evil Morty's Eyepatch on your head.

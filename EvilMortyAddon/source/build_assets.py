@@ -68,87 +68,164 @@ def fill(px, region, color):
             px[x, y] = color
 
 
-# --- Parche (casco) ---------------------------------------------------------
+# --- Pintura con volumen -----------------------------------------------------
 
-PATCH_REG = {"strap": (0, 0, 2, 2), "side": (2, 0, 2, 2), "led": (4, 0, 1, 1), "front": (0, 4, 8, 6)}
+def lerp(a, b, t):
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+def paint(px, region, top, bottom, light=None, dark=None):
+    """Degradado vertical con bisel: borde superior/izquierdo claro, inferior/derecho oscuro."""
+    u, v, w, h = region
+    for y in range(h):
+        base = lerp(top, bottom, y / max(h - 1, 1))
+        for x in range(w):
+            color = base
+            if light and (x == 0 or y == 0):
+                color = light
+            if dark and (x == w - 1 or y == h - 1):
+                color = dark
+            px[u + x, v + y] = color + (255,)
+
+
+# --- Parche (casco) ---------------------------------------------------------
+# Las raíces "head" y "rightItem" se llaman igual que los huesos del jugador:
+# así Bedrock une el modelo a la cabeza y a la mano.
+
+PATCH_REG = {
+    "front": (0, 0, 12, 10), "side": (12, 0, 4, 4), "strap": (16, 0, 4, 4), "metal": (20, 0, 4, 4),
+    "amber": (24, 0, 4, 4), "lens": (28, 0, 4, 4), "led": (0, 10, 2, 2), "led_amber": (2, 10, 2, 2),
+    "buckle": (4, 10, 4, 4),
+}
+PATCH_WORN = ["parche", "anillo", "lente", "led", "correa", "hebilla", "modulo", "antena", "antena_punta", "cable"]
+PATCH_HELD = ["sostenido", "sostenido_lente"]
 
 
 def patch_geometry():
     r = PATCH_REG
     y, h, t = 28.6, 0.5, 0.3
-    strap = [
-        cube(r, [-0.5, y, -4.35], [4.85, h, t], "strap"),
-        cube(r, [-4.35, y, -4.35], [0.85, h, t], "strap"),
-        cube(r, [4.05, y, -4.35], [t, h, 8.7], "strap"),
-        cube(r, [-4.35, y, -4.35], [t, h, 8.7], "strap"),
-        cube(r, [-4.35, y, 4.05], [8.7, h, t], "strap"),
-    ]
     bones = [
-        {"name": "worn_root", "parent": "head", "pivot": [0, 24, 0]},
-        {"name": "worn_strap", "parent": "worn_root", "pivot": [0, 28.85, 0], "cubes": strap},
-        # Ojo derecho del personaje (x negativa en el espacio del modelo).
-        {"name": "worn_lens", "parent": "worn_root", "pivot": [-2, 27.7, -4.5],
-         "cubes": [cube(r, [-3.6, 26.3, -4.75], [3.2, 2.8, 0.45], "front", "side")]},
-        {"name": "worn_led", "parent": "worn_lens", "pivot": [-2.2, 28.6, -4.8],
-         "cubes": [cube(r, [-2.4, 28.4, -4.85], [0.4, 0.4, 0.15], "led")]},
-        {"name": "held_root", "parent": "rightItem", "pivot": [-6, 15, 1]},
-        {"name": "held_lens", "parent": "held_root", "pivot": [-6, 15, 1], "cubes": [
-            cube(r, [-7.6, 14, -0.4], [3.2, 2.8, 0.45], "front", "side"),
-            cube(r, [-8.6, 15.2, -0.35], [5.2, 0.5, 0.3], "strap"),
+        {"name": "head", "pivot": [0, 24, 0]},
+        {"name": "parche", "parent": "head", "pivot": [-2, 27.7, -4.5], "cubes": [
+            cube(r, [-4.0, 25.9, -4.55], [4.0, 3.6, 0.25], "metal"),
+            cube(r, [-3.8, 26.1, -4.8], [3.6, 3.2, 0.5], "front", "side"),
         ]},
+        {"name": "anillo", "parent": "parche", "pivot": [-2, 27.7, -5.0], "cubes": [
+            cube(r, [-2.9, 28.5, -5.05], [1.8, 0.3, 0.3], "amber"),
+            cube(r, [-2.9, 26.6, -5.05], [1.8, 0.3, 0.3], "amber"),
+            cube(r, [-2.9, 26.9, -5.05], [0.3, 1.6, 0.3], "amber"),
+            cube(r, [-1.4, 26.9, -5.05], [0.3, 1.6, 0.3], "amber"),
+        ]},
+        {"name": "lente", "parent": "parche", "pivot": [-2, 27.7, -5.0],
+         "cubes": [cube(r, [-2.5, 27.2, -5.0], [1.0, 1.0, 0.2], "lens")]},
+        {"name": "led", "parent": "parche", "pivot": [-0.6, 28.9, -4.9],
+         "cubes": [cube(r, [-0.8, 28.7, -4.95], [0.4, 0.4, 0.2], "led")]},
+        {"name": "correa", "parent": "head", "pivot": [0, 28.85, 0], "cubes": [
+            cube(r, [-0.2, y, -4.35], [4.55, h, t], "strap"),
+            cube(r, [-4.35, y, -4.35], [0.5, h, t], "strap"),
+            cube(r, [4.05, y, -4.35], [t, h, 8.7], "strap"),
+            cube(r, [-4.35, y, -4.35], [t, h, 8.7], "strap"),
+            cube(r, [-4.35, y, 4.05], [8.7, h, t], "strap"),
+            cube(r, [1.2, y + 0.05, -4.45], [0.4, 0.4, 0.12], "led_amber"),
+            cube(r, [2.4, y + 0.05, -4.45], [0.4, 0.4, 0.12], "led_amber"),
+        ]},
+        {"name": "hebilla", "parent": "head", "pivot": [4.3, 28.85, 0],
+         "cubes": [cube(r, [4.1, 28.35, -0.8], [0.45, 1.0, 1.6], "buckle")]},
+        {"name": "modulo", "parent": "head", "pivot": [-4.7, 27.5, -1.1], "cubes": [
+            cube(r, [-5.1, 26.2, -2.6], [0.8, 2.6, 3.0], "metal"),
+            cube(r, [-5.2, 27.2, -2.3], [0.1, 0.6, 2.4], "amber"),
+        ]},
+        {"name": "antena", "parent": "modulo", "pivot": [-4.75, 28.8, -1.5],
+         "cubes": [cube(r, [-4.85, 28.8, -1.6], [0.25, 3.6, 0.25], "metal")]},
+        {"name": "antena_punta", "parent": "antena", "pivot": [-4.75, 32.6, -1.5],
+         "cubes": [cube(r, [-4.95, 32.4, -1.7], [0.45, 0.45, 0.45], "led_amber")]},
+        {"name": "cable", "parent": "head", "pivot": [-4.5, 26.5, -4.6], "cubes": [
+            cube(r, [-4.6, 26.4, -4.75], [0.9, 0.3, 0.3], "metal"),
+            cube(r, [-4.6, 26.4, -4.75], [0.3, 0.3, 2.2], "metal"),
+        ]},
+        {"name": "rightItem", "pivot": [-6, 15, 1]},
+        {"name": "sostenido", "parent": "rightItem", "pivot": [-6, 15, 1], "cubes": [
+            cube(r, [-7.8, 14.0, -0.5], [3.6, 3.2, 0.5], "front", "side"),
+            cube(r, [-9.0, 15.4, -0.4], [6.0, 0.5, 0.3], "strap"),
+        ]},
+        {"name": "sostenido_lente", "parent": "sostenido", "pivot": [-6, 15.6, -0.6],
+         "cubes": [cube(r, [-6.5, 15.1, -0.7], [1.0, 1.0, 0.2], "lens")]},
     ]
-    return geo("geometry.evilmorty.parche", 16, 16, bones)
+    return geo("geometry.evilmorty.parche", 32, 32, bones)
 
 
 def patch_texture():
-    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
     px = img.load()
-    fill(px, PATCH_REG["strap"], (22, 22, 24, 255))
-    px[1, 0] = (48, 48, 52, 255)
-    fill(px, PATCH_REG["side"], (12, 12, 14, 255))
-    fill(px, PATCH_REG["led"], (255, 150, 20, 255))
-    u, v, w, h = PATCH_REG["front"]
-    for x in range(w):
-        for y in range(h):
-            edge = x in (0, w - 1) or y in (0, h - 1)
-            px[u + x, v + y] = (40, 40, 44, 255) if edge else (16, 16, 18, 255)
-    for x in (2, 4):
-        px[u + x, v + h - 1] = (70, 70, 76, 255)
-    px[u + 2, v + 1] = px[u + 3, v + 1] = (58, 58, 64, 255)
+    r = PATCH_REG
+    # Cara del parche: cuero negro con costura y brillo.
+    u, v, w, h = r["front"]
+    paint(px, r["front"], (44, 44, 50), (18, 18, 22), (70, 70, 78), (8, 8, 10))
+    for x in range(2, w - 2, 2):
+        px[u + x, v + 1] = px[u + x, v + h - 2] = (96, 96, 104, 255)
+    for y in range(2, h - 2, 2):
+        px[u + 1, v + y] = px[u + w - 2, v + y] = (96, 96, 104, 255)
+    px[u + 3, v + 3] = px[u + 4, v + 3] = px[u + 3, v + 4] = (90, 90, 98, 255)
+    paint(px, r["side"], (34, 34, 38), (14, 14, 16), dark=(6, 6, 8))
+    paint(px, r["strap"], (40, 34, 30), (22, 18, 16), (60, 52, 46), (10, 8, 8))
+    paint(px, r["metal"], (150, 156, 168), (78, 84, 96), (196, 202, 212), (48, 52, 60))
+    paint(px, r["amber"], AMBER_HOT, AMBER_DEEP, (255, 236, 160), (150, 60, 0))
+    paint(px, r["lens"], (255, 200, 70), (220, 110, 10), (255, 250, 210), (140, 50, 0))
+    px[r["lens"][0] + 1, r["lens"][1] + 1] = (255, 255, 240, 255)
+    paint(px, r["led"], (255, 90, 60), (200, 20, 10))
+    paint(px, r["led_amber"], (255, 230, 120), (255, 150, 20))
+    paint(px, r["buckle"], (210, 214, 222), (120, 126, 136), (240, 242, 246), (70, 74, 82))
     return img
 
 
 # --- Mano de Rayo Láser (guante en el brazo derecho) ------------------------
 
-GLOVE_REG = {"metal": (0, 0, 4, 4), "dark": (4, 0, 4, 4), "accent": (8, 0, 4, 4), "lens": (12, 0, 2, 2)}
+GLOVE_REG = {
+    "metal": (0, 0, 6, 6), "dark": (6, 0, 6, 6), "amber": (12, 0, 4, 4), "red": (16, 0, 4, 4),
+    "finger": (20, 0, 3, 3), "panel": (0, 6, 8, 8),
+}
 
 
 def glove_geometry():
     r = GLOVE_REG
+    fingers = [cube(r, [-8.1 + i * 1.05, 9.8, -2.1], [0.9, 1.4, 1.4], "finger") for i in range(4)]
     bones = [
+        {"name": "rightArm", "pivot": [-5, 22, 0]},
         {"name": "guante", "parent": "rightArm", "pivot": [-5, 22, 0], "cubes": [
-            cube(r, [-8.4, 15.5, -2.4], [4.8, 1.5, 4.8], "dark"),
-            cube(r, [-8.3, 11.6, -2.3], [4.6, 4.0, 4.6], "metal"),
-            cube(r, [-8.6, 12.4, -1.5], [0.3, 3.0, 3.0], "accent"),
-            cube(r, [-6.5, 12.4, -2.6], [2.0, 3.0, 0.3], "accent"),
-            cube(r, [-7.0, 10.6, -1.0], [2.0, 1.0, 2.0], "dark"),
-        ]},
-        {"name": "lente", "parent": "guante", "pivot": [-6, 10.45, 0], "cubes": [
-            cube(r, [-6.75, 10.3, -0.75], [1.5, 0.3, 1.5], "lens"),
-        ]},
+            cube(r, [-8.4, 14.2, -2.4], [4.8, 3.6, 4.8], "dark", "panel"),
+            cube(r, [-8.55, 17.6, -2.55], [5.1, 0.9, 5.1], "amber"),
+            cube(r, [-8.3, 11.2, -2.3], [4.6, 3.0, 4.6], "metal"),
+            cube(r, [-8.0, 11.4, -2.6], [4.0, 0.8, 0.3], "dark"),
+            cube(r, [-8.6, 11.6, -1.8], [0.3, 2.2, 3.6], "amber"),
+            cube(r, [-3.9, 11.0, -1.6], [0.6, 1.6, 1.0], "finger"),
+            cube(r, [-7.6, 12.0, 2.35], [0.4, 5.5, 0.4], "dark"),
+            cube(r, [-5.6, 12.0, 2.35], [0.4, 5.5, 0.4], "dark"),
+            cube(r, [-6.75, 9.2, -0.4], [1.5, 1.0, 1.5], "dark"),
+        ] + fingers},
+        {"name": "nucleo", "parent": "guante", "pivot": [-8.6, 15.8, 0],
+         "cubes": [cube(r, [-8.85, 14.8, -1.0], [0.45, 2.0, 2.0], "amber")]},
+        {"name": "lente", "parent": "guante", "pivot": [-6, 9.05, 0.35],
+         "cubes": [cube(r, [-6.5, 8.9, -0.15], [1.0, 0.3, 1.0], "red")]},
     ]
-    return geo("geometry.evilmorty.mano_laser", 16, 16, bones)
+    return geo("geometry.evilmorty.mano_laser", 32, 32, bones)
 
 
 def glove_texture():
-    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
     px = img.load()
-    fill(px, GLOVE_REG["metal"], (120, 128, 140, 255))
-    fill(px, GLOVE_REG["dark"], (44, 48, 56, 255))
-    fill(px, GLOVE_REG["accent"], AMBER + (255,))
-    fill(px, GLOVE_REG["lens"], (255, 60, 30, 255))
-    px[1, 1] = px[2, 2] = (160, 168, 180, 255)
-    px[9, 1] = AMBER_HOT + (255,)
+    r = GLOVE_REG
+    paint(px, r["metal"], (176, 184, 196), (92, 100, 114), (220, 226, 234), (56, 60, 70))
+    paint(px, r["dark"], (70, 76, 88), (34, 38, 46), (96, 104, 118), (18, 20, 26))
+    paint(px, r["amber"], AMBER_HOT, AMBER_DEEP, (255, 236, 160), (150, 60, 0))
+    paint(px, r["red"], (255, 120, 80), (220, 30, 10), (255, 220, 200), (130, 10, 0))
+    paint(px, r["finger"], (160, 168, 180), (100, 108, 120), (210, 216, 226), (60, 64, 74))
+    u, v, w, h = r["panel"]
+    paint(px, r["panel"], (66, 72, 84), (34, 38, 46), (96, 104, 118), (18, 20, 26))
+    for x in range(1, w - 1):
+        px[u + x, v + 3] = AMBER + (255,)
+    for y in range(3, h - 1):
+        px[u + 2, v + y] = AMBER + (255,)
+    px[u + 5, v + 5] = AMBER_HOT + (255,)
     return img
 
 
@@ -214,42 +291,84 @@ def beam_texture():
     return img
 
 
-# --- Iconos de inventario ---------------------------------------------------
+# --- Iconos de inventario (32x32, con contorno y sombreado) ----------------
 
-PALETTE = {
-    "s": (40, 40, 44, 255), "k": (16, 16, 18, 255), "h": (70, 70, 78, 255),
-    "o": AMBER + (255,), "y": AMBER_HOT + (255,), "r": (255, 60, 30, 255),
-    "g": (120, 128, 140, 255), "d": (44, 48, 56, 255), "l": (170, 178, 190, 255),
-}
-
-
-def pixel_icon(rows):
-    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    for y, row in enumerate(rows):
-        for x, ch in enumerate(row):
-            if ch != ".":
-                img.putpixel((x, y), PALETTE[ch])
+def outline(img, color=(10, 8, 6, 255)):
+    src = img.copy()
+    w, h = img.size
+    sp, dp = src.load(), img.load()
+    for x in range(w):
+        for y in range(h):
+            if sp[x, y][3]:
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < w and 0 <= ny < h and sp[nx, ny][3] > 128:
+                    dp[x, y] = color
+                    break
     return img
 
 
-ICON_PARCHE = [
-    "................", "................", "ss..............", "..ss............",
-    "....ss..........", ".....kkkkkk.....", "....kkhhkkkk....", "...kkhkkkkkkk...",
-    "...kkkkkkkkoks..", "...kkkkkkkkkk.ss", "....kkkkkkkk....", ".....kkkkkk.....",
-    "................", "................", "................", "................",
-]
-ICON_MANO = [
-    "................", "......gg.gg.....", ".....gggggggg...", ".....gllgllgg...",
-    ".....gggggggg...", "....ogggggggo...", "....ogggggggo...", ".....gggggggg...",
-    ".....dddddddd...", ".....dddddddd...", "......dddddd....", ".......dddd.....",
-    ".......drrd.....", "........rr......", "........rr......", "................",
-]
-ICON_CONTROL = [
-    "..........y.....", ".........y......", "........y.......", ".....oooooo.....",
-    ".....odddddo....", ".....odyydo.....", ".....odddddo....", ".....oooooo.....",
-    ".....oorrooo....", ".....orrrroo....", ".....oorrooo....", ".....oooooo.....",
-    ".....oddddoo....", ".....oddddoo....", ".....oooooo.....", "................",
-]
+def icon_parche():
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    # Correa.
+    d.line([(0, 9), (9, 12)], fill=(58, 48, 42, 255), width=3)
+    d.line([(23, 12), (31, 10)], fill=(58, 48, 42, 255), width=3)
+    d.point([(2, 9), (5, 10)], fill=AMBER_HOT + (255,))
+    # Parche de cuero con degradado.
+    for i in range(10):
+        c = lerp((62, 62, 70), (16, 16, 20), i / 9)
+        d.ellipse([6 + i // 3, 9 + i // 3, 26 - i // 2, 27 - i // 2], fill=c + (255,))
+    # Costura.
+    for a in range(0, 360, 30):
+        x = 16 + 8.2 * math.cos(math.radians(a))
+        y = 18 + 7.2 * math.sin(math.radians(a))
+        d.point((round(x), round(y)), fill=(120, 120, 130, 255))
+    # Anillo y lente ámbar.
+    d.ellipse([11, 13, 21, 23], outline=AMBER + (255,), width=2)
+    d.ellipse([14, 16, 18, 20], fill=(255, 200, 70, 255))
+    d.point([(15, 17)], fill=(255, 255, 230, 255))
+    # LED y módulo con antena.
+    d.rectangle([22, 13, 23, 14], fill=(255, 70, 40, 255))
+    d.rectangle([26, 16, 29, 23], fill=(120, 126, 138, 255))
+    d.line([(26, 16), (26, 23)], fill=(180, 186, 196, 255))
+    d.line([(28, 15), (28, 5)], fill=(150, 156, 168, 255))
+    d.rectangle([27, 3, 29, 5], fill=AMBER_HOT + (255,))
+    d.point([(27, 3)], fill=(255, 255, 230, 255))
+    return outline(img)
+
+
+def icon_mano():
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    steel_hi, steel, steel_lo = (214, 220, 230, 255), (150, 158, 172, 255), (86, 94, 108, 255)
+    # Dedos.
+    for i, top in enumerate((5, 3, 4, 7)):
+        x = 9 + i * 4
+        d.rectangle([x, top, x + 2, 13], fill=steel)
+        d.line([(x, top), (x, 13)], fill=steel_hi)
+        d.line([(x, 9), (x + 2, 9)], fill=steel_lo)
+    # Pulgar.
+    d.polygon([(5, 14), (8, 12), (10, 16), (8, 20), (5, 18)], fill=steel)
+    d.line([(5, 14), (8, 12)], fill=steel_hi)
+    # Dorso de la mano.
+    d.rectangle([8, 12, 24, 23], fill=steel)
+    d.line([(8, 12), (24, 12)], fill=steel_hi)
+    d.line([(8, 12), (8, 23)], fill=steel_hi)
+    d.line([(24, 13), (24, 23)], fill=steel_lo)
+    d.rectangle([9, 13, 23, 14], fill=(70, 76, 88, 255))
+    # Emisor rojo con anillo ámbar.
+    d.ellipse([12, 15, 20, 23], fill=AMBER + (255,))
+    d.ellipse([14, 17, 18, 21], fill=(255, 60, 30, 255))
+    d.point([(15, 18)], fill=(255, 220, 200, 255))
+    # Muñequera y antebrazo.
+    d.rectangle([9, 24, 23, 25], fill=AMBER_HOT + (255,))
+    d.rectangle([10, 26, 22, 31], fill=(60, 66, 78, 255))
+    d.line([(10, 26), (22, 26)], fill=(96, 104, 118, 255))
+    d.line([(13, 27), (13, 31)], fill=AMBER + (255,))
+    d.line([(19, 27), (19, 31)], fill=AMBER + (255,))
+    return outline(img)
 
 
 # --- Iconos del menú (32x32) -------------------------------------------------
@@ -281,6 +400,10 @@ def menu_icon(kind):
         for x in (8, 24):
             d.line([(x, 10), (x, 22)], fill=fillc)
         d.ellipse([13, 13, 19, 19], outline=line, width=2)
+    elif kind == "nocturna":
+        d.ellipse([6, 5, 26, 25], fill=fillc)
+        d.ellipse([12, 2, 30, 20], fill=(0, 0, 0, 0))
+        d.point([(24, 22), (27, 17), (21, 26)], fill=line)
     elif kind == "cerrar":
         d.line([(8, 8), (24, 24)], fill=line, width=4)
         d.line([(24, 8), (8, 24)], fill=line, width=4)
@@ -364,6 +487,21 @@ def pack_icon():
     return img
 
 
+def render_controllers():
+    worn = "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+    held = "c.item_slot == 'main_hand' || c.item_slot == 'off_hand'"
+    visibility = [{"*": True}] + [{b: worn} for b in PATCH_WORN] + [{b: held} for b in PATCH_HELD]
+    return {"format_version": "1.8.0", "render_controllers": {
+        # Si c.item_slot no estuviera disponible, el parche se sigue viendo en la cabeza.
+        "controller.render.evilmorty_parche": {
+            "geometry": "Geometry.default", "materials": [{"*": "Material.default"}],
+            "textures": ["Texture.default"], "part_visibility": visibility},
+        "controller.render.evilmorty_rayo": {
+            "geometry": "Geometry.default", "materials": [{"*": "Material.default"}, {"brillo": "Material.glow"}],
+            "textures": ["Texture.default"]},
+    }}
+
+
 def main():
     write_json(RP / "models/entity/parche.geo.json", patch_geometry())
     write_json(RP / "models/entity/mano_laser.geo.json", glove_geometry())
@@ -373,10 +511,10 @@ def main():
     save(glove_texture(), RP / "textures/models/evilmorty/mano_laser.png")
     save(dome_texture(), RP / "textures/entity/evilmorty/escudo_domo.png")
     save(beam_texture(), RP / "textures/entity/evilmorty/rayo_laser.png")
-    save(pixel_icon(ICON_PARCHE), RP / "textures/items/evilmorty/parche.png")
-    save(pixel_icon(ICON_MANO), RP / "textures/items/evilmorty/mano_laser.png")
-    save(pixel_icon(ICON_CONTROL), RP / "textures/items/evilmorty/control.png")
-    for kind in ("escudo", "modo", "vision", "archivos", "ojo", "cerrar", "carpeta", "volver"):
+    save(icon_parche(), RP / "textures/items/evilmorty/parche.png")
+    save(icon_mano(), RP / "textures/items/evilmorty/mano_laser.png")
+    write_json(RP / "render_controllers/evilmorty.render_controllers.json", render_controllers())
+    for kind in ("escudo", "modo", "vision", "nocturna", "archivos", "ojo", "cerrar", "carpeta", "volver"):
         save(menu_icon(kind), RP / f"textures/ui/evilmorty/{kind}.png")
     save(hud_overlay(), RP / "textures/ui/evilmorty/ojo_hud.png")
     save(pack_icon(), RP / "pack_icon.png")

@@ -14,16 +14,17 @@ Móvil primero (Android, pantallas de 5-7"), también funciona en PC y consola. 
 
 1. **Interfaz del ojo (HUD)**: `ojo_hud.png` a pantalla completa con el centro transparente para no tapar el juego: esquinas, barra superior con marcas, barras de datos laterales y retícula central.
 2. **Barra de acción**: ficha del objetivo que miras (nombre, vida, armas, intención) o "Objetivos en seguimiento: N". Los mensajes de habilidades la reservan 2 s.
-3. **Menú del Control del Parche** (ActionForm de `@minecraft/server-ui`).
+3. **Menú integrado del parche** (ActionForm de `@minecraft/server-ui`).
 
 ## Mapa de navegación
 
 ```
-Control del Parche (usar)
-└── PARCHE // EVIL MORTY  (estado: parche, escudo + modo, visión, nivel láser)
+Parche puesto + agacharse mirando arriba   (o /evilmorty:parche)
+└── PARCHE // EVIL MORTY  (estado: parche, escudo + modo, visión, visión nocturna, nivel láser, ayuda)
     ├── Activar/Desactivar escudo        [escudo]
     ├── Cambiar modo del escudo          [modo]    Reflejar ⇄ Destruir
     ├── Activar/Desactivar visión        [vision]
+    ├── Activar/Desactivar visión nocturna [nocturna]
     ├── Archivos                         [archivos]
     │   ├── carpeta por objetivo (máx. 9) [carpeta] → Ficha (tipo, vida, armas, distancia, predicción) → Volver
     │   └── Volver                       [volver]
@@ -35,12 +36,13 @@ Control del Parche (usar)
 
 | Acción | Control | Estado / feedback | Repetición |
 |---|---|---|---|
-| Abrir menú | Usar el Control del Parche | Menú con estado actual | — |
-| Escudo on/off rápido | Agachado + usar el Control | Cúpula, partículas, animación, mensaje | Alterna en cada pulsación |
+| Abrir menú | Con el parche: agacharse mirando arriba (o `/evilmorty:parche`) | Menú con estado actual y ayuda | Se abre 0,4 s después, para distinguirlo de la doble pulsación |
+| Escudo on/off rápido | Con el parche: agacharse dos veces seguidas mirando arriba | Cúpula, partículas, animación, mensaje | Alterna en cada doble pulsación |
+| Aviso al equipar | Ponerse el parche | "PARCHE EN LÍNEA · Agáchate mirando arriba para abrir el menú" | Una vez por equipamiento |
 | Disparar láser | Usar la Mano de Rayo Láser | Rayo 3D, destello, impacto, animación | Recarga 0,6 s; las pulsaciones durante la recarga se ignoran |
 | Mejorar láser | Agachado + usar la Mano | Partículas, animación, mensaje con nuevo daño y alcance; error si falta diamante o nivel máximo | Una mejora por pulsación |
 
-Los botones táctiles fijos en pantalla no son viables con la API estable; el menú y "agachado + usar" son la alternativa.
+Los botones táctiles fijos en pantalla no son viables con la API estable; el gesto de mirar arriba y agacharse (cómodo en móvil y que no interfiere al construir) y el comando son la alternativa.
 
 ## Pruebas de UI
 

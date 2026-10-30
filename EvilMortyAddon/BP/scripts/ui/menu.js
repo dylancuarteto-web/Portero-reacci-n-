@@ -1,14 +1,15 @@
 import { ActionFormData } from "@minecraft/server-ui";
 import { ITEMS } from "../config.js";
-import { t } from "../core/feedback.js";
 import { heldItem, wearsPatch } from "../core/patch.js";
 import { getState, savePrefs } from "../core/state.js";
+import { sound, t } from "../core/feedback.js";
 import { alternarEscudo, cambiarModo } from "../abilities/escudo.js";
 import { nivelDe } from "../abilities/laser.js";
 import { healthOf, intentOf, nameOf, nearbyTargets, weaponsOf } from "../abilities/prediccion.js";
 
-// Menú del Control del Parche. Bedrock no permite botones táctiles fijos en
-// el HUD con la API estable, así que las acciones viven en este panel.
+// Menú integrado en el parche: se abre agachándote mientras miras hacia
+// arriba (o con /evilmorty:parche). Bedrock no permite botones táctiles fijos
+// en el HUD con la API estable, así que las acciones viven en este panel.
 
 const ICON = (name) => `textures/ui/evilmorty/${name}`;
 const onOff = (value) => t(value ? "evilmorty.ui.on" : "evilmorty.ui.off");
@@ -20,6 +21,8 @@ function laserLevel(player) {
 
 export async function abrirMenu(player) {
   const state = getState(player);
+  if (!wearsPatch(player)) return;
+  sound(player, "menu");
   const form = new ActionFormData()
     .title(t("evilmorty.ui.titulo"))
     .body({
@@ -28,12 +31,15 @@ export async function abrirMenu(player) {
         t("evilmorty.ui.estado_escudo"), { text: " " }, onOff(state.escudo), { text: " (" },
         t(`evilmorty.modo.${state.modoEscudo}`), { text: ")\n" },
         t("evilmorty.ui.estado_vision"), { text: " " }, onOff(state.vision), { text: "\n" },
-        t("evilmorty.ui.estado_laser"), { text: " " + laserLevel(player) },
+        t("evilmorty.ui.estado_nocturna"), { text: " " }, onOff(state.nocturna), { text: "\n" },
+        t("evilmorty.ui.estado_laser"), { text: " " + laserLevel(player) + "\n\n" },
+        t("evilmorty.ui.ayuda"),
       ],
     })
     .button(t(state.escudo ? "evilmorty.ui.escudo_off" : "evilmorty.ui.escudo_on"), ICON("escudo"))
     .button(t("evilmorty.ui.modo"), ICON("modo"))
     .button(t(state.vision ? "evilmorty.ui.vision_off" : "evilmorty.ui.vision_on"), ICON("vision"))
+    .button(t(state.nocturna ? "evilmorty.ui.nocturna_off" : "evilmorty.ui.nocturna_on"), ICON("nocturna"))
     .button(t("evilmorty.ui.archivos"), ICON("archivos"))
     .button(t(state.ojo ? "evilmorty.ui.ojo_off" : "evilmorty.ui.ojo_on"), ICON("ojo"))
     .button(t("evilmorty.ui.cerrar"), ICON("cerrar"));
@@ -52,9 +58,13 @@ export async function abrirMenu(player) {
       savePrefs(player, state);
       break;
     case 3:
-      await abrirArchivos(player);
+      state.nocturna = !state.nocturna;
+      savePrefs(player, state);
       break;
     case 4:
+      await abrirArchivos(player);
+      break;
+    case 5:
       state.ojo = !state.ojo;
       savePrefs(player, state);
       break;

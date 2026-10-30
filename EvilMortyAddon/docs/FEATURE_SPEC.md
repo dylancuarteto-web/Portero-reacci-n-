@@ -6,14 +6,17 @@ Proyecto **fan-made no oficial**, sin afiliación con *Rick and Morty* ni sus pr
 
 | Objeto | Identifier | Uso |
 |---|---|---|
-| Parche de Evil Morty | `evilmorty:parche` | Se pone en el casco. Activa la interfaz del ojo y la visión predictiva. Requisito de todas las habilidades. |
-| Control del Parche | `evilmorty:control` | **Usar**: abre el menú. **Agachado + usar**: escudo on/off. |
+| Parche de Evil Morty | `evilmorty:parche` | Se pone en el casco. Lleva el menú integrado: **agacharse mirando hacia arriba** abre el menú; **dos veces seguidas**, escudo on/off. Respaldo: comando `/evilmorty:parche`. Requisito de todas las habilidades. |
 | Mano de Rayo Láser | `evilmorty:mano_laser` | **Usar**: dispara. **Agachado + usar**: mejora con 1 bloque de diamante. |
+
+Modelo 3D del parche: placa de cuero con borde metálico, anillo ámbar giratorio con lente que pulsa, LED rojo que parpadea, correa con luces y hebilla, módulo en la oreja con cable y antena con punta luminosa. Guante 3D: antebrazo blindado, muñequera ámbar, dedos articulados, núcleo de energía, tubos y emisor rojo que pulsa.
 
 ## Habilidades (un archivo por habilidad)
 
 | Habilidad | Archivo | Comportamiento | Límites | Prueba de aceptación |
 |---|---|---|---|---|
+| Menú integrado y gestos | `BP/scripts/core/gestos.js`, `BP/scripts/core/comandos.js`, `BP/scripts/ui/menu.js` | Agacharse mirando arriba (más de 55°) con el parche puesto abre el menú; dos pulsaciones en 0,4 s alternan el escudo. Agacharse mirando al frente o abajo no hace nada (no molesta al construir). `/evilmorty:parche` abre el menú sin trucos. | Solo con el parche puesto | Con el parche, mirar arriba y agacharse: se abre el menú; dos veces rápido: escudo |
+| Visión nocturna | `BP/scripts/abilities/vision_nocturna.js` | Visión nocturna mientras llevas el parche; se apaga desde el menú y se quita al quitarte el parche | — | De noche con el parche se ve todo; al desactivarla en el menú, desaparece |
 | Interfaz del ojo | `BP/scripts/hud/ojo.js` + `RP/ui/hud_screen.json` | Al ponerte el parche: destello ámbar en la cámara y capa holográfica fija sobre la pantalla. Al quitártelo desaparece. Se puede ocultar en el menú. | Usa un título invisible como señal (ver limitaciones) | Equipar el parche: destello + marco ámbar; quitarlo: el marco desaparece |
 | Visión predictiva | `BP/scripts/abilities/prediccion.js` | Cada 0,5 s marca con puntos ámbar la trayectoria prevista de hasta 6 criaturas/jugadores en 24 bloques durante el próximo segundo; **solo tú ves las marcas**. Al mirar a un objetivo (hasta 32 bloques), la barra de acción muestra su nombre, vida, arma de cada mano e intención (viene hacia ti y en cuántos segundos llega, se aleja, te rodea, quieto, agachado) | 6 objetivos, 5 partículas cada uno | Un zombi persiguiéndote: puntos hacia ti y "viene hacia ti (llega en X s)"; un jugador con espada: "Arma: Espada de hierro" |
 | Escudo Protector | `BP/scripts/abilities/escudo.js` | Cúpula 3D ámbar que te sigue. Cancela todo daño de ataques: cuerpo a cuerpo, proyectiles, explosiones, magia, rayos, cohetes, maza y embestidas. **Sin efectos de poción.** Modo **Reflejar**: devuelve los proyectiles hacia quien los lanzó. Modo **Destruir**: los desintegra al tocar la cúpula. | No bloquea caídas, fuego, lava, ahogo ni hambre (no son ataques) | Con el escudo, un esqueleto no te hace daño; en Reflejar la flecha vuelve al esqueleto; en Destruir desaparece con chispas |
@@ -38,7 +41,8 @@ Ver `docs/UI_SPEC.md`.
 
 - **Interfaz del ojo**: Bedrock no tiene una API estable para dibujar imágenes en el HUD. Se usa la técnica habitual de *JSON UI* que lee el texto del título: el script envía el título `evilmorty:ojo_on` con duración 0 (no se ve) y `RP/ui/hud_screen.json` muestra la capa mientras ese texto esté presente. Si otro add-on o comando muestra un título, la capa puede desaparecer hasta 10 s (se reafirma sola). Si una actualización de Minecraft cambia el HUD vanilla, borra `RP/ui/hud_screen.json` y el resto del add-on sigue funcionando.
 - **Armas de criaturas**: la API solo expone el equipo de jugadores y de algunas criaturas. Cuando no se puede leer, se muestra "sin datos".
-- **Botones táctiles**: no se pueden añadir botones fijos a la pantalla con la API estable; las acciones van en el menú del Control y en "agachado + usar".
+- **Botones táctiles**: no se pueden añadir botones fijos a la pantalla con la API estable; las acciones van en el menú integrado del parche, que se abre con un gesto.
+- **Parche en la mano**: si el motor no expone `context.item_slot`, al sostener el parche en la mano se verá también en la cara (se prefirió que siempre se vea puesto).
 - **Habilidades anteriores** (portal, señal, escape, sigilo) se retiraron porque la nueva lista del usuario las sustituye.
 
 ## Rendimiento (Android)

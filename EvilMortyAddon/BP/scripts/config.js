@@ -5,8 +5,17 @@ import { EntityDamageCause } from "@minecraft/server";
 export const ITEMS = {
   parche: "evilmorty:parche",
   manoLaser: "evilmorty:mano_laser",
-  control: "evilmorty:control",
 };
+
+// Gestos del parche (el menú va integrado en el parche, sin ítem aparte):
+//   agacharse mirando hacia arriba = menú; dos veces seguidas = escudo on/off.
+export const GESTO = {
+  pitchArriba: -55,
+  ventanaDoble: 8,
+};
+
+// Comando de respaldo para abrir el menú: /evilmorty:parche
+export const COMANDO_MENU = "evilmorty:parche";
 
 export const ENTITIES = {
   domo: "evilmorty:escudo_domo",
@@ -41,6 +50,7 @@ export const SOUNDS = {
   laser: "",
   mejora: "",
   ojoOn: "",
+  menu: "",
 };
 
 // Tiempos en ticks (20 ticks = 1 segundo).
@@ -53,6 +63,8 @@ export const TICKS = {
   mensaje: 40,
   laserCooldown: 12,
   rayoVida: 6,
+  nocturna: 300,
+  nocturnaRenovar: 220,
 };
 
 export const PREDICCION = {

@@ -1,9 +1,11 @@
 import { system, world } from "@minecraft/server";
 import { ITEMS, TICKS } from "./config.js";
+import { registrarComandos } from "./core/comandos.js";
+import { message, t } from "./core/feedback.js";
+import { registrarGestos } from "./core/gestos.js";
 import { wearsPatch } from "./core/patch.js";
 import { forgetState, getState } from "./core/state.js";
 import {
-  alternarEscudo,
   desactivarEscudo,
   limpiarDomos,
   registrarEscudo,
@@ -12,27 +14,26 @@ import {
 } from "./abilities/escudo.js";
 import { dispararLaser, mejorarLaser, prepararLore } from "./abilities/laser.js";
 import { tickPrediccion } from "./abilities/prediccion.js";
+import { quitarVisionNocturna, tickVisionNocturna } from "./abilities/vision_nocturna.js";
 import { actualizarOjo } from "./hud/ojo.js";
-import { abrirMenu } from "./ui/menu.js";
 import { patchGlint } from "./vfx.js";
 
 // Controles:
-//   Control del Parche: usar = menú; agachado + usar = escudo on/off.
+//   Parche puesto: agacharse mirando arriba = menú; dos veces = escudo on/off.
 //   Mano de Rayo Láser: usar = disparar; agachado + usar = mejorar (1 bloque de diamante).
+//   Comando de respaldo: /evilmorty:parche
+registrarComandos();
+registrarGestos();
+registrarEscudo();
+
 world.afterEvents.itemUse.subscribe(({ source: player, itemStack }) => {
-  if (itemStack?.typeId === ITEMS.control) {
-    if (player.isSneaking) alternarEscudo(player);
-    else abrirMenu(player).catch(() => {});
-  } else if (itemStack?.typeId === ITEMS.manoLaser) {
-    if (player.isSneaking) mejorarLaser(player);
-    else {
-      prepararLore(player, itemStack);
-      dispararLaser(player, itemStack);
-    }
+  if (itemStack?.typeId !== ITEMS.manoLaser) return;
+  if (player.isSneaking) mejorarLaser(player);
+  else {
+    prepararLore(player, itemStack);
+    dispararLaser(player, itemStack);
   }
 });
-
-registrarEscudo();
 
 world.afterEvents.playerLeave.subscribe(({ playerId }) => {
   const state = forgetState(playerId);
@@ -43,17 +44,20 @@ world.afterEvents.playerLeave.subscribe(({ playerId }) => {
   }
 });
 
-// Pasiva del parche: interfaz del ojo, predicción y destello.
+// Pasiva del parche: interfaz del ojo, visión nocturna, predicción y destello.
 system.runInterval(() => {
   for (const player of world.getAllPlayers()) {
     const state = getState(player);
     const lleva = wearsPatch(player);
+    if (lleva && !state.llevaParche) message(player, [t("evilmorty.msg.parche_en_linea")]);
     state.llevaParche = lleva;
     actualizarOjo(player, lleva);
     if (!lleva) {
       if (state.escudo) desactivarEscudo(player);
+      quitarVisionNocturna(player);
       continue;
     }
+    tickVisionNocturna(player);
     tickPrediccion(player);
     if (system.currentTick % 40 < TICKS.pasiva) patchGlint(player);
   }
