@@ -1,11 +1,11 @@
 ---
 name: bedrock-item-creator
-description: Diseña objetos personalizados Bedrock con identidad propia, componentes, iconos, modelos 3D, animaciones y habilidades utilitarias/de apoyo.
+description: Diseña objetos personalizados Bedrock con componentes, iconos, modelos 3D, animaciones y habilidades de gameplay, combate ficticio, defensa o apoyo.
 ---
 
 # Bedrock Item Creator
 
-Crea objetos originales que encajen en el juego, con una función clara y recursos visuales coherentes. Este módulo está enfocado en herramientas, artefactos decorativos y objetos mágicos de apoyo, no en mecánicas ofensivas.
+Crea objetos con una función clara y recursos visuales coherentes. Puede implementar herramientas, artefactos decorativos, objetos mágicos, habilidades ofensivas o defensivas y mecánicas de combate ficticias propias de Minecraft. Sigue la intención exacta del usuario.
 
 ## Brief del objeto
 
@@ -32,14 +32,16 @@ Antes de crear archivos, define:
 8. Añade recetas/localización solo cuando formen parte del diseño.
 9. Ejecuta los validadores y prepara prueba dentro del juego.
 
-## Habilidades utilitarias de ejemplo
+## Habilidades y acciones
 
-Un artefacto puede ofrecer tres acciones no ofensivas como:
-- **Luz guía**: ilumina o ayuda a orientarse.
-- **Bendición**: concede un efecto positivo o apoyo temporal al usuario.
-- **Regreso seguro**: vuelve a una ubicación guardada, si la API y las reglas de destino lo permiten.
+El objeto puede ofrecer varias acciones seleccionables, por ejemplo:
+- habilidades de ataque ficticias propias del juego, con daño y alcance configurables;
+- defensa, escudo temporal, bloqueo o contraataque abstracto;
+- movilidad, impulso, salto especial o esquiva;
+- luz guía, curación/soporte, teletransporte o regreso a un punto;
+- cambio de modo, selección de habilidad o invocación de un efecto visual.
 
-Cada acción debe tener activación inequívoca, cooldown independiente, feedback y manejo de errores. No hagas que una acción ejecute otra accidentalmente.
+Cada acción debe tener activación inequívoca, cooldown independiente, feedback visual/sonoro si el usuario aporta sonidos, límites de rendimiento y manejo de errores. No hagas que una acción ejecute otra accidentalmente. Comprueba que las mecánicas sean válidas en Minecraft y no dependan de APIs inexistentes.
 
 ## Reglas técnicas
 
@@ -47,7 +49,9 @@ Cada acción debe tener activación inequívoca, cooldown independiente, feedbac
 - No uses componentes legacy sin confirmar su estado en el target.
 - No uses APIs beta en builds estables sin aprobación explícita.
 - No copies identificadores de Vanilla para contenido propio.
-- Separa cada acción de apoyo en un módulo y una prueba independiente.
+- Separa cada habilidad en un módulo y una prueba independiente.
+- Conserva literalmente el nombre solicitado para el objeto/personaje, incluso si pertenece a una franquicia. No lo sustituyas por un nombre genérico sin permiso.
+- Para proyectos fan-made, crea assets originales y no afirmes que el contenido es oficial.
 - No incluyas archivos de sonido: deja los puntos de integración descritos para que el usuario aporte audio.
 
 ## Entrega mínima

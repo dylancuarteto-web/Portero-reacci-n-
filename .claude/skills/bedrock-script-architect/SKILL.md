@@ -35,13 +35,14 @@ Implementa lógica clara y compatible con la versión real del juego.
 
 ## Mecánicas adecuadas para este módulo
 
-- utilidades de inventario;
-- marcadores y teletransporte de apoyo con comprobación del destino;
-- estados positivos/efectos de ayuda;
-- seguimiento y órdenes a compañeros pacíficos;
-- construcción, recolección permitida y tareas del mundo;
-- cooldowns, progresión y guardado de preferencias;
-- sincronización de partículas y animaciones.
+- combate ficticio dentro de Minecraft: daño, objetivos, proyectiles del juego, habilidades, defensas, jefes y enemigos;
+- cooldowns, recursos de habilidad, progresión, balance y guardado de preferencias;
+- interacción con objetos, entidades, bloques y menús;
+- formularios, botones de menú, selección de habilidades y estados de UI;
+- marcadores, teletransporte, efectos de ayuda, compañeros, construcción y tareas del mundo;
+- sincronización de partículas, animaciones, HUD/actionbar y feedback de interacción.
+
+No asumas que toda plataforma permite añadir botones táctiles permanentes personalizados. Verifica las capacidades de la versión destino y ofrece una alternativa funcional si no existe una API pública adecuada.
 
 ## Calidad
 - Añade logs de desarrollo controlados.

@@ -1,11 +1,11 @@
 ---
 name: bedrock-entity-creator
-description: Diseña criaturas, NPC y compañeros pacíficos de Minecraft Bedrock con navegación, memoria limitada, órdenes útiles, modelos, animaciones y VFX.
+description: Diseña criaturas, NPC, enemigos, jefes y compañeros de Minecraft Bedrock con IA, navegación, objetivos, modelos, animaciones y VFX.
 ---
 
 # Bedrock Entity Creator
 
-Crea criaturas originales que ayuden a explorar, construir, organizar y decorar. Este módulo se centra en IA pacífica y de apoyo.
+Crea criaturas y NPC según el rol solicitado: pacíficos, neutrales, hostiles, jefes, compañeros o ayudantes. Implementa sus estados, objetivos y comportamientos de forma coherente con Minecraft.
 
 ## Diseño de comportamiento
 
@@ -36,7 +36,9 @@ Puede incluir:
 - No sobrecargues `runInterval` ni consultes todo el mundo constantemente.
 - Evita spawn duplicado y fugas de entidades.
 - No afirmes que el NPC realiza acciones de jugador si la API no puede reproducirlas. Implementa la acción equivalente mediante un sistema propio y explícitalo.
-- No uses objetivos de daño ni mecánicas de combate.
+- Los objetivos de daño y las mecánicas de combate ficticias de Minecraft están permitidos cuando el usuario los solicita. Configura objetivos, alcance, cooldowns, daño y condiciones de forma explícita y prueba su comportamiento en el juego.
+- No conviertas una criatura hostil solicitada en pacífica ni elimines sus habilidades sin autorización.
+- Respeta el nombre exacto del personaje/entidad que pida el usuario; no lo renombres automáticamente. Para fan-made, crea assets propios y no afirmes que es oficial.
 
 ## Recursos
 Usa 3D Creator, Animation Studio y VFX Studio coordinados. Los nombres de geometría, animación, controller y textura deben coincidir con el registro de assets.

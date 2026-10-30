@@ -36,5 +36,9 @@ Without MCP, generate Blockbench-compatible Bedrock geometry and animation files
 - Prefer JSON validation and compatibility checks over desktop automation.
 - Report exactly what was generated, statically checked, imported, and tested.
 
-## Safety and design
-Focus on decorative, exploration, building, accessibility, companion, and support features.
+## Gameplay, naming and interface rules
+- Support the full requested Minecraft gameplay scope, including fictional combat, damage mechanics, hostile entities, bosses, active abilities, defense and progression. Do not impose a blanket ban on combat.
+- Preserve exact user-requested character/item/franchise names (including “Evil Morty”); never silently rename them. Clearly label fan-made work as unofficial and create new assets rather than extracting proprietary files.
+- For interactive projects, use `/bedrock-ui-studio` and create a professional UI specification: functional buttons, clear navigation, touch-friendly layout, icons, visual states and feedback.
+- Do not promise arbitrary persistent touch buttons unless the target Bedrock version supports them. If not, provide the best working alternative: Script API forms, item-use controls, entity interaction, HUD/actionbar, scoreboard or a documented UI resource-pack approach.
+- Keep combat strictly within fictional Minecraft gameplay; do not translate it into real-world instructions.

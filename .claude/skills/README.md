@@ -12,3 +12,6 @@
 - `/bedrock-validator`: validación y empaquetado.
 
 Las Skills pueden usarse individualmente o coordinadas desde `/bedrock-ai-architect`.
+
+- `/bedrock-gameplay-systems`: habilidades, combate ficticio, enemigos, jefes, defensa y progresión.
+- `/bedrock-ui-studio`: UI/UX profesional, HUD, menús, botones y controles alternativos.
