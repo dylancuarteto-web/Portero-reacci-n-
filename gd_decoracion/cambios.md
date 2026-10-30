@@ -9,7 +9,7 @@ Archivos de esta carpeta:
 | `referencia_objetos.gdlvl` | Tu nivel con los 37 objetos de referencia. |
 | `generar_decoracion.py` | Script que genera el nivel decorado a partir del backup (`python3 generar_decoracion.py nivel_original_backup.gdlvl referencia_objetos.gdlvl nivel_decorado.gdlvl`). |
 
-El archivo de salida usa el mismo formato que el original (base64 URL-safe con gzip, y `k4` igual por dentro). Lo volví a leer después de guardarlo y se lee bien. También actualicé `k48` (número de objetos): 2198 → 1812.
+El archivo de salida usa el mismo formato que el original (base64 URL-safe con gzip, y `k4` igual por dentro). Lo volví a leer después de guardarlo y se lee bien. También actualicé `k48` (número de objetos): 2198 → 2519.
 
 ---
 
@@ -53,7 +53,7 @@ Todos estos objetos están **idénticos byte a byte** al original, salvo los tri
 ## 2. Análisis del nivel
 
 - **Suelo, techo y paredes:** todo está hecho con el bloque 467 (253 posiciones distintas). Hay 194 copias del 467 escaladas a 1.22 y en la capa B3, puestas detrás de los bloques. **Las conservé**, porque pueden agrandar la colisión. Les puse color negro (canal 1) y ahora hacen de contorno oscuro alrededor de todas las formas.
-- **Grupo 1:** es la torre/puerta de x=225–405 (base de 7×3 bloques y columna de 3×6, hasta y=345) con 7 pinchos. El trigger de movimiento de x=151 (de toque) la sube 75 unidades. **Toda la decoración de la torre (201 objetos) lleva el grupo 1**, así que sube con ella.
+- **Grupo 1:** es la torre/puerta de x=225–405 (base de 7×3 bloques y columna de 3×6, hasta y=345) con 7 pinchos. El trigger de movimiento de x=151 (de toque) la sube 75 unidades. **Toda la decoración de la torre (313 objetos) lleva el grupo 1**, así que sube con ella.
 - **Música:** ya había 236 pulsos sincronizados. Además, los grupos 101–106 rebotan con el ritmo mediante 89 triggers de movimiento, y los grupos 120–123 hacen una animación de entrada.
 - **"Corazón":** no encontré ningún objeto que fuera claramente el corazón y no elegiste ninguno, así que **el elemento central es la torre del grupo 1**. Es la que lleva los pinchos grandes, el glow T3, los engranajes y los destellos, y por tanto lo más brillante de la pantalla. Si el corazón es otro objeto (por ejemplo los dos ID 1743 de los huecos de la torre o el ID 3884), dímelo y lo cambio.
 
@@ -62,39 +62,57 @@ En el original, el **color de objeto (1004) tenía opacidad 0**, así que los pi
 
 ---
 
-## 3. Qué objeto de referencia va en cada paso
+## 3. Versión 2: qué cambió respecto a la primera
 
-Elegiste que usara mi mejor suposición. Asigné los 8 bloques de `referencia_objetos.gdlvl` así:
+La primera versión se veía sencilla y sin el estilo del tutorial. Con el video que mandaste vi cómo se ven de verdad los objetos y encontré la causa:
 
-| Bloque (x) | IDs | Paso | Motivo |
-|---|---|---|---|
-| B1 (435–637) | 469, 1265, 471, 1263, 1203, 1157 | **Contorno** | 1265 y 1263 están más abajo, igual que los dos puntitos del panel OUTLINE. Lo tomo como: 469/1203 = esquina en L, 471/1157 = línea. |
-| B2 (825) | 211 | **Relleno** | El cuadrado sólido. |
-| B2 (952–1100) | 1010, 1009, 503, 1292, 504 | **Detalles del contorno** | 1292 está más alto, como la textura dentada del panel; el resto son degradados. |
-| B3+B4 (1185–1755) | 190, 231, 237, 1735, 1909, 326, 1754, 884, 1279 | **Detalles interiores** | 1735 es un objeto giratorio (el engranaje); 190 está más alto, como el glow pequeño de esquina. |
-| B5 (1890–2025) | 3035, 3034, 3042, 3046 | **Más detalles** | 4 objetos, como el panel (rampa pequeña, pendiente, línea, ladrillo). |
-| B6 (2175–2390) | 1887, 1886, 2974, 505, 504 | **Detalles finales** | 5 objetos en el mismo orden que el panel (orbe de glow, pico, línea, cuadrado con borde, degradado de esquina). |
-| B7 (2452–2635) | 3048, 3044, 3047, 3043, 3045, 3049 | **Pinchos + cuadrados** | Cuadrado con bisel + 5 triángulos que se combinan para formar un pincho. |
-| B8 (2715) | 2974 | **Glow T3** | Línea; el orbe (1887) y el degradado (504) se reutilizan de B6. |
+- **La línea 471 sin girar va en el borde derecho**, no en el izquierdo. Por eso casi todas las líneas del borde quedaron una celda hacia dentro.
+- **La 1292 no es la textura dentada**: es una barrita con degradado.
+- **Los triángulos 3043–3049 miden medio bloque** a escala 1, así que los pinchos salieron pequeños.
+- **Solo la torre tenía detalle**; el resto del nivel era relleno azul más una línea.
 
-No usé 1010, 1009, 503, 1754, 1279, 3035 ni 1886, porque no supe a qué forma corresponden. Solo se usan IDs de `referencia_objetos.gdlvl`; el script se detiene si aparece cualquier otro.
+Formas confirmadas en el video: 1735 = engranaje, 3034 = triángulo de contorno de 1 bloque que apunta hacia arriba, 505 = cuadrado con degradado suave, 1157 = línea corta, 1292 = barrita con degradado, 231/237 = rombos, 884 = destello, y los triángulos 3043–3049 apilados forman un pincho con degradado.
 
-**No puedo ver los sprites del juego**, así que la forma y la rotación por defecto de cada objeto son suposiciones. Supuse que la L (469/1203) sin rotar es "┌", que la línea (471/1157) va en el lado izquierdo y que el degradado 504 está en la esquina superior izquierda. Por eso **cada paso está en su propia capa del editor** (de la 11 a la 18): si una capa se ve mal, puedes aislarla o borrarla en el editor sin tocar las demás.
+Ahora cada estructura tiene el estilo "dark" del tutorial, adaptado a dorado:
+
+- **Interior negro** con ladrillo azul y **borde azul marino**, con **marco doble**: línea dorada exterior y línea dorada oscura interior.
+- **Borde dentado**: dientes pequeños (3034) apuntando hacia fuera, siempre dentro del bloque.
+- **Columnas de triángulos ▲▼** alternados dentro de las paredes de las estructuras grandes, con pinchos con degradado y contorno.
+- **Rombo** arriba en el centro, **cuadrados con degradado** en las esquinas de arriba, **destellos** en las cuatro esquinas y **engranaje** en el centro de las estructuras gruesas.
+- **Pilares finos**: cadena de rombos por el centro.
+- **Torre**: pinchos el doble de grandes (escala 3.0 / 3.8 / 2.4), rombo grande arriba, puerta negra con engranajes y cadenas de rombos a los lados.
+
+Ya no uso los objetos cuya forma no pude comprobar: 1887, 504, 190, 326 y 1909. En `esquemas/` hay un dibujo esquemático de la colocación (`v2_torre.png`, `v2_tramo1.png`, `v2_tramo2.png`). No es el render del juego: dibuja cada objeto con la forma aproximada que vi en el video, solo para revisar dónde va cada pieza.
+
+### Qué objeto de referencia va en cada paso
+
+| Paso (capa del editor) | IDs usados |
+|---|---|
+| 11 Contorno | 469 (L "┌"), 471 (línea), 1157, 1203, 1265, 1263 |
+| 12 Relleno | 211 |
+| 13 Detalles del contorno | 1292 |
+| 14 Detalles interiores | 1735, 231, 237, 884 |
+| 15 Más detalles | 3034 (dientes, rombos, contorno de pinchos), 3046 (ladrillo), 3042 |
+| 16 Detalles finales | 505, 2974 |
+| 17 Pinchos + cuadrados | 3048, 3044, 3047, 3043, 3045, 3049 |
+| 18 Glow T3 | 2974 |
+
+Cada paso sigue en su propia capa del editor (11–18), por si quieres aislar o borrar alguno.
 
 ---
 
-## 4. Capas añadidas: 912 objetos
+## 4. Capas añadidas: 1619 objetos
 
-| Capa editor | Paso | Objetos | Qué hace | Color |
-|---:|---|---:|---|---|
-| 12 | Relleno | 242 | 211 en cada bloque visible (capa Z T2) | `0D1B3E` ×0.9; puerta de la torre en `000000` |
-| 15 | Más detalles | 59 | Ladrillo 3046 en las celdas interiores; rampas 3034 y líneas "\|\|\|" 3042 en la torre | `1B2A4F` ×0.7, `B8860B`, `FFD700` |
-| 13 | Detalles del contorno | 149 | Textura dentada 1292 en los lados izquierdo y derecho expuestos | `B8860B` |
-| 11 | Contorno (borde principal) | 237 | L 469 en esquinas, líneas 471 en lados; marco interior de la puerta con 1203/1157 y puntos 1265/1263 | `FFD700` (puntos `FFF8E1`) |
-| 17 | Pinchos + cuadrados | 105 | Cuadrado con bisel 3048 en cada esquina exterior; 3 pinchos grandes (escala 1.4 / 1.8 / 1.1) sobre la torre, cada uno con 5 triángulos apilados; 3 pinchos colgantes | `B8860B` → `FFD700` → `FFE066`, centro `000000` |
-| 18 | Glow T3 + glow de esquina | 91 | Degradado 504 en cada esquina exterior; orbes 1887 en las esquinas de la torre; líneas de brillo 2974 en la columna (capa Z T3) | `FFE066` ×0.8 (blending) |
-| 14 | Detalles interiores | 19 | 2 engranajes 1735 en la puerta, cadena de rombos 231/237 con triángulo 1909, hexágonos 326, glow 190, 4 destellos 884 | `FFD700`, `B8860B`, `FFE066`, `FFF8E1` ×0.9 |
-| 16 | Detalles finales | 10 | Cuadrados con borde 505 en la base, orbes detrás de los engranajes, cadena de los colgantes | `FFD700`, `FFE066`, `B8860B` |
+| Capa | Paso | Objetos | Color |
+|---:|---|---:|---|
+| 12 | Relleno: borde azul marino, interior y puerta negros | 242 | `0D1B3E` ×0.9 / `000000` |
+| 15 | Más detalles: dientes del borde, rombos, contornos de pinchos, ladrillo, "\|\|\|" | 617 | `B8860B`, `FFD700`, `1B2A4F` ×0.7 |
+| 11 | Contorno doble y marco de la puerta | 319 | `FFD700` / `B8860B` (puntos `FFF8E1`) |
+| 17 | Pinchos (5 triángulos apilados) y cuadrados con bisel en las esquinas | 245 | `B8860B` → `FFD700` → `FFE066`, centro `000000` |
+| 13 | Barritas con degradado en las paredes | 103 | `B8860B` |
+| 14 | Engranajes, rombos y destellos | 59 | `FFD700`, `B8860B`, `FFF8E1` ×0.9 |
+| 16 | Glow de esquina y detrás de los engranajes | 22 | `FFE066` ×0.8 (blending) |
+| 18 | Líneas de brillo T3 en la torre | 12 | `FFE066` ×0.8 (blending) |
 
 - **Contorno oscuro:** son las 194 copias negras ×1.22 del 467 que ya estaban (canal 1 = `000000`).
 - **Capas Z:** el relleno y los paneles van en T2; el contorno, los brillos y los detalles van en T3, por encima. No hay decoración nueva en las capas B.
@@ -122,7 +140,7 @@ Reutilicé los **236 pulsos que ya estaban sincronizados**: tienen el mismo núm
 
 - **El gameplay no cambió.** Antes y después hay los mismos 42 pinchos (8), 15 pinchos pequeños (39), 444 bloques (467), 107 triggers de movimiento (901), 15 orbes y pads, 11 portales (4 de velocidad, 3 de tamaño y 4 de gravedad), 236 pulsos y 5 triggers de color. Lo comprobé releyendo los dos archivos y comparando cada objeto byte a byte.
 - **Los 107 triggers de movimiento siguen todos.** Los de los grupos 101–106 mueven los pinchos colgantes nuevos. Los de 120–123 apuntan ahora a grupos vacíos, así que no hacen nada.
-- **Solape con el juego:** toda la decoración está dentro de los bloques de juego. Las excepciones son los pinchos de encima de la torre, que van en un hueco sin gameplay, y los colgantes, que se comprobaron uno a uno. Nada queda encima de pinchos, orbes ni portales.
+- **Solape con el juego:** toda la decoración está dentro de los bloques de juego. Las únicas excepciones son los 3 pinchos de encima de la torre y los 3 colgantes, y comprobé que ninguno queda a menos de un bloque de un objeto de juego. Las celdas que tienen dentro un 481 o un 507 no se decoran.
 - **La decoración de la torre sube con el grupo 1.**
 
 ## 7. Dudas pendientes

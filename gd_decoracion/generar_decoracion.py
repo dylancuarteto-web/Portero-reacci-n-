@@ -12,7 +12,7 @@ import re
 import struct
 import sys
 import zlib
-from collections import Counter
+from collections import Counter, deque
 
 # ---------------------------------------------------------------- formato .gdlvl
 
@@ -216,6 +216,14 @@ def main(src, ref, dst):
             o['57'] = grupo
         nuevos.append(o)
 
+    # Calibrado con el video del nivel: 471 sin girar es una línea en el borde DERECHO,
+    # 469 sin girar es "┌", 3034 es un triángulo de contorno de 1 bloque que apunta arriba,
+    # los triángulos 3043-3049 miden medio bloque a escala 1.
+    LADOS = {'R': (30, 0, 0), 'D': (0, -30, 90), 'L': (-30, 0, 180), 'U': (0, 30, 270)}
+    HACIA_FUERA = {'U': (0, 1, 0), 'R': (1, 0, 90), 'D': (0, -1, 180), 'L': (-1, 0, 270)}
+    ESQUINAS = [('L', 'U', 0), ('U', 'R', 90), ('R', 'D', 180), ('D', 'L', 270)]
+    MEDIO = 15  # tamaño de los triángulos 3043-3049 a escala 1
+
     # Torre del grupo 1: columna central = puerta.
     torre = {p for p, g in bloques.items() if g}
     puerta_x = 315.0
@@ -225,52 +233,152 @@ def main(src, ref, dst):
     ocupadas = {(x, y) for (x, y) in celdas
                 if any(abs(px - x) <= 15 and abs(py - y) <= 15 for px, py in gameplay_pts)}
 
+    # Profundidad de cada celda (0 = borde) y estructuras conectadas.
+    prof, cola = {}, deque()
+    for (x, y) in celdas:
+        if any(not hay(x + dx, y + dy) for dx, dy, _ in LADOS.values()):
+            prof[(x, y)] = 0
+            cola.append((x, y))
+    while cola:
+        x, y = cola.popleft()
+        for dx, dy, _ in LADOS.values():
+            n = (x + dx, y + dy)
+            if n in celdas and n not in prof:
+                prof[n] = prof[(x, y)] + 1
+                cola.append(n)
+    estructura, estructuras = {}, []
+    for c in sorted(celdas):
+        if c in estructura:
+            continue
+        comp, pila = [], [c]
+        estructura[c] = len(estructuras)
+        while pila:
+            x, y = pila.pop()
+            comp.append((x, y))
+            for dx, dy, _ in LADOS.values():
+                n = (x + dx, y + dy)
+                if n in celdas and n not in estructura:
+                    estructura[n] = len(estructuras)
+                    pila.append(n)
+        estructuras.append(comp)
+
+    def pincho(x, base_y, s, grupo, rot=0, paso=17, contorno=True):
+        # Pincho del tutorial: 5 triángulos apilados (claro -> oscuro) + contorno.
+        sgn = 1 if rot == 0 else -1
+        cy = base_y + sgn * MEDIO / 2 * s
+        add('3044', x, cy, paso, DGOLD, T3, 10, rot=rot, sx=s, grupo=grupo)
+        add('3047', x, cy, paso, GOLD, T3, 11, rot=rot, sx=s * 0.92, grupo=grupo)
+        add('3043', x, cy + sgn * 1.5 * s, paso, YELLOW, T3, 12, rot=rot, sx=s * 0.8, grupo=grupo)
+        add('3045', x, cy, paso, GOLD, T3, 13, rot=rot, sx=s, grupo=grupo)
+        add('3049', x, base_y + sgn * 3.5 * s, paso, BLACK, T3, 14, rot=rot, sx=s * 0.45, grupo=grupo)
+        if contorno:
+            add('3034', x, cy, 15, GOLD, T3, 15, rot=rot, sx=s * MEDIO / 30, grupo=grupo)
+
+    def rombo(x, y, s, grupo, ch=GOLD):
+        # Rombo hecho con dos triángulos de contorno (uno arriba, otro abajo).
+        h = 30 * s
+        add('3034', x, y + h / 2, 15, ch, T3, 6, sx=s, grupo=grupo)
+        add('3034', x, y - h / 2, 15, ch, T3, 6, rot=180, sx=s, grupo=grupo)
+
+    # Rasgos de cada estructura grande: interior, esquinas reales del interior y celda del rombo.
+    rasgos = []
+    for comp in estructuras:
+        interior = [c for c in comp if prof[c] >= 1 and c not in ocupadas]
+        if not interior or set(comp) & torre:
+            continue
+        y0, y1 = min(y for _, y in interior), max(y for _, y in interior)
+        arriba = sorted(x for x, y in interior if y == y1)
+        abajo = sorted(x for x, y in interior if y == y0)
+        esquinas = [(arriba[0], y1, -1, 1), (arriba[-1], y1, 1, 1), (abajo[0], y0, -1, -1), (abajo[-1], y0, 1, -1)]
+        centro = (arriba[len(arriba) // 2], y1) if len(arriba) >= 3 else None
+        rasgos.append((comp, interior, esquinas, centro))
+    centros = {r[3] for r in rasgos if r[3]}
+
     for (x, y), g1 in sorted(bloques.items()):
         if (x, y) in ocupadas:
             continue
         grp = '1' if g1 else None
-        L, R = not hay(x - 30, y), not hay(x + 30, y)
-        U, D = not hay(x, y + 30), not hay(x, y - 30)
+        d = prof[(x, y)]
+        maxd = max(prof[c] for c in estructuras[estructura[(x, y)]])
+        expuesto = {k: not hay(x + dx, y + dy) for k, (dx, dy, _) in LADOS.items()}
+        en_suelo = y - 15 <= 0
         es_puerta = (x, y) in puerta
 
-        # Relleno: azul marino (negro dentro de la puerta).
-        add('211', x, y, 12, BLACK if es_puerta else NAVY, T2, 0, grupo=grp)
+        # Relleno: borde en azul marino, interior y puerta en negro (estilo "dark").
+        add('211', x, y, 12, BLACK if (d >= 1 or es_puerta) else NAVY, T2, 0, grupo=grp)
 
-        # Más detalles: ladrillo en las celdas interiores.
-        if not (L or R or U or D) and not es_puerta:
+        # Ladrillo en el interior.
+        if d >= 1 and not es_puerta:
             add('3046', x, y, 15, NAVY2, T2, 2, grupo=grp)
 
-        # Detalles del contorno: textura dentada en los lados expuestos.
-        if L:
-            add('1292', x, y, 13, DGOLD, T2, 4, rot=0, grupo=grp)
-        if R:
-            add('1292', x, y, 13, DGOLD, T2, 4, rot=180, grupo=grp)
-
-        # Contorno dorado: L en esquinas, líneas en los lados sueltos.
-        lados = {'L': L, 'U': U, 'R': R, 'D': D}
-        esquinas = [('L', 'U', 0), ('U', 'R', 90), ('R', 'D', 180), ('D', 'L', 270)]
+        # Contorno exterior: L en esquinas, línea en cada lado suelto.
         usados = set()
-        bisel = False
-        for a, b, rot in esquinas:
-            if lados[a] and lados[b] and a not in usados and b not in usados:
+        for a, b, rot in ESQUINAS:
+            if expuesto[a] and expuesto[b] and not usados & {a, b}:
                 add('469', x, y, 11, GOLD, T3, 5, rot=rot, grupo=grp)
                 usados |= {a, b}
-                # Glow de esquina (amarillo suave) y cuadrado con bisel en las esquinas del marco.
-                add('504', x, y, 18, YELLOW, T3, 1, rot=rot, grupo=grp)
-                if not bisel:
-                    add('3048', x, y, 17, DGOLD, T2, 5, sx=0.8, grupo=grp, ch2=NAVY)
-                    bisel = True
-        for lado, rot in (('L', 0), ('U', 90), ('R', 180), ('D', 270)):
-            if lados[lado] and lado not in usados:
+        for lado, (_, _, rot) in LADOS.items():
+            if expuesto[lado] and lado not in usados:
                 add('471', x, y, 11, GOLD, T3, 5, rot=rot, grupo=grp)
+        if usados:
+            add('3048', x, y, 17, GOLD, T2, 5, sx=0.6, grupo=grp, ch2=NAVY)
+
+        # Contorno interior (marco doble del tutorial): línea donde el interior toca el borde.
+        if d == 1 and not es_puerta:
+            for lado, (dx, dy, rot) in LADOS.items():
+                if prof.get((x + dx, y + dy)) == 0:
+                    add('471', x, y, 11, DGOLD, T3, 4, rot=rot, grupo=grp)
+
+        # Borde dentado: dientes pequeños apuntando hacia fuera, dentro del bloque.
+        if d == 0:
+            for lado, (nx, ny, rot) in HACIA_FUERA.items():
+                if not expuesto[lado] or (lado == 'D' and en_suelo):
+                    continue
+                for t in (-7.5, 7.5):
+                    cx = x + nx * 10.5 + (0 if nx else t)
+                    cy = y + ny * 10.5 + (0 if ny else t)
+                    add('3034', cx, cy, 15, DGOLD, T3, 3, rot=rot, sx=0.3, grupo=grp)
+            # Luces con degradado en las paredes laterales.
+            pilar = expuesto['L'] and expuesto['R']
+            if expuesto['L'] and not pilar:
+                add('1292', x, y, 13, DGOLD, T2, 4, rot=0, grupo=grp)
+            if expuesto['R'] and not pilar:
+                add('1292', x, y, 13, DGOLD, T2, 4, rot=180, grupo=grp)
+            # Pilares de 1 bloque: cadena de rombos por el centro.
+            if expuesto['L'] and expuesto['R'] and not (expuesto['U'] and expuesto['D']) and maxd == 0:
+                add('231' if int((y - 15) // 30) % 2 == 0 else '237', x, y, 14, DGOLD, T3, 2, sx=0.6, grupo=grp)
+
+        # Triángulos del tutorial en las columnas laterales del interior: ▲ y ▼ alternados.
+        if d == 1 and not es_puerta and (x, y) not in centros and (prof.get((x - 30, y)) == 0 or prof.get((x + 30, y)) == 0):
+            arriba = int((y - 15) // 30) % 2 == 0
+            pincho(x, y - 13 if arriba else y + 13, 1.7, grp, rot=0 if arriba else 180)
+
+    # Detalles por estructura grande (rombo central, glow, destellos, engranaje).
+    for comp, interior, esquinas, centro in rasgos:
+        grp = None
+        (xa, ya, _, _), (xb, yb, _, _) = esquinas[0], esquinas[1]
+        add('505', xa, ya, 16, YELLOW, T3, 1, sx=0.9, grupo=grp)
+        add('505', xb, yb, 16, YELLOW, T3, 1, sx=0.9, grupo=grp, flipx=True)
+        for cx, cy, sx_, sy_ in esquinas:
+            add('884', cx + 8 * sx_, cy + 8 * sy_, 14, WARM, T3, 20, sx=0.5, grupo=grp)
+        if centro:
+            rombo(*centro, 0.5, grp)
+            rombo(*centro, 0.3, grp, ch=YELLOW)
+        if max(prof[c] for c in comp) >= 2:
+            x0, x1 = min(x for x, _ in interior), max(x for x, _ in interior)
+            cx, cy = max(interior, key=lambda c: (prof[c], -abs(c[0] - (x0 + x1) / 2)))
+            add('505', cx, cy, 16, YELLOW, T3, 1, sx=1.2, grupo=grp)
+            add('1735', cx, cy, 14, GOLD, T3, 3, sx=1.1, grupo=grp)
 
     # ---------------- la torre (elemento central)
     ys = sorted({y for _, y in torre})
     top = ys[-1]
     base_top = max(y for (x, y) in torre if x == min(x for x, _ in torre))
     xs_col = sorted({x for x, y in torre if y == top})
+    base = sorted(p for p in torre if p[1] <= base_top)
+    bx0, bx1 = min(x for x, _ in base), max(x for x, _ in base)
 
-    # Marco interior de la puerta.
+    # Puerta: líneas a los lados, marco arriba, "|||" y engranajes.
     for (x, y) in sorted(puerta):
         add('1157', x, y, 11, GOLD, T3, 6, rot=0, grupo='1')
         add('1157', x, y, 11, GOLD, T3, 6, rot=180, grupo='1')
@@ -279,57 +387,35 @@ def main(src, ref, dst):
     add('1203', puerta_x, yp, 11, GOLD, T3, 6, rot=90, grupo='1')
     add('1265', puerta_x - 13, yp + 13, 11, WARM, T3, 7, grupo='1')
     add('1263', puerta_x + 13, yp + 13, 11, WARM, T3, 7, grupo='1')
-    # Líneas "|||" en lo alto de la puerta y glow de esquina interior.
     for dx in (-6, 0, 6):
         add('3042', puerta_x + dx, yp - 4, 15, GOLD, T3, 3, sx=0.5, grupo='1')
-    add('190', puerta_x, yp, 14, YELLOW, T3, 2, grupo='1')
-
-    # Engranajes dentro de la puerta, con brillo detrás.
     for gy, dx in ((ys[-3], 6), (ys[2], -6)):
-        add('1887', puerta_x + dx, gy, 16, YELLOW, T3, 1, sx=0.9, grupo='1')
-        add('1735', puerta_x + dx, gy, 14, GOLD, T3, 3, sx=0.9, grupo='1')
+        add('505', puerta_x + dx, gy, 16, YELLOW, T3, 1, sx=1.1, grupo='1')
+        add('1735', puerta_x + dx, gy, 14, GOLD, T3, 3, sx=1.0, grupo='1')
 
-    # Cadena de rombos a ambos lados de la columna y triángulo al final.
+    # Cadena de rombos a los lados de la columna.
     for x in (xs_col[0], xs_col[-1]):
-        for i, y in enumerate(y for y in ys if base_top + 30 < y < top):
+        for i, y in enumerate(y for y in ys if base_top < y < top):
             add('231' if i % 2 == 0 else '237', x, y, 14, DGOLD, T3, 2, sx=0.8, grupo='1')
-        add('1909', x, base_top + 30, 14, DGOLD, T3, 2, rot=180, sx=0.6, grupo='1')
 
-    # Paneles de la base: cuadrado con borde y hexágonos.
-    base = sorted(p for p in torre if p[1] <= base_top)
-    bx0, bx1 = min(x for x, _ in base), max(x for x, _ in base)
-    for x in (bx0 + 30, bx1 - 30):
-        add('505', x, base_top - 30, 16, GOLD, T3, 2, sx=0.8, grupo='1')
-        add('326', x, base_top - 60, 14, DGOLD, T3, 2, sx=0.7, grupo='1')
-    # Rampas en la base, a los lados de la columna.
-    add('3034', xs_col[0] - 30, base_top, 15, DGOLD, T3, 2, grupo='1')
-    add('3034', xs_col[-1] + 30, base_top, 15, DGOLD, T3, 2, grupo='1', flipx=True)
+    # Rombo grande arriba de la columna y glow en las esquinas.
+    rombo(puerta_x, top, 0.6, '1')
+    rombo(puerta_x, top, 0.35, '1', ch=YELLOW)
+    add('505', bx0, base_top, 16, YELLOW, T3, 1, grupo='1')
+    add('505', bx1, base_top, 16, YELLOW, T3, 1, grupo='1', flipx=True)
+    for x, y in ((xs_col[0] - 8, top + 8), (xs_col[-1] + 8, top + 8), (bx0 - 8, base_top + 8), (bx1 + 8, base_top + 8)):
+        add('884', x, y, 14, WARM, T3, 20, sx=0.6, grupo='1')
 
-    # Destellos (cruces brillantes) en las cuatro esquinas, como en el tutorial.
-    for x, y in ((xs_col[0], top - 15), (xs_col[-1], top - 15), (bx0 + 15, base_top - 75), (bx1 - 15, base_top - 75)):
-        add('884', x, y, 14, WARM, T3, 20, sx=0.5, grupo='1')
-
-    # Pinchos decorados encima de la torre (se suben con el grupo 1).
-    def pincho(x, base_y, s, grupo, rot=0, paso=17):
-        sgn = 1 if rot == 0 else -1
-        cy = base_y + sgn * 15 * s
-        add('3044', x, cy, paso, DGOLD, T3, 10, rot=rot, sx=s, grupo=grupo)
-        add('3047', x, cy, paso, GOLD, T3, 11, rot=rot, sx=s * 0.92, grupo=grupo)
-        add('3043', x, cy + sgn * 3 * s, paso, YELLOW, T3, 12, rot=rot, sx=s * 0.8, grupo=grupo)
-        add('3045', x, cy, paso, GOLD, T3, 13, rot=rot, sx=s, grupo=grupo)
-        add('3049', x, base_y + sgn * 7 * s, paso, BLACK, T3, 14, rot=rot, sx=s * 0.45, grupo=grupo)
-
+    # Pinchos grandes encima de la torre (suben con el grupo 1): grande, más grande, pequeño.
     techo = top + 15
-    for x, s in zip(xs_col, (1.4, 1.8, 1.1)):
+    for x, s in zip(xs_col, (3.0, 3.8, 2.4)):
         pincho(x, techo, s, '1')
 
-    # Glow T3: orbes en las esquinas de la torre y líneas de brillo en la columna.
-    for x, y in ((bx0, base_top), (bx1, base_top), (xs_col[0], top), (xs_col[-1], top)):
-        add('1887', x, y, 18, YELLOW, T3, 0, sx=1.1, grupo='1')
-    for x, rot in ((xs_col[0] - 14, 0), (xs_col[-1] + 14, 0)):
+    # Glow T3: líneas de brillo por fuera de la columna (dentro de sus bloques).
+    for x in (xs_col[0] - 14, xs_col[-1] + 14):
         for y in ys:
             if y > base_top:
-                add('2974', x, y, 18, YELLOW, T3, 4, rot=rot, grupo='1')
+                add('2974', x, y, 18, YELLOW, T3, 4, grupo='1')
 
     # ---------------- decoración que rebota con la música (grupos 101-106 ya existentes)
     colgantes = []
@@ -351,8 +437,8 @@ def main(src, ref, dst):
             saltados.append((x, y, g))
             continue
         add('2974', x, y + 45, 16, DGOLD, T3, 0, sy=2.0, grupo=g)
-        add('1887', x, y, 16, YELLOW, T3, 1, sx=0.8, grupo=g)
-        pincho(x, y + 15, 0.9, g, rot=180)
+        add('505', x, y + 8, 16, YELLOW, T3, 1, sx=0.7, grupo=g)
+        pincho(x, y + 15, 1.8, g, rot=180)
 
     # ---------------- cabecera y colores
     hparts = header.split(',')
