@@ -16,9 +16,9 @@ Realms y servidores Bedrock (BDS).
    - Las 22 texturas de zombie → `resource_pack/textures/entity/zombie_apocalypse/`
    - `guia_supervivencia.png` → `resource_pack/textures/items/`
    - (cada carpeta tiene un `COLOCA_AQUI_*.md` con la lista exacta)
-2. Empaqueta:
-   - Renombra `behavior_pack/` → `Zombie_Apocalypse_BP` y comprímelo en `.zip` → renombra a `.mcpack` (o copia la carpeta a `development_behavior_packs`).
-   - Igual con `resource_pack/` → `Zombie_Apocalypse_RP`.
+2. Empaqueta con `python3 herramientas/empaquetar.py --subir-version` (desde la raíz del repo):
+   revisa el addon y genera `dist/Zombie_Apocalypse.mcaddon`, que se importa abriéndolo con Minecraft.
+   `--subir-version` hace falta para reemplazar una versión ya importada.
 3. Actívalos en el mundo (el BP ya declara dependencia del RP: al activar el BP se activa el RP solo).
 4. **Requisito**: activar **Beta APIs NO es necesario** (se usan solo módulos estables), pero sí "Ciclos de experimentos" desactivados está bien. Mundo en 1.21.90 o superior.
 5. En Realms: sube el mundo con los packs ya aplicados.

@@ -1,0 +1,16 @@
+{
+  "name": "zombie-apocalypse-herramientas",
+  "private": true,
+  "description": "Comprobaciones del addon antes de probarlo en el juego.",
+  "scripts": {
+    "tipos": "tsc -p tsconfig.json",
+    "validar": "python3 validar.py",
+    "empaquetar": "python3 empaquetar.py",
+    "revisar": "npm run validar && npm run tipos"
+  },
+  "devDependencies": {
+    "@minecraft/server": "2.0.0",
+    "@minecraft/server-ui": "2.0.0",
+    "typescript": "5.6.3"
+  }
+}

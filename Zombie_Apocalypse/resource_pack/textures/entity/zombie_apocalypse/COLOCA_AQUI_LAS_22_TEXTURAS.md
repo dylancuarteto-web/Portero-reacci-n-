@@ -3,8 +3,11 @@
 La carpeta `textures/` **no venía en el repositorio**, así que el addon ya
 referencia las rutas exactas pero los `.png` los tienes que copiar tú aquí.
 
-Los 22 archivos que los client entities esperan en esta carpeta (UV de zombie
-vanilla, 64×64):
+Los 22 archivos que los client entities esperan en esta carpeta. Deben medir
+**64×32** (o 128×64, el doble), con la misma distribución que la textura del
+zombie vanilla: es lo que espera `geometry.zombie`. Una skin de 64×64 se vería
+estirada; si tus texturas son de 64×64, hay que cambiar la geometría, no la
+imagen. `python3 herramientas/validar.py` avisa si alguna no encaja.
 
 ```
 zombie_normal.png          zombie_espadachin.png

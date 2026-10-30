@@ -1,0 +1,42 @@
+# Revisa el addon en cada push: JSON y referencias, scripts contra la API real,
+# vista previa de los modelos y, si todo está bien, el .mcaddon listo para importar.
+name: Addon Bedrock
+
+on:
+  push:
+    paths: ["Zombie_Apocalypse/**", "herramientas/**", ".github/workflows/addon.yml"]
+  pull_request:
+    paths: ["Zombie_Apocalypse/**", "herramientas/**", ".github/workflows/addon.yml"]
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: herramientas/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar herramientas
+        run: |
+          npm ci --prefix herramientas --no-audit --no-fund
+          pip install pillow
+      - name: Scripts contra @minecraft/server
+        run: npx --prefix herramientas tsc -p herramientas/tsconfig.json
+      - name: Vista previa de los modelos
+        if: always()
+        run: python3 herramientas/vista_previa.py
+      - name: Validar el addon
+        run: python3 herramientas/validar.py
+      - name: Empaquetar
+        run: python3 herramientas/empaquetar.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: addon
+          path: dist/
+          if-no-files-found: ignore

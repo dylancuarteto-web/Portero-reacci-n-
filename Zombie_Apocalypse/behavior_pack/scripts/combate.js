@@ -43,8 +43,7 @@ export function initCombate() {
             try {
               victima.applyKnockback({ x: (dx / len) * 4, z: (dz / len) * 4 }, 0.7);
             } catch {
-              // Firma antigua (1.x) por si el server resuelve otro módulo.
-              victima.applyKnockback(dx / len, dz / len, 4, 0.7);
+              // La víctima pudo morir o descargarse en este mismo tick.
             }
             break;
           }

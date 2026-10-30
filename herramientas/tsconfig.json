@@ -1,0 +1,26 @@
+{
+  // Revisa los scripts del addon con los tipos oficiales de @minecraft/server,
+  // con las mismas versiones que pide el manifest del behavior pack.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "types": [],
+    "strict": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types"],
+    // Los scripts están fuera de esta carpeta: se les indica dónde están los tipos.
+    "paths": {
+      "@minecraft/server": ["./node_modules/@minecraft/server"],
+      "@minecraft/server-ui": ["./node_modules/@minecraft/server-ui"],
+      "@minecraft/common": ["./node_modules/@minecraft/common"],
+      "@minecraft/vanilla-data": ["./node_modules/@minecraft/vanilla-data"]
+    }
+  },
+  "include": ["bedrock-globals.d.ts", "../Zombie_Apocalypse/behavior_pack/scripts/**/*.js"]
+}
