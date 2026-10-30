@@ -1,0 +1,13 @@
+pack.description=Parche con habilidades de portal, señal, escape y sigilo. Bedrock 26.60.
+item.estr.parche.name=Parche del Estratega
+item.estr.transmisor.name=Transmisor del Parche
+estr.ability.portal=Salto de portal
+estr.ability.signal=Señal del parche
+estr.ability.escape=Romper la Curva
+estr.ability.stealth=Sin rastro
+estr.msg.selected=Habilidad:
+estr.msg.cooldown=recargando %s s
+estr.msg.need_patch=Ponte el Parche del Estratega en la cabeza.
+estr.msg.no_target=No hay un lugar seguro donde abrir el portal.
+estr.msg.blocked=El destino está bloqueado.
+estr.msg.signal=Señal enviada: %s criaturas inmovilizadas.

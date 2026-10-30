@@ -1,0 +1,35 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "estr:parche_recipe"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      "S S",
+      "LRL",
+      " L "
+    ],
+    "key": {
+      "S": {
+        "item": "minecraft:string"
+      },
+      "L": {
+        "item": "minecraft:leather"
+      },
+      "R": {
+        "item": "minecraft:redstone"
+      }
+    },
+    "unlock": [
+      {
+        "item": "minecraft:leather"
+      }
+    ],
+    "result": {
+      "item": "estr:parche"
+    }
+  }
+}

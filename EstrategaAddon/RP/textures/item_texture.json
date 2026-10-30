@@ -1,0 +1,12 @@
+{
+  "resource_pack_name": "estr",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "estr_parche": {
+      "textures": "textures/items/estr_parche"
+    },
+    "estr_transmisor": {
+      "textures": "textures/items/estr_transmisor"
+    }
+  }
+}

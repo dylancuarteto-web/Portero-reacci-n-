@@ -1,0 +1,13 @@
+pack.description=Eyepatch with portal, signal, escape and stealth abilities. Bedrock 26.60.
+item.estr.parche.name=Strategist's Eyepatch
+item.estr.transmisor.name=Eyepatch Transmitter
+estr.ability.portal=Portal Jump
+estr.ability.signal=Eyepatch Signal
+estr.ability.escape=Break the Curve
+estr.ability.stealth=Off the Grid
+estr.msg.selected=Ability:
+estr.msg.cooldown=recharging %s s
+estr.msg.need_patch=Wear the Strategist's Eyepatch on your head.
+estr.msg.no_target=No safe place to open the portal.
+estr.msg.blocked=The destination is blocked.
+estr.msg.signal=Signal sent: %s creatures frozen.

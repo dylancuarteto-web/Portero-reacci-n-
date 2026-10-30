@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:attachable": {
+    "description": {
+      "identifier": "estr:parche",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/models/estr_parche"
+      },
+      "geometry": {
+        "default": "geometry.estr.parche"
+      },
+      "animations": {
+        "idle": "animation.estr.parche.idle"
+      },
+      "scripts": {
+        "animate": [
+          "idle"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.estr_parche"
+      ]
+    }
+  }
+}
