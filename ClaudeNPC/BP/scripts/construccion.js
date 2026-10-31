@@ -1,7 +1,7 @@
 import { BlockPermutation, ItemStack, system } from "@minecraft/server";
 import { ANIM, NIVEL_BLOQUE, PARTICLES } from "./config.js";
-import { sostener } from "./equipo.js";
-import { animate, blockAt, flat, particleAt, sound } from "./util.js";
+import { pico, sostener } from "./equipo.js";
+import { animate, blockAt, flat, now, particleAt, sound } from "./util.js";
 
 const BLOQUE = "minecraft:cobblestone";
 
@@ -40,24 +40,29 @@ export function romper(npc, state, block) {
   }
 }
 
-// Sube construyendo un pilar bajo sus pies.
-export function pilar(npc) {
+// Sube como un jugador: salta y coloca un bloque bajo sus pies en el punto alto.
+export function pilar(npc, state) {
+  if (!npc.isOnGround) return;
   sostener(npc, BLOQUE);
   const pie = { ...npc.location };
+  state.ocupadoHasta = now() + 10;
   try {
-    npc.applyImpulse({ x: 0, y: 0.48, z: 0 });
+    npc.applyImpulse({ x: 0, y: 0.42, z: 0 });
   } catch {
     return;
   }
-  animate(npc, ANIM.colocar);
   system.runTimeout(() => {
-    if (npc.isValid) colocar(npc.dimension, pie, BLOQUE);
-  }, 6);
+    if (!npc.isValid) return;
+    animate(npc, ANIM.colocar);
+    colocar(npc.dimension, pie, BLOQUE);
+  }, 5);
 }
 
 // Cava hacia abajo para alcanzar a un jugador que está más abajo.
 export function cavar(npc, state) {
-  animate(npc, ANIM.golpe);
+  sostener(npc, pico(state));
+  animate(npc, ANIM.minar);
+  state.ocupadoHasta = now() + 16;
   romper(npc, state, blockAt(npc.dimension, { x: npc.location.x, y: npc.location.y - 1, z: npc.location.z }));
 }
 

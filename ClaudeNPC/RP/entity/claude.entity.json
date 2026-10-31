@@ -21,6 +21,9 @@
         "escudo": "animation.claudenpc.escudo",
         "lanzar": "animation.claudenpc.lanzar",
         "colocar": "animation.claudenpc.colocar",
+        "arco": "animation.claudenpc.arco",
+        "planeo": "animation.claudenpc.planeo",
+        "cubeta": "animation.claudenpc.cubeta",
         "crafteo": "animation.claudenpc.crafteo",
         "minar": "animation.claudenpc.minar"
       },

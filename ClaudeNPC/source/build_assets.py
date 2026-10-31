@@ -143,6 +143,20 @@ def animations():
             "rightArm": {"rotation": k(*[(t * 0.3, [-50 if i % 2 == 0 else -85, 10 * (i % 2), 0]) for i, t in enumerate(range(11))])},
             "leftArm": {"rotation": k(*[(t * 0.3, [-40 if i % 2 == 0 else -28, -10 * (i % 2), 0]) for i, t in enumerate(range(11))])},
             "head": {"rotation": k((0, Z), (0.2, [25, 0, 0]), (2.8, [25, 0, 0]), (3.0, Z))}}},
+        "animation.claudenpc.arco": {"animation_length": 1.4, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.2, [-90, -10, 0]), (1.15, [-90, -10, 0]), (1.25, [-80, -5, 0]), (1.4, Z))},
+            "leftArm": {"rotation": k((0, Z), (0.2, [-90, 35, 0]), (1.15, [-90, 35, 0]), (1.4, Z))},
+            "body": {"rotation": k((0, Z), (0.2, [0, 15, 0]), (1.15, [0, 15, 0]), (1.4, Z))}}},
+        "animation.claudenpc.planeo": {"animation_length": 1.0, "bones": {
+            "body": {"rotation": [60, 0, 0], "position": [0, -4, -6]},
+            "rightArm": {"rotation": [20, 0, 30]},
+            "leftArm": {"rotation": [20, 0, -30]},
+            "rightLeg": {"rotation": [10, 0, 5]},
+            "leftLeg": {"rotation": [10, 0, -5]},
+            "head": {"rotation": [-45, 0, 0]}}},
+        "animation.claudenpc.cubeta": {"animation_length": 1.5, "bones": {
+            "head": {"rotation": k((0, Z), (0.15, [60, 0, 0]), (1.3, [60, 0, 0]), (1.5, Z))},
+            "rightArm": {"rotation": k((0, Z), (0.15, [-30, 0, 0]), (1.3, [-30, 0, 0]), (1.5, Z))}}},
         "animation.claudenpc.minar": {"animation_length": 0.8, "bones": {
             "rightArm": {"rotation": k((0, [-60, 0, 0]), (0.2, [-110, 0, 0]), (0.4, [-60, 0, 0]),
                                        (0.6, [-110, 0, 0]), (0.8, Z))}}},
@@ -192,6 +206,18 @@ def particles():
                   "minecraft:particle_initial_speed": 0,
                   "minecraft:particle_motion_dynamic": {"linear_acceleration": [0, 1.4, 0]}},
       {"0.0": "#FFFFE9A0", "1.0": "#00D97757"}, 0.1)
+    p("cohete", {"minecraft:emitter_rate_instant": {"num_particles": 16},
+                 "minecraft:emitter_shape_point": {},
+                 "minecraft:particle_lifetime_expression": {"max_lifetime": 0.6},
+                 "minecraft:particle_initial_speed": 1.2,
+                 "minecraft:particle_motion_dynamic": {"linear_acceleration": [0, -2, 0], "linear_drag_coefficient": 2}},
+      {"0.0": "#FFFFF0C8", "0.5": "#FFFF8C3C", "1.0": "#00808080"}, 0.12)
+    p("idea", {"minecraft:emitter_rate_instant": {"num_particles": 6},
+               "minecraft:emitter_shape_sphere": {"radius": 0.25, "direction": "outwards"},
+               "minecraft:particle_lifetime_expression": {"max_lifetime": 0.8},
+               "minecraft:particle_initial_speed": 0.6,
+               "minecraft:particle_motion_dynamic": {"linear_acceleration": [0, 0.8, 0]}},
+      {"0.0": "#FFB4F0FF", "1.0": "#00FFD25A"}, 0.14)
     p("construir", {"minecraft:emitter_rate_instant": {"num_particles": 12},
                     "minecraft:emitter_shape_box": {"half_dimensions": [0.5, 0.5, 0.5], "surface_only": True},
                     "minecraft:particle_lifetime_expression": {"max_lifetime": 0.5},
@@ -205,6 +231,8 @@ def client_entity():
         "respirar": "animation.claudenpc.respirar", "golpe": "animation.claudenpc.golpe",
         "martillazo": "animation.claudenpc.martillazo", "escudo": "animation.claudenpc.escudo",
         "lanzar": "animation.claudenpc.lanzar", "colocar": "animation.claudenpc.colocar",
+        "arco": "animation.claudenpc.arco", "planeo": "animation.claudenpc.planeo",
+        "cubeta": "animation.claudenpc.cubeta",
         "crafteo": "animation.claudenpc.crafteo", "minar": "animation.claudenpc.minar",
     }
     return {"format_version": "1.10.0", "minecraft:client_entity": {"description": {

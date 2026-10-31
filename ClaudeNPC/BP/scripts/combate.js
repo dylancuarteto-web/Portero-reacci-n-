@@ -1,145 +1,106 @@
-import { EntityDamageCause, system } from "@minecraft/server";
-import { ANIM, ARMAS, COMBATE, MODIFICA_MUNDO, PARTICLES } from "./config.js";
+import { ARMAS, COMBATE, MODIFICA_MUNDO } from "./config.js";
 import { cavar, pilar, puente, torreta, trampa } from "./construccion.js";
 import { sostener } from "./equipo.js";
-import { animate, burst, flat, now, rand, sound } from "./util.js";
+import { aprender, nivel } from "./iq.js";
+import { ritmo } from "./movimiento.js";
+import {
+  arco, elytraMartillo, golpeEscudo, hayBorde, martillazo, perla, saltarAlVacio,
+} from "./tacticas.js";
+import { now, rand } from "./util.js";
 
-const listo = (state, key) => now() >= (state.cd[key] ?? 0);
-const esperar = (state, key, ticks) => { state.cd[key] = now() + ticks; };
+// Nodos de decisión: cada situación tiene varias alternativas. El IQ desbloquea
+// nodos, acorta el tiempo de reacción y la memoria de lo que le funcionó (y de lo
+// que suele hacer el jugador) cambia la probabilidad de cada una.
+const NODOS = [
+  // El jugador sube para escapar: construir, disparar, volar o teletransportarse.
+  { id: "pilar", iq: 70, cd: 10, si: (c) => c.alto > 2 && c.dist < 5 && MODIFICA_MUNDO, peso: () => 3 },
+  { id: "arco", iq: 70, cd: 50, si: (c) => c.dist > 9 || c.alto > 3, peso: (c) => 2.5 + (c.dist > 15 ? 2 : 0) + c.mem.torres * 0.3 },
+  { id: "elytra", iq: 125, cd: 500, si: (c) => (c.alto > 4 || c.dist > 16) && c.cielo, peso: (c) => 1.5 + c.mem.torres * 0.5 },
+  { id: "perla", iq: 85, cd: 220, si: (c) => c.dist > 14 || c.alto > 5, peso: (c) => 1.2 + c.mem.arco * 0.4 },
+  // El jugador está abajo: saltar con water drop o cavar.
+  { id: "vacio", iq: 100, cd: 160, si: (c) => c.alto < -5 && c.dist < 10 && c.borde, peso: () => 3 },
+  { id: "cavar", iq: 70, cd: 16, si: (c) => c.alto < -3 && c.dist < 4 && MODIFICA_MUNDO, peso: () => 2 },
+  // Cerca: maza, escudo; con más IQ, trampas y torretas.
+  { id: "martillazo", iq: 75, cd: 140, si: (c) => c.dist < 5 && c.alto > -1 && c.alto < 2, peso: () => 1.5 },
+  { id: "escudo", iq: 70, cd: 70, si: (c) => c.dist < 3, peso: (c) => 1 + c.mem.golpes * 0.1 },
+  { id: "torreta", iq: 110, cd: 1100, si: (c) => c.dist > 7 && c.dist < 18 && MODIFICA_MUNDO, peso: () => 0.8 },
+  { id: "trampa", iq: 120, cd: 700, si: (c) => c.dist > 4 && c.dist < 12 && MODIFICA_MUNDO, peso: () => 0.8 },
+];
+
+const ACCIONES = {
+  pilar: (npc, s) => pilar(npc, s),
+  arco, perla, martillazo,
+  elytra: elytraMartillo,
+  vacio: saltarAlVacio,
+  cavar: (npc, s) => cavar(npc, s),
+  escudo: golpeEscudo,
+  torreta: (npc, s, j) => torreta(npc, j),
+  trampa: (npc, s, j) => trampa(npc, j),
+};
 
 function cambiarArma(npc, state) {
-  state.arma = (state.arma + 1) % ARMAS.length;
+  state.arma = (state.arma + 1) % 4; // espadas, hacha y tridente; el resto lo usan las tácticas
   sostener(npc, ARMAS[state.arma]);
-  // Escudo en la otra mano salvo cuando el escudo es el arma principal.
-  sostener(npc, ARMAS[state.arma] === "minecraft:shield" ? "minecraft:totem_of_undying" : "minecraft:shield",
-    "slot.weapon.offhand");
-  esperar(state, "arma", rand(...COMBATE.cambioArma));
+  sostener(npc, "minecraft:shield", "slot.weapon.offhand");
+  state.cd.arma = now() + rand(...COMBATE.cambioArma);
 }
 
-function golpear(npc, jugador, dano, empuje, alto) {
+// Para volar con elytra necesita espacio libre encima.
+function cieloLibre(npc) {
   try {
-    const dir = flat(npc.location, jugador.location);
-    jugador.applyDamage(dano, { cause: EntityDamageCause.entityAttack, damagingEntity: npc });
-    jugador.applyKnockback({ x: dir.x * empuje, z: dir.z * empuje }, alto);
+    return !npc.dimension.getBlockFromRay(npc.getHeadLocation(), { x: 0, y: 1, z: 0 }, { maxDistance: 8 });
   } catch {
-    // Jugador fuera de alcance o invulnerable.
+    return false;
   }
 }
 
-// Se mueve en distintas direcciones: de lado, hacia atrás, embestida y saltos.
-function moverse(npc, jugador, dist) {
-  const dir = flat(npc.location, jugador.location);
-  const lado = Math.random() < 0.5 ? 1 : -1;
-  const salto = Math.random() < 0.35 ? 0.42 : 0;
-  let impulso;
-  if (dist < 2.5) impulso = { x: -dir.x * 0.5, y: salto, z: -dir.z * 0.5 };
-  else if (dist < 6 && Math.random() < 0.4) {
-    impulso = { x: dir.x * 0.7, y: 0.3, z: dir.z * 0.7 };
-    animate(npc, ANIM.golpe);
-  } else impulso = { x: -dir.z * lado * 0.45, y: salto, z: dir.x * lado * 0.45 };
-  try {
-    npc.applyImpulse(impulso);
-  } catch {
-    // Entidad descargada.
-  }
+function contexto(npc, state, jugador) {
+  const dist = Math.hypot(jugador.location.x - npc.location.x, jugador.location.z - npc.location.z);
+  return {
+    dist,
+    alto: jugador.location.y - npc.location.y,
+    mem: state.memoria,
+    borde: hayBorde(npc, jugador),
+    cielo: cieloLibre(npc),
+  };
 }
 
-function martillazo(npc, jugador) {
-  const dir = flat(npc.location, jugador.location);
-  animate(npc, ANIM.martillazo);
-  try {
-    npc.applyImpulse({ x: dir.x * 0.5, y: 0.95, z: dir.z * 0.5 });
-  } catch {
-    return;
+function elegir(candidatos, state) {
+  const total = candidatos.reduce((t, c) => t + c.p, 0);
+  let r = Math.random() * total;
+  for (const c of candidatos) {
+    r -= c.p;
+    if (r <= 0) return c.nodo;
   }
-  system.runTimeout(() => {
-    if (!npc.isValid) return;
-    burst(npc, PARTICLES.onda, { x: 0, y: 0.1, z: 0 });
-    sound(npc, "mace.heavy_smash_ground", 1);
-    for (const p of npc.dimension.getPlayers({ location: npc.location, maxDistance: 3.5 })) golpear(npc, p, 9, 1.4, 0.6);
-  }, 16);
-}
-
-function golpeEscudo(npc, jugador) {
-  animate(npc, ANIM.escudo);
-  sound(npc, "item.shield.block", 0.8);
-  golpear(npc, jugador, 6, 1.8, 0.4);
-}
-
-// Lanza una perla de ender y aparece junto al jugador.
-function perla(npc, state, jugador) {
-  sostener(npc, "minecraft:ender_pearl");
-  animate(npc, ANIM.lanzar);
-  const dir = flat(npc.location, jugador.location);
-  try {
-    const head = npc.getHeadLocation();
-    const pearl = npc.dimension.spawnEntity("minecraft:ender_pearl", { x: head.x + dir.x, y: head.y, z: head.z + dir.z });
-    pearl.getComponent("minecraft:projectile")?.shoot({ x: dir.x * 1.4, y: 0.5, z: dir.z * 1.4 });
-    system.runTimeout(() => { if (pearl.isValid) pearl.remove(); }, 18);
-  } catch {
-    // Sin perla visual, el teletransporte sigue.
-  }
-  system.runTimeout(() => {
-    if (!npc.isValid || !jugador.isValid) return;
-    burst(npc, PARTICLES.teletransporte);
-    const d = flat(jugador.location, npc.location);
-    try {
-      npc.teleport({ x: jugador.location.x + d.x * 2.5, y: jugador.location.y, z: jugador.location.z + d.z * 2.5 },
-        { facingLocation: jugador.location, checkForBlocks: true });
-    } catch {
-      return;
-    }
-    burst(npc, PARTICLES.teletransporte);
-    sound(npc, "mob.endermen.portal");
-    sostener(npc, ARMAS[state.arma]);
-  }, 18);
+  return candidatos[0]?.nodo;
 }
 
 export function tickCombate(npc, state, jugador) {
-  const dist = Math.hypot(jugador.location.x - npc.location.x, jugador.location.z - npc.location.z);
-  const alto = jugador.location.y - npc.location.y;
-  const arma = ARMAS[state.arma];
+  const c = contexto(npc, state, jugador);
+  if (now() >= (state.cd.arma ?? 0) && now() >= state.ocupadoHasta) cambiarArma(npc, state);
+  if (now() < state.ocupadoHasta) return;
+  ritmo(npc, state, jugador, c.dist);
 
-  if (listo(state, "arma")) cambiarArma(npc, state);
+  // Reacción: con IQ bajo piensa cada 1,5 s; con IQ máximo, cada 0,5 s.
+  const n = nivel(state);
+  if (now() < (state.cd.pensar ?? 0)) return;
+  state.cd.pensar = now() + Math.round(30 - n * 20);
 
-  if (dist > COMBATE.perlaDistancia && listo(state, "perla")) {
-    esperar(state, "perla", COMBATE.perlaCooldown);
-    perla(npc, state, jugador);
+  const candidatos = [];
+  for (const nodo of NODOS) {
+    if (state.iq < nodo.iq || now() < (state.cd[nodo.id] ?? 0) || !nodo.si(c)) continue;
+    const exito = state.memoria.exitos[nodo.id] ?? 0;
+    candidatos.push({ nodo, p: nodo.peso(c) * (1 + exito * 0.2) });
+  }
+  // Cerca, a menudo lo mejor es seguir peleando cuerpo a cuerpo.
+  if (c.dist < 4) candidatos.push({ nodo: null, p: 4 - n * 2 });
+  const nodo = elegir(candidatos, state);
+  if (!nodo) {
+    if (MODIFICA_MUNDO && c.dist > 2) puente(npc, jugador);
     return;
   }
-  if (arma === "minecraft:mace" && dist < 7 && listo(state, "martillo")) {
-    esperar(state, "martillo", COMBATE.martilloCooldown);
-    martillazo(npc, jugador);
-    return;
-  }
-  if (arma === "minecraft:shield" && dist < 3.2 && listo(state, "escudo")) {
-    esperar(state, "escudo", COMBATE.escudoCooldown);
-    golpeEscudo(npc, jugador);
-    return;
-  }
-  if (MODIFICA_MUNDO) {
-    if (alto > 2 && dist < 5 && listo(state, "obra")) {
-      esperar(state, "obra", 12);
-      pilar(npc);
-      return;
-    }
-    if (alto < -3 && dist < 4 && listo(state, "obra")) {
-      esperar(state, "obra", 14);
-      cavar(npc, state);
-      return;
-    }
-    if (dist > 6 && dist < 16 && listo(state, "torreta") && torreta(npc, jugador)) {
-      esperar(state, "torreta", COMBATE.torretaCooldown);
-      return;
-    }
-    if (dist > 4 && dist < 12 && listo(state, "trampa") && trampa(npc, jugador)) {
-      esperar(state, "trampa", COMBATE.trampaCooldown);
-      return;
-    }
-    if (listo(state, "puente") && puente(npc, jugador)) esperar(state, "puente", 10);
-  }
-  if (listo(state, "mover")) {
-    esperar(state, "mover", COMBATE.movimiento);
-    moverse(npc, jugador, dist);
-  }
+  state.cd[nodo.id] = now() + Math.round(nodo.cd * (1 - n * 0.4));
+  state.ultima = nodo.id;
+  ACCIONES[nodo.id](npc, state, jugador);
+  aprender(npc, state, 0.05);
 }

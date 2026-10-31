@@ -8,27 +8,33 @@ NPC con forma de Claude: personaje naranja, solo ojos y un emblema de estrella d
 2. Genera a Claude con el huevo "Generar a Claude" (pestaña de huevos) o `/summon claudenpc:claude`.
 3. Para que te ataque, el mundo debe tener PvP activado y tú estar en Supervivencia o Aventura.
 
-## Qué hace
+## IQ
 
-**Con un jugador a menos de 20 bloques (combate):**
-- Cambia de arma cada 2,5-4 s: espada de diamante, maza, hacha, tridente, espada de netherita y escudo; lleva escudo (o tótem) en la otra mano.
-- Se mueve de lado, retrocede, embiste y salta.
-- Maza: salta y cae con una onda que daña y empuja.
-- Escudo: golpe de escudo que daña y empuja fuerte.
-- Perla de ender: si estás lejos, lanza una perla y aparece a tu lado.
-- Construye: pilar para subir hasta ti, cava si estás abajo, puentes sobre huecos.
-- Trampa: TNT bajo una placa de presión en tu camino.
-- Torreta de redstone: dispensador con flechas (o TNT) disparado por pulsos de redstone; se desmonta sola.
+Encima del nombre lleva su **IQ** (empieza en 70, máximo 300). Sube cuando te ve construir, romper o subir en torre, cuando recibe golpes y flechas, cuando una táctica le funciona y con el tiempo de pelea. Se guarda en el NPC y en el mundo: un Claude nuevo hereda gran parte de lo aprendido. Con más IQ:
+- piensa más rápido (de cada 1,5 s a cada 0,5 s);
+- desbloquea tácticas: perla (85), water drop saltando al vacío (100), torreta (110), trampa (120), elytra + maza (125);
+- apunta mejor con el arco (predice tu movimiento y la caída de la flecha);
+- bloquea más golpes con el escudo y se mueve de lado más a menudo;
+- recuerda tus costumbres (si sueles subir en torre o usar arco) y lo que le funcionó, y elige en consecuencia.
 
-**Sin jugadores cerca (trabajo):**
-- Mina bloques que tiene delante solo si su pico es suficiente (madera → piedra → hierro → diamante → netherita).
-- Simula craftear: pone una mesa de crafteo, la mira, trabaja y saca un objeto. Con lo minado mejora su pico y su armadura (cuero → netherita); si no, saca algo cualquiera (antorcha, pan, arco…).
+## Combate (jugador a menos de 32 bloques)
+
+- **Se mueve como un jugador:** camina cerca, corre si tú corres o te alejas, salta mientras corre, se mueve de lado y retrocede tras golpear.
+- **Cambia de arma constantemente** entre espadas, hacha y tridente; escudo en la otra mano.
+- **Nodos de decisión con alternativas:**
+  - Si subes en torre para escapar: construye un pilar, te dispara con el arco, despega con elytra o lanza una perla.
+  - Si estás lejos: arco (con animación de tensar), perla, torreta.
+  - Si estás abajo: salta al vacío con water drop o cava.
+  - Cerca: salto con maza, golpe de escudo, trampas.
+- **Elytra + maza:** despega con cohete, planea hacia ti y cae en picada con la maza; el daño depende de la altura.
+- **Water drop:** si cae desde altura, coloca agua justo antes de tocar el suelo y luego la recoge.
+
+## Trabajo (sin jugadores cerca)
+
+- **Mina en escalera hacia abajo** (20 bloques) y después en túnel, un bloque por golpe, a ritmo humano, poniendo antorchas. Solo rompe lo que su pico permite y evita la lava.
+- **Craftea despacio:** pone la mesa, la mira trabajando unos 9 s, saca el objeto y recoge la mesa. Mejora pico (12 bloques minados) y armadura (18).
 
 Para que no toque bloques de tu mundo: `BP/scripts/config.js` → `MODIFICA_MUNDO = false`.
-
-## Pendiente (siguiente versión)
-
-Elytra, bote y arco/ballesta reales.
 
 ## Estado
 

@@ -44,6 +44,14 @@ export function run(entity, command) {
   }
 }
 
+export function impulse(entity, v) {
+  try {
+    entity.applyImpulse(v);
+  } catch {
+    // Entidad descargada.
+  }
+}
+
 export function flat(from, to) {
   const dx = to.x - from.x;
   const dz = to.z - from.z;
@@ -58,5 +66,24 @@ export function blockAt(dimension, location) {
     return dimension.getBlock({ x: Math.floor(location.x), y: Math.floor(location.y), z: Math.floor(location.z) });
   } catch {
     return undefined;
+  }
+}
+
+// Altura hasta el suelo debajo de la entidad (Infinity si no hay suelo cargado).
+export function alturaSuelo(entity, max = 40) {
+  try {
+    const hit = entity.dimension.getBlockFromRay(entity.location, { x: 0, y: -1, z: 0 },
+      { maxDistance: max, includeLiquidBlocks: true });
+    return hit ? entity.location.y - (hit.block.location.y + 1) : Infinity;
+  } catch {
+    return Infinity;
+  }
+}
+
+export function mirarA(entity, location) {
+  try {
+    entity.teleport(entity.location, { facingLocation: location, keepVelocity: true });
+  } catch {
+    // Sin giro.
   }
 }
