@@ -1,6 +1,7 @@
 import { system } from "@minecraft/server";
 import { ANIM, CONSTRUCCION } from "../config.js";
 import { sostener } from "../equipo.js";
+import { protegido } from "../estructuras.js";
 import { nivel } from "../iq.js";
 import { caminarA, detener, velocidad } from "../movimiento.js";
 import { animate, blockAt, centro, colocar, flat, impulse, mirarA, now, piso, rand, reemplazable, sound } from "../util.js";
@@ -30,6 +31,7 @@ export function tickPuente(npc, state) {
   const eje = Math.abs(d.x) >= Math.abs(d.z) ? { x: Math.sign(d.x), z: 0 } : { x: 0, z: Math.sign(d.z) };
   const sig = { x: p.x + eje.x, y: p.y, z: p.z + eje.z };
   const bajo = { x: sig.x, y: p.y - 1, z: sig.z };
+  if (protegido(sig)) return true; // no construye dentro de casas ni del aula
   if (!o.equipado) {
     sostener(npc, o.bloque);
     o.equipado = true;

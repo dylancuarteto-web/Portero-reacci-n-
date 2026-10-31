@@ -2,6 +2,7 @@ import { system } from "@minecraft/server";
 import { ANIM, CONSTRUCCION } from "../config.js";
 import { romper } from "../construccion.js";
 import { sostener } from "../equipo.js";
+import { protegido } from "../estructuras.js";
 import { nivel } from "../iq.js";
 import { detener, velocidad } from "../movimiento.js";
 import { animate, blockAt, colocar, impulse, now, piso, rand, sound } from "../util.js";
@@ -10,10 +11,11 @@ import { animate, blockAt, colocar, impulse, now, piso, rand, sound } from "../u
 // coloca el bloque bajo sus pies en el punto más alto del salto. Repite hasta llegar
 // a la altura que quiere. Con IQ bajo a veces falla un bloque y lo vuelve a intentar.
 
-export function iniciarTorre(npc, state, hastaY, bloque = CONSTRUCCION.bloque) {
+// "libre": el andamio de su propia obra (casa o aula) sí puede levantarse dentro de ella.
+export function iniciarTorre(npc, state, hastaY, bloque = CONSTRUCCION.bloque, libre = false) {
   detener(npc);
   velocidad(npc, 0);
-  state.obra = { tipo: "torre", hasta: hastaY, bloque, puestos: 0, equipado: false };
+  state.obra = { tipo: "torre", hasta: hastaY, bloque, puestos: 0, equipado: false, libre };
 }
 
 export function tickTorre(npc, state) {
@@ -23,6 +25,7 @@ export function tickTorre(npc, state) {
   if (!npc.isOnGround) return false;
 
   const p = piso(npc.location);
+  if (!o.libre && protegido(p)) return true; // no construye dentro de casas ni del aula
   const techo = blockAt(npc.dimension, { x: p.x, y: p.y + 2, z: p.z });
   if (techo && !techo.isAir && !techo.isLiquid) {
     // Algo encima de la cabeza: lo rompe primero, como haría un jugador.

@@ -27,26 +27,46 @@ export function ritmo(npc, state, jugador, dist) {
   if (!npc.isOnGround) return;
   const d = flat(npc.location, jugador.location);
 
-  if (corre && dist > 7 && now() >= (state.cd.salto ?? 0) && Math.random() < 0.7) {
-    state.cd.salto = now() + rand(11, 15);
-    impulse(npc, { x: d.x * 0.1, y: 0.42, z: d.z * 0.1 });
+  if (corre && dist > 7 && now() >= (state.cd.salto ?? 0) && Math.random() < 0.6) {
+    state.cd.salto = now() + rand(12, 18);
+    impulse(npc, { x: d.x * 0.08, y: 0.42, z: d.z * 0.08 });
     return;
   }
+  // A media distancia, de vez en cuando rodea al jugador con un paso lateral suave
+  // (nunca justo después de golpear ni con tirones).
   const n = nivel(state);
-  if (dist < 4 && now() >= (state.cd.lateral ?? 0) && Math.random() < 0.25 + n * 0.5) {
-    state.cd.lateral = now() + rand(12, 22);
-    if (Math.random() < 0.35) state.lado = -(state.lado ?? 1);
-    const s = (state.lado ?? 1) * 0.11;
-    impulse(npc, { x: -d.z * s, y: 0, z: d.x * s });
+  if (dist > 2.6 && dist < 6 && now() >= (state.cd.lateral ?? 0) && now() - (state.ultimoGolpe ?? -100) > 14) {
+    state.cd.lateral = now() + rand(40, 70);
+    if (Math.random() < 0.15 + n * 0.3) {
+      if (Math.random() < 0.4) state.lado = -(state.lado ?? 1);
+      esquivar(npc, jugador, state.lado ?? 1);
+    }
   }
 }
 
-// Tras acertar un golpe, retrocede un poco para no recibir el contraataque.
-export function wTap(npc, jugador, state) {
-  if (nivel(state) < 0.1 || !npc.isOnGround) return;
-  const d = flat(npc.location, jugador.location);
-  impulse(npc, { x: -d.x * 0.16, y: 0, z: -d.z * 0.16 });
+// Paso lateral suave alrededor del jugador: acelera y frena poco a poco.
+const esquivas = new Map();
+
+export function esquivar(npc, objetivo, lado, ticks = 20, fuerza = 0.04) {
+  esquivas.set(npc.id, { npc, objetivo, lado, desde: now(), ticks, fuerza });
 }
+
+system.runInterval(() => {
+  for (const [id, e] of esquivas) {
+    const t = now() - e.desde;
+    if (!e.npc.isValid || !e.objetivo.isValid || t > e.ticks) {
+      esquivas.delete(id);
+      continue;
+    }
+    try {
+      const d = flat(e.npc.location, e.objetivo.location);
+      const k = Math.sin((t / e.ticks) * Math.PI) * e.fuerza * e.lado;
+      impulse(e.npc, { x: -d.z * k, y: 0, z: d.x * k });
+    } catch {
+      esquivas.delete(id);
+    }
+  }
+}, 1);
 
 // --- Motor de pasos: camina (o nada) hasta un punto con control por tick ---
 

@@ -8,14 +8,14 @@ import { registrarComandos } from "./comandos.js";
 import { bloqueaProyectil, efectoBloqueo } from "./escudo.js";
 import { estados, obtenerEstado } from "./estado.js";
 import { revisarFusion } from "./fusion.js";
-import "./golden.js";
+import "./golden/index.js";
 import { aprender, ponerHaciendo } from "./iq.js";
 import "./maestro.js";
-import { caminarA, caminando, velocidad, wTap } from "./movimiento.js";
+import { caminarA, caminando, destinoActual, velocidad } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
 import { hostil } from "./postura.js";
-import { vigilarCaida } from "./tacticas.js";
+import { perlaHasta, vigilarCaida } from "./tacticas.js";
 import { cada, now } from "./util.js";
 
 // Cerebro de cada Claude. Prioridades en cada turno:
@@ -67,8 +67,19 @@ function cerebro(npc) {
   }
   if (s.reunion) {
     hostil(npc, s, false);
-    ponerHaciendo(npc, s, "§d¡buscando a los genios!");
-    if (!caminando(npc)) caminarA(npc, s.reunion, 0.28);
+    pausarRutina(npc, s);
+    ponerHaciendo(npc, s, "§d¡buscando al jugador!");
+    const lejos = Math.hypot(npc.location.x - s.reunion.x, npc.location.z - s.reunion.z);
+    if (lejos > 6 && s.reunionDesde && now() - s.reunionDesde > 600) {
+      s.reunionDesde = now(); // tarda demasiado: llega con una perla
+      perlaHasta(npc, s.reunion);
+      return;
+    }
+    const actual = destinoActual(npc);
+    if (lejos > 1.5 && (!caminando(npc) || !actual || Math.hypot(actual.x - s.reunion.x, actual.z - s.reunion.z) > 2)) {
+      velocidad(npc, 0);
+      caminarA(npc, s.reunion, 0.28);
+    }
     return;
   }
   hostil(npc, s, pelea);
@@ -140,10 +151,7 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
     if (!s) return;
     if (s.ultima) s.memoria.exitos[s.ultima] = (s.memoria.exitos[s.ultima] ?? 0) + 1;
     aprender(atacante, s, 0.5);
-    if (damageSource.cause === EntityDamageCause.entityAttack) {
-      animarGolpe(atacante); // por si el juego no avisó del golpe
-      wTap(atacante, hurtEntity, s);
-    }
+    if (damageSource.cause === EntityDamageCause.entityAttack) animarGolpe(atacante); // por si el juego no avisó del golpe
   }
 });
 

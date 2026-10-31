@@ -44,6 +44,20 @@
         }
       ]
     },
+    "controller.render.claudenpc_aura": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "brillo*": "Material.brillo"
+        }
+      ]
+    },
     "controller.render.claudenpc_maestro": {
       "geometry": "Geometry.default",
       "textures": [

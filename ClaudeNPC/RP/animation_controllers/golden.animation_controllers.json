@@ -1,0 +1,22 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.claudenpc.golden.ojo": {
+      "initial_state": "brillar",
+      "states": {
+        "brillar": {
+          "particle_effects": [
+            {
+              "effect": "ojo",
+              "locator": "ojo_derecho"
+            },
+            {
+              "effect": "halo_ojo",
+              "locator": "ojo_derecho"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { world } from "@minecraft/server";
-import { ANIM, MAESTRO_CFG, NPC, PARTICLES, VELOCIDAD } from "./config.js";
+import { ANIM, IQ, MAESTRO_CFG, NPC, PARTICLES, VELOCIDAD } from "./config.js";
 import { pausarRutina } from "./actividades/index.js";
 import { bajar } from "./bote.js";
 import { pico, sostener } from "./equipo.js";
@@ -9,6 +9,7 @@ import { aprender, nivel, ponerHaciendo } from "./iq.js";
 import { caminarA, caminando, detener, seAtasco, velocidad } from "./movimiento.js";
 import { terminarObra } from "./obras/index.js";
 import { hostil, sentarse } from "./postura.js";
+import { perlaHasta } from "./tacticas.js";
 import { animate, burst, distancia, distancia2D, FRENTES, now, rand, sound } from "./util.js";
 
 // Lado de los alumnos. Cuando Claude Maestro toca la campana, los Claudes cercanos
@@ -90,19 +91,6 @@ function unirse(npc, s, sesion, idx) {
   burst(npc, PARTICLES.idea, { x: 0, y: 2.3, z: 0 });
 }
 
-function perlaA(npc, destino) {
-  sostener(npc, "minecraft:ender_pearl");
-  animate(npc, ANIM.lanzar);
-  burst(npc, PARTICLES.teletransporte);
-  try {
-    npc.teleport(centro(destino), { checkForBlocks: false });
-  } catch {
-    return;
-  }
-  burst(npc, PARTICLES.teletransporte);
-  sound(npc, "mob.endermen.portal", 1.2, 0.7);
-}
-
 function sentar(npc, s, c) {
   const aula = c.sesion.aula;
   detener(npc);
@@ -126,7 +114,8 @@ function sentar(npc, s, c) {
 export function tickAlumno(npc, s) {
   const c = s.clase;
   const ses = c.sesion;
-  if (!ses.activa || !ses.maestro?.isValid) return salirDeClase(npc, s, false);
+  if (c.fase === "saliendo") return tickSalida(npc, s, c);
+  if (!ses.activa || !ses.maestro?.isValid) return empezarSalida(npc, s, false);
   hostil(npc, s, false);
   if (c.fase === "yendo") {
     ponerHaciendo(npc, s, "yendo a clase");
@@ -134,7 +123,7 @@ export function tickAlumno(npc, s) {
     if (!c.perla && now() - c.desde > 500) {
       // Llega tarde: con una perla de ender aparece en la puerta del aula.
       c.perla = true;
-      perlaA(npc, ses.aula.puntos.puertaDentro);
+      perlaHasta(npc, centro(ses.aula.puntos.puertaDentro));
       c.ruta = c.asiento.ruta.slice(2);
       c.paso = 0;
       return;
@@ -147,7 +136,7 @@ export function tickAlumno(npc, s) {
       if (d > 4 && !c.perla && !ses.aula.aire) {
         // Se perdió por el camino: perla a la puerta y sigue por el pasillo.
         c.perla = true;
-        perlaA(npc, ses.aula.puntos.puertaDentro);
+        perlaHasta(npc, centro(ses.aula.puntos.puertaDentro));
         c.ruta = c.asiento.ruta.slice(2);
         c.paso = 0;
         return;
@@ -177,6 +166,55 @@ export function tickAlumno(npc, s) {
       // Sin teletransporte.
     }
   }
+}
+
+// Al terminar la clase: se levanta y sale por el pasillo y la puerta (que el maestro
+// deja abierta) hasta quedar fuera del aula; recién ahí vuelve a lo suyo.
+function rutaSalida(c) {
+  const aula = c.sesion.aula;
+  const P = aula.puntos;
+  const fuera = P.puertaFuera;
+  const dentro = P.puertaDentro;
+  const fx = Math.sign(fuera.x - dentro.x);
+  const fz = Math.sign(fuera.z - dentro.z);
+  const lado = rand(-3, 3);
+  const lejos = rand(3, 5);
+  const afuera = { x: fuera.x + 0.5 + fx * lejos - fz * lado, y: fuera.y, z: fuera.z + 0.5 + fz * lejos + fx * lado };
+  const interior = c.asiento.silla ? c.asiento.ruta.slice(2).reverse() : [];
+  return [...interior.map(centro), centro(dentro), centro(fuera), afuera];
+}
+
+function empezarSalida(npc, s, conBono) {
+  const c = s.clase;
+  if (!c || c.fase === "saliendo") return;
+  if (s.sentado) sentarse(npc, s, false);
+  if (c.fase !== "sentado" || c.sesion.aula.aire) return salirDeClase(npc, s, conBono);
+  c.fase = "saliendo";
+  c.conBono = conBono;
+  c.salida = rutaSalida(c);
+  c.paso = 0;
+  c.desdeSalida = now();
+  c.esperaSalida = now() + rand(4, 40); // no salen todos a la vez
+  velocidad(npc, 0);
+  ponerHaciendo(npc, s, "saliendo de clase");
+  if (conBono) burst(npc, PARTICLES.idea, { x: 0, y: 2.2, z: 0 });
+}
+
+function tickSalida(npc, s, c) {
+  hostil(npc, s, false);
+  if (now() - c.desdeSalida > 500) return salirDeClase(npc, s, c.conBono); // nunca se queda atrapado
+  if (now() < c.esperaSalida || caminando(npc)) return;
+  const wp = c.salida[c.paso];
+  if (!wp) return salirDeClase(npc, s, c.conBono);
+  if (distancia2D(npc.location, wp) < 0.9 || seAtasco(npc)) {
+    c.paso++;
+    return;
+  }
+  caminarA(npc, wp, (s.pers?.paso ?? 0.22) * 1.05);
+}
+
+export function saliendo(sesion) {
+  return alumnos(sesion).length > 0;
 }
 
 export function salirDeClase(npc, s, conBono) {
@@ -216,11 +254,10 @@ export function sentados(sesion) {
   return alumnos(sesion).filter(({ s }) => s.clase.fase === "sentado");
 }
 
-// IQ por atender (no pueden pasar del IQ del maestro solo con clases).
+// IQ por atender: suben hasta el máximo (300), incluso por encima del IQ del maestro.
 export function darPuntos(sesion) {
   for (const { npc, s } of sentados(sesion)) {
-    if (s.iq >= MAESTRO_CFG.iq) continue;
-    aprender(npc, s, Math.min(MAESTRO_CFG.puntos, MAESTRO_CFG.iq - s.iq));
+    if (s.iq < IQ.maximo) aprender(npc, s, MAESTRO_CFG.puntos);
   }
 }
 
@@ -250,17 +287,17 @@ export function aplausos(sesion) {
   for (const { npc } of sentados(sesion)) animate(npc, ANIM.aplaudir);
 }
 
-// Fin de la clase: se levantan, aprenden la táctica de la lección y salen con el
-// bono de aprendizaje (aprenden el doble durante un rato).
+// Fin de la clase: aprenden la táctica de la lección, se levantan y salen del aula
+// con el bono de aprendizaje (aprenden el doble durante un rato).
 export function terminarClase(sesion, completa) {
-  sesion.activa = false;
+  sesion.terminada = true;
   const nodo = sesion.leccion?.nodo;
   for (const { npc, s } of alumnos(sesion)) {
+    if (s.clase.fase === "saliendo") continue;
     if (completa && nodo) {
       if (nodo === "escudo") s.memoria.arco += 3;
       else s.memoria.exitos[nodo] = (s.memoria.exitos[nodo] ?? 0) + 3;
     }
-    salirDeClase(npc, s, completa);
+    empezarSalida(npc, s, completa);
   }
-  sesion.alumnos.clear();
 }

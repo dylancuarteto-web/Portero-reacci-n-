@@ -128,9 +128,16 @@ export function alturaSuelo(entity, max = 40) {
   }
 }
 
+// Gira la cabeza y el cuerpo hacia un punto sin teletransportar (así no da tirones).
 export function mirarA(entity, location) {
   try {
-    entity.teleport(entity.location, { facingLocation: location, keepVelocity: true });
+    const o = entity.getHeadLocation();
+    const dx = location.x - o.x;
+    const dy = location.y - o.y;
+    const dz = location.z - o.z;
+    const yaw = (Math.atan2(-dx, dz) * 180) / Math.PI;
+    const pitch = (-Math.atan2(dy, Math.hypot(dx, dz)) * 180) / Math.PI;
+    entity.setRotation({ x: pitch, y: yaw });
   } catch {
     // Sin giro.
   }

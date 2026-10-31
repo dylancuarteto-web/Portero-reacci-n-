@@ -1,8 +1,8 @@
 import { BlockPermutation, Player, system, world } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
-import { ANIM, DIMENSIONES, MAESTRO, MAESTRO_CFG, MODIFICA_MUNDO, NPC, PARTICLES } from "./config.js";
+import { ANIM, DIMENSIONES, IQ, MAESTRO, MAESTRO_CFG, MODIFICA_MUNDO, NPC, PARTICLES } from "./config.js";
 import {
-  acierta, alumnos, aplausos, convocar, darPuntos, gestos, levantarMano, sentados, terminarClase,
+  acierta, alumnos, aplausos, convocar, darPuntos, gestos, levantarMano, saliendo, sentados, terminarClase,
 } from "./clase.js";
 import { estados } from "./estado.js";
 import { aprender } from "./iq.js";
@@ -298,7 +298,7 @@ function recreo(e, m) {
   if (!aula.aire && !dentro(aula, e.location) && !m.tarea) {
     m.tarea = { lugar: aula.puntos.puertaFuera, hacer: () => {
       abrirPuerta(m, true);
-      m.tarea = { lugar: aula.puntos.puertaDentro, hacer: () => system.runTimeout(() => !m.sesion && abrirPuerta(m, false), 30) };
+      m.tarea = { lugar: aula.puntos.puertaDentro, hacer: () => system.runTimeout(() => !m.sesion && !m.salida && abrirPuerta(m, false), 30) };
     } };
   }
   if (!m.tarea) {
@@ -507,7 +507,7 @@ function clase(e, m) {
       animate(e, ANIM.maestroAplaudir);
       aplausos(ses);
       burst(a.npc, PARTICLES.confeti, { x: 0, y: 2, z: 0 });
-      if (a.s.iq < MAESTRO_CFG.iq) aprender(a.npc, a.s, Math.min(2, MAESTRO_CFG.iq - a.s.iq));
+      if (a.s.iq < IQ.maximo) aprender(a.npc, a.s, 2);
     } else {
       avisar(e.dimension, e.location, `§6Claude Maestro:§r Casi... ${L.respuesta}`, 28);
       animate(e, ANIM.maestroPensar);
@@ -527,7 +527,11 @@ function clase(e, m) {
 }
 
 function terminar(e, m, completa) {
-  if (m.sesion) terminarClase(m.sesion, completa);
+  if (m.sesion) {
+    terminarClase(m.sesion, completa);
+    abrirPuerta(m, true);
+    m.salida = { sesion: m.sesion, hasta: now() + 700 }; // la puerta queda abierta hasta que salgan
+  }
   m.sesion = undefined;
   m.clase = undefined;
   m.fase = "recreo";
@@ -540,7 +544,16 @@ function terminar(e, m, completa) {
   }
   guardar(e, m);
   letrero(m, 1, `§lPróxima:§r\n${leccionActual(m).tema}`);
-  system.runTimeout(() => !m.sesion && abrirPuerta(m, false), 240);
+}
+
+// Cierra la puerta cuando ya salieron todos los alumnos.
+function vigilarSalida(m) {
+  const sal = m.salida;
+  if (!sal) return;
+  if (saliendo(sal.sesion) && now() < sal.hasta) return;
+  sal.sesion.activa = false;
+  m.salida = undefined;
+  if (!m.sesion) abrirPuerta(m, false);
 }
 
 function cancelar(e, m, motivo) {
@@ -561,6 +574,7 @@ function tickMaestro(e) {
       // Sin vida.
     }
   }
+  vigilarSalida(m);
   if (tickObra(e, m)) return;
   if (m.fase === "clase" && m.sesion) return clase(e, m); // la clase avanza aunque esté gesticulando
   if (now() < m.ocupadoHasta) return;

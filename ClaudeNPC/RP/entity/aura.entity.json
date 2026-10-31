@@ -4,7 +4,8 @@
     "description": {
       "identifier": "claudenpc:aura",
       "materials": {
-        "default": "entity_alphablend"
+        "default": "entity_alphablend",
+        "brillo": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/claudenpc/aura"
@@ -21,7 +22,7 @@
         ]
       },
       "render_controllers": [
-        "controller.render.default"
+        "controller.render.claudenpc_aura"
       ]
     }
   }

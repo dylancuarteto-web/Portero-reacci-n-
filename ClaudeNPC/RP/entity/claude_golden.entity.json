@@ -24,7 +24,17 @@
         "poder": "animation.claudenpc.golden.poder",
         "chasquido": "animation.claudenpc.golden.chasquido",
         "dirigir": "animation.claudenpc.golden.dirigir",
-        "pensar": "animation.claudenpc.golden.pensar"
+        "pensar": "animation.claudenpc.golden.pensar",
+        "ojo": "animation.claudenpc.golden.ojo",
+        "golpe": "animation.claudenpc.golden.golpe",
+        "aturdido": "animation.claudenpc.golden.aturdido",
+        "risa": "animation.claudenpc.golden.risa",
+        "picada": "animation.claudenpc.golden.picada",
+        "ctrl_ojo": "controller.animation.claudenpc.golden.ojo"
+      },
+      "particle_effects": {
+        "ojo": "claudenpc:ojo_golden",
+        "halo_ojo": "claudenpc:ojo_halo"
       },
       "scripts": {
         "animate": [
@@ -33,7 +43,9 @@
           "parpadeo",
           "flotar",
           "halo",
-          "aura"
+          "aura",
+          "ojo",
+          "ctrl_ojo"
         ]
       },
       "render_controllers": [

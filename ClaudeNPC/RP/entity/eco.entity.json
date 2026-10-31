@@ -18,7 +18,8 @@
         "caminar": "animation.claudenpc.caminar",
         "respirar": "animation.claudenpc.respirar",
         "parpadeo": "animation.claudenpc.parpadeo",
-        "celebrar": "animation.claudenpc.celebrar"
+        "celebrar": "animation.claudenpc.celebrar",
+        "golpe": "animation.claudenpc.golpe"
       },
       "scripts": {
         "animate": [

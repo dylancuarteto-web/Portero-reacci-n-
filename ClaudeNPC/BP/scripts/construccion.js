@@ -1,6 +1,7 @@
 import { BlockPermutation, ItemStack, system } from "@minecraft/server";
 import { ANIM, NIVEL_BLOQUE, PARTICLES } from "./config.js";
 import { pico, sostener } from "./equipo.js";
+import { protegido } from "./estructuras.js";
 import { animate, blockAt, flat, now, particleAt, sound } from "./util.js";
 
 function solido(block) {
@@ -9,7 +10,7 @@ function solido(block) {
 
 // Rompe un bloque si su pico tiene nivel suficiente y suelta el objeto.
 export function romper(npc, state, block) {
-  if (!block || block.isAir || block.isLiquid) return false;
+  if (!block || block.isAir || block.isLiquid || protegido(block.location)) return false; // nunca casas ni el aula
   const nivel = NIVEL_BLOQUE[block.typeId];
   if (nivel === undefined || nivel > state.nivelPico) return false;
   try {
@@ -40,7 +41,7 @@ export function trampa(npc, jugador) {
   const p = { x: jugador.location.x + v.x * 12, y: jugador.location.y, z: jugador.location.z + v.z * 12 };
   const placa = blockAt(npc.dimension, p);
   const suelo = blockAt(npc.dimension, { x: p.x, y: p.y - 1, z: p.z });
-  if (!placa?.isAir || !solido(suelo) || suelo.typeId === "minecraft:bedrock") return false;
+  if (!placa?.isAir || !solido(suelo) || suelo.typeId === "minecraft:bedrock" || protegido(p)) return false;
   try {
     sostener(npc, "minecraft:tnt");
     animate(npc, ANIM.colocar);
@@ -66,7 +67,7 @@ export function torreta(npc, jugador) {
   const base = { x: npc.location.x + lado.x, y: npc.location.y, z: npc.location.z + lado.z };
   const pos = blockAt(npc.dimension, base);
   const arriba = blockAt(npc.dimension, { x: base.x, y: base.y + 1, z: base.z });
-  if (!pos?.isAir || !arriba?.isAir) return false;
+  if (!pos?.isAir || !arriba?.isAir || protegido(base)) return false;
   const tnt = Math.random() < 0.3;
   try {
     sostener(npc, "minecraft:dispenser");

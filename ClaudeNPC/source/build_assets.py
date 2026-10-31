@@ -78,6 +78,8 @@ Z = [0, 0, 0]
 REG = {
     "ojo": (0, 32, 2, 3), "ojo_lado": (2, 32, 1, 1), "emblema": (8, 32, 8, 8), "emblema_lado": (3, 32, 1, 1),
     "aura": (16, 32, 8, 8), "halo": (24, 32, 4, 4), "orbe": (28, 32, 4, 4),
+    # Ojo derecho de Claude Golden (núcleo y rayos del destello).
+    "nucleo": (32, 32, 4, 4), "rayo": (32, 40, 16, 1), "rayo_v": (48, 32, 1, 16),
     # Solo en la textura de Claude Maestro (zona libre 0-16 x 48-64).
     "pelo": (0, 48, 4, 4), "marco": (4, 48, 2, 2), "vidrio": (6, 48, 2, 3), "corbata": (8, 48, 2, 2),
     "corbata_larga": (10, 48, 2, 6), "cuello": (12, 48, 2, 2), "libro_tapa": (0, 52, 6, 7),
@@ -178,6 +180,24 @@ def golden_geometry():
         orbes.append({"origin": [round(10 * math.cos(a) - 0.75, 3), 15, round(10 * math.sin(a) - 0.75, 3)],
                       "size": [1.5, 1.5, 1.5], "uv": per_face("orbe", "orbe")})
     bones.append(bone("orbes", [0, 15.75, 0], "root", orbes))
+    # Ojo derecho (el del lado del brazo derecho, x negativo) con un esplendor
+    # reluciente: núcleo que late y rayos en cruz que giran. Brillan (material emisivo).
+    def plano(region):
+        u, v, w, h = REG[region]
+        return {"north": {"uv": [u, v], "uv_size": [w, h]}, "south": {"uv": [u, v], "uv_size": [w, h]}}
+    ojo = [-2.0, 27.5, -4.55]
+    nucleo = bone("ojo_brillo", ojo, "head", [
+        {"origin": [-3.15, 25.95, -4.45], "size": [2.3, 3.1, 0.2], "uv": caras(resto="nucleo")}])
+    nucleo["locators"] = {"ojo_derecho": [-2.0, 27.5, -5.0]}
+    bones.append(nucleo)
+    rayos = [
+        {"origin": [-8.0, 27.25, -4.6], "size": [12.0, 0.5, 0], "uv": plano("rayo")},
+        {"origin": [-2.25, 21.5, -4.6], "size": [0.5, 12.0, 0], "uv": plano("rayo_v")},
+    ]
+    for ang in (45, -45):
+        rayos.append({"origin": [-5.5, 27.32, -4.62], "size": [7.0, 0.36, 0], "uv": plano("rayo"),
+                      "pivot": ojo, "rotation": [0, 0, ang]})
+    bones.append(bone("ojo_rayos", ojo, "head", rayos))
     return geo("geometry.claudenpc.golden", bones, bounds=(3, 3.5, 1.6))
 
 
@@ -249,14 +269,24 @@ def sphere_geometry(identifier, radius, center_y, bands, n_lon, region="panel"):
                           "size": [round(w, 3), round(h, 3), 0], "uv": uv,
                           "pivot": [0, center_y, 0], "rotation": [-lat, 0, 0]})
         bones.append(bone(f"gajo_{i}", [0, center_y, 0], "esfera", cubes, rotation=[0, i * 360 / n_lon, 0]))
-    ring = []
-    rr = radius * 1.04
-    w = 2 * rr * math.tan(math.pi / 32) * 1.03
-    for j in range(32):
-        uv = {f: {"uv": [32, 0], "uv_size": [32, 4]} for f in FACES}
-        ring.append({"origin": [round(-w / 2, 3), center_y - 0.6, -rr], "size": [round(w, 3), 1.2, 0], "uv": uv,
-                     "pivot": [0, center_y, 0], "rotation": [0, j * 360 / 32, 0]})
-    bones.append(bone("anillo", [0, center_y, 0], None, ring))
+    brillo = {f: {"uv": [32, 8], "uv_size": [8, 2]} for f in FACES}
+
+    def anillo_horizontal(rr, ancho, segs=32):
+        w = 2 * rr * math.tan(math.pi / segs) * 1.04
+        return [{"origin": [round(-w / 2, 3), round(center_y - ancho / 2, 3), round(-rr, 3)], "size": [round(w, 3), ancho, 0],
+                 "uv": brillo, "pivot": [0, center_y, 0], "rotation": [0, j * 360 / segs, 0]} for j in range(segs)]
+
+    # Meridianos luminosos (giran con la esfera): 8 círculos que pasan por los polos.
+    rm = radius * 1.01
+    h = 2 * rm * math.tan(math.pi / 24) * 1.05
+    for i in range(8):
+        cubos = [{"origin": [-0.6, round(center_y - h / 2, 3), round(-rm, 3)], "size": [1.2, round(h, 3), 0], "uv": brillo,
+                  "pivot": [0, center_y, 0], "rotation": [k * 15, 0, 0]} for k in range(24)]
+        bones.append(bone(f"brillo_meridiano_{i}", [0, center_y, 0], "esfera", cubos, rotation=[0, i * 22.5, 0]))
+    # Ecuador y dos órbitas inclinadas, más anchas.
+    bones.append(bone("brillo_anillo", [0, center_y, 0], None, anillo_horizontal(radius * 1.04, 2.0)))
+    bones.append(bone("brillo_orbita_a", [0, center_y, 0], None, anillo_horizontal(radius * 1.12, 1.4), rotation=[35, 0, 0]))
+    bones.append(bone("brillo_orbita_b", [0, center_y, 0], None, anillo_horizontal(radius * 1.12, 1.4), rotation=[-35, 0, 0]))
     return {"format_version": "1.16.0", "minecraft:geometry": [{
         "description": {"identifier": identifier, "texture_width": 64, "texture_height": 32,
                         "visible_bounds_width": radius / 4, "visible_bounds_height": radius / 4,
@@ -389,6 +419,25 @@ def golden_skin(alpha_cuerpo=205):
         for y in range(h):
             for x in range(w):
                 px[u + x, v + y] = BLANCO + (0,)
+    # Ojo derecho: núcleo blanco que se vuelve oro hacia el borde; rayos que se apagan en las puntas.
+    u, v, w, h = REG["nucleo"]
+    for y in range(h):
+        for x in range(w):
+            r = math.hypot(x - (w - 1) / 2, y - (h - 1) / 2) / (w / 2)
+            c = [BLANCO[i] + (ORO_CLARO[i] - BLANCO[i]) * min(1, r) for i in range(3)]
+            px[u + x, v + y] = tuple(clamp(k) for k in c) + (0,)
+    def gradiente(t):  # 0 centro, 1 punta
+        if t < 0.35:
+            a, b, k = BLANCO, ORO_CLARO, t / 0.35
+        else:
+            a, b, k = ORO_CLARO, ORO_OSCURO, (t - 0.35) / 0.65
+        return tuple(clamp(a[i] + (b[i] - a[i]) * k) for i in range(3)) + (0,)
+    u, v, w, h = REG["rayo"]
+    for x in range(w):
+        px[u + x, v] = gradiente(abs(x - (w - 1) / 2) / ((w - 1) / 2))
+    u, v, w, h = REG["rayo_v"]
+    for y in range(h):
+        px[u, v + y] = gradiente(abs(y - (h - 1) / 2) / ((h - 1) / 2))
     return img
 
 
@@ -556,17 +605,20 @@ def maestro_skin():
     return img
 
 
-def sphere_texture(color=(255, 214, 110)):
+def sphere_texture(color=(255, 196, 64)):
+    """Cáscara dorada translúcida (más intensa en los bordes de cada gajo) y el
+    color de los anillos luminosos (alfa 0 = brillo total con el material emisivo)."""
     img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
     px = img.load()
     for y in range(32):
         for x in range(32):
             edge = min(x, y, 31 - x, 31 - y)
-            a = {0: 170, 1: 110, 2: 70}.get(edge, 22 + 40 * max(0.0, 1 - (edge - 3) / 8))
-            px[x, y] = color + (clamp(a),)
-    for y in range(4):
-        for x in range(32, 64):
-            px[x, y] = (255, 250, 220, (200, 255, 255, 200)[y])
+            a = {0: 230, 1: 170, 2: 120}.get(edge, 60 + 50 * max(0.0, 1 - (edge - 3) / 9))
+            brillo = 1 + 0.25 * math.exp(-((x - 10) ** 2 + (y - 9) ** 2) / 40)  # reflejo
+            px[x, y] = tuple(clamp(c * brillo) for c in color) + (clamp(a),)
+    for y in range(8, 10):
+        for x in range(32, 40):
+            px[x, y] = ((255, 255, 236) if x in (35, 36) else (255, 214, 92)) + (0,)
     return img
 
 
@@ -620,9 +672,9 @@ def particle_atlas():
 
 
 def write_particles():
-    def p(name, sprite, comps, color, size, material="particles_add"):
+    def p(name, sprite, comps, color, size, material="particles_add", facing="lookat_xyz"):
         u, v, w, h = ATLAS[sprite]
-        billboard = {"size": size, "facing_camera_mode": "lookat_xyz",
+        billboard = {"size": size, "facing_camera_mode": facing,
                      "uv": {"texture_width": 64, "texture_height": 32, "uv": [u, v], "uv_size": [w, h]}}
         write_json(RP / f"particles/{name}.particle.json", {"format_version": "1.10.0", "particle_effect": {
             "description": {"identifier": f"claudenpc:{name}",
@@ -678,6 +730,52 @@ def write_particles():
     p("zzz", "z", {**inst(1), "minecraft:emitter_shape_point": {}, **life(1.8), **spd(0.15),
                    **mot(linear_acceleration=[0.15, 0.45, 0])},
       {"0.0": "#FFE6F0FF", "0.7": "#CCB4D2FF", "1.0": "#00B4D2FF"}, sz(0.14, 0.32), "particles_alpha")
+    # Poderes de Claude Golden.
+    p("aviso", "anillo", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.32), **spd(0), **mot()},
+      {"0.0": "#FFFF5040", "0.5": "#FFFFD25A", "1.0": "#00FFD25A"}, sz(1.0), facing="emitter_transform_xz")
+    p("estallido", "brillo", {**inst(2), "minecraft:emitter_shape_point": {}, **life(0.35), **spd(0), **mot()},
+      {"0.0": "#FFFFFFFF", "0.4": "#FFFFE08C", "1.0": "#00FFAA1E"}, sz(0.3, 2.2))
+    p("chispa_cae", "brillo", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.15), **spd(0), **mot()},
+      {"0.0": "#FFFFFFFF", "1.0": "#80FFD25A"}, sz(0.45))
+    p("onda_chispa", "chispa", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.25), **spd(0),
+                                **mot(linear_acceleration=[0, 1.5, 0])},
+      {"0.0": "#FFFFF0B4", "1.0": "#00FFAA1E"}, sz(0.22, 0.05))
+    p("sol", "brillo", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.18), **spd(0), **mot()},
+      {"0.0": "#FFFFF5C8", "1.0": "#00FF9628"}, sz(2.4, 2.8))
+    p("sol_rayo", "chispa", {**inst(5), "minecraft:emitter_shape_box": {"half_dimensions": [0.8, 0.2, 0.8]},
+                             **life(0.6), **spd(0), **mot(linear_acceleration=[0, -14, 0])},
+      {"0.0": "#FFFFDC78", "1.0": "#00FF8C28"}, sz(0.12))
+    p("agujero", "brillo", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.14), **spd(0), **mot()},
+      {"0.0": "#F014081E", "1.0": "#0014081E"}, sz(1.1), "particles_alpha")
+    p("nota", "nota", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.1), **spd(0), **mot(),
+                       "minecraft:particle_appearance_tinting": {"color": [
+                           "0.6 + variable.particle_random_1 * 0.4", "0.4 + variable.particle_random_2 * 0.6",
+                           "0.5 + variable.particle_random_3 * 0.5", 1]}},
+      {"0.0": "#FFFFFFFF", "1.0": "#FFFFFFFF"}, sz(0.32))
+    p("espejo", "estrella", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.3), **spd(0), **mot()},
+      {"0.0": "#FFE6F5FF", "1.0": "#00A0DCFF"}, sz(0.16, 0.04))
+    # Esplendor del ojo derecho: emisores en bucle pegados al localizador del ojo.
+    def ojo(name, sprite, rate, vida, color, size, spin):
+        u, v, w, h = ATLAS[sprite]
+        write_json(RP / f"particles/{name}.particle.json", {"format_version": "1.10.0", "particle_effect": {
+            "description": {"identifier": f"claudenpc:{name}",
+                            "basic_render_parameters": {"material": "particles_add", "texture": "textures/particle/claudenpc"}},
+            "components": {
+                "minecraft:emitter_local_space": {"position": True, "rotation": True},
+                "minecraft:emitter_rate_steady": {"spawn_rate": rate, "max_particles": 16},
+                "minecraft:emitter_lifetime_looping": {"active_time": 1},
+                "minecraft:emitter_shape_point": {},
+                "minecraft:particle_lifetime_expression": {"max_lifetime": vida},
+                "minecraft:particle_initial_spin": {"rotation": "variable.particle_random_1 * 360", "rotation_rate": spin},
+                "minecraft:particle_initial_speed": 0,
+                "minecraft:particle_motion_dynamic": {},
+                "minecraft:particle_appearance_billboard": {"size": size, "facing_camera_mode": "rotate_xyz",
+                    "uv": {"texture_width": 64, "texture_height": 32, "uv": [u, v], "uv_size": [w, h]}},
+                "minecraft:particle_appearance_tinting": {"color": {"gradient": color,
+                    "interpolant": "variable.particle_age / variable.particle_lifetime"}}}}})
+    pulso = "(0.32 + math.sin(variable.particle_age * 1400) * 0.06)"
+    ojo("ojo_golden", "estrella", 30, 0.22, {"0.0": "#FFFFFFFF", "0.5": "#FFFFE896", "1.0": "#00FFB43C"}, [pulso, pulso], 160)
+    ojo("ojo_halo", "brillo", 14, 0.3, {"0.0": "#B4FFF0B4", "1.0": "#00FFC850"}, [0.42, 0.42], 0)
     # Fusión y Claude Golden.
     p("aura_dorada", "estrella", {**inst(6), "minecraft:emitter_shape_box": {"half_dimensions": [0.45, 1.0, 0.45]},
                                   **life("0.8 + variable.particle_random_1 * 0.6"), **spd(0),
@@ -921,6 +1019,29 @@ def golden_animations():
             "rightArm": {"rotation": k(*[(t * 0.25, [-100 + 30 * math.sin(t), 20 * math.cos(t), 0]) for t in range(17)])},
             "leftArm": {"rotation": k(*[(t * 0.25, [-90 + 25 * math.cos(t), -20 * math.sin(t), 0]) for t in range(17)])},
             "head": {"rotation": k(*[(t * 0.5, [0, 0, 8 * math.sin(t * 1.5)]) for t in range(9)])}}},
+        # Ojo derecho: el núcleo late y los rayos giran; en fase 2 (furia) brilla más grande.
+        "animation.claudenpc.golden.ojo": {"loop": True, "bones": {
+            "ojo_brillo": {"scale": "1.0 + math.sin(query.life_time * 720) * 0.12 + query.property('claudenpc:furia') * 0.25"},
+            "ojo_rayos": {"rotation": [0, 0, "query.life_time * 50"],
+                          "scale": "0.85 + math.sin(query.life_time * 430) * 0.2 + query.property('claudenpc:furia') * 0.55"}}},
+        "animation.claudenpc.golden.golpe": {"animation_length": 0.5, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.12, [-60, 0, -20]), (0.22, [-95, 0, 10]), (0.5, Z))},
+            "leftArm": {"rotation": k((0, Z), (0.12, [-60, 0, 20]), (0.22, [-95, 0, -10]), (0.5, Z))},
+            "body": {"rotation": k((0, Z), (0.15, [-10, 0, 0]), (0.25, [15, 0, 0]), (0.5, Z))}}},
+        "animation.claudenpc.golden.aturdido": {"animation_length": 6.0, "bones": {
+            "head": {"rotation": k(*[(t * 0.5, [12, 0, 15 if t % 2 else -15]) for t in range(12)], (6.0, Z))},
+            "rightArm": {"rotation": [12, 0, 8]}, "leftArm": {"rotation": [12, 0, -8]},
+            "body": {"rotation": k(*[(t * 0.5, [8, 0, 5 if t % 2 else -5]) for t in range(12)], (6.0, Z))}}},
+        "animation.claudenpc.golden.risa": {"animation_length": 1.4, "bones": {
+            "head": {"rotation": k((0, Z), (0.2, [-25, 0, 0]), (1.2, [-25, 0, 0]), (1.4, Z))},
+            "body": {"rotation": k(*[(0.1 + t * 0.1, [-6 if t % 2 else 6, 0, 0]) for t in range(12)], (0, Z), (1.4, Z))},
+            "rightArm": {"rotation": k((0, Z), (0.2, [-40, 0, 20]), (1.2, [-40, 0, 20]), (1.4, Z))},
+            "leftArm": {"rotation": k((0, Z), (0.2, [-40, 0, -20]), (1.2, [-40, 0, -20]), (1.4, Z))}}},
+        "animation.claudenpc.golden.picada": {"animation_length": 1.0, "bones": {
+            "body": {"rotation": k((0, Z), (0.15, [50, 0, 0]), (0.8, [50, 0, 0]), (1.0, Z))},
+            "head": {"rotation": k((0, Z), (0.15, [-35, 0, 0]), (0.8, [-35, 0, 0]), (1.0, Z))},
+            "rightArm": {"rotation": k((0, Z), (0.15, [40, 0, 25]), (0.8, [40, 0, 25]), (1.0, Z))},
+            "leftArm": {"rotation": k((0, Z), (0.15, [40, 0, -25]), (0.8, [40, 0, -25]), (1.0, Z))}}},
         "animation.claudenpc.golden.pensar": {"animation_length": 3.0, "bones": {
             "rightArm": {"rotation": k((0, Z), (0.3, [-120, 40, 0]), (2.7, [-120, 40, 0]), (3.0, Z))},
             "head": {"rotation": k((0, Z), (0.3, [10, 0, 10]), (2.7, [10, 0, 10]), (3.0, Z))}}},
@@ -932,8 +1053,10 @@ def aura_animations():
         "animation.claudenpc.aura.idle": {"loop": True, "bones": {
             "esfera": {"rotation": [0, "query.life_time * 40", 0],
                        "scale": "math.min(query.life_time * 0.8, 1) * (1 + math.sin(query.life_time * 400) * 0.03)"},
-            "anillo": {"rotation": ["math.sin(query.life_time * 90) * 25", "-query.life_time * 120", 0],
-                       "scale": "math.min(query.life_time * 0.8, 1)"}}}}}
+            "brillo_anillo": {"rotation": ["math.sin(query.life_time * 90) * 25", "-query.life_time * 120", 0],
+                              "scale": "math.min(query.life_time * 0.8, 1)"},
+            "brillo_orbita_a": {"rotation": [0, "query.life_time * 90", 0], "scale": "math.min(query.life_time * 0.8, 1)"},
+            "brillo_orbita_b": {"rotation": [0, "-query.life_time * 70", 0], "scale": "math.min(query.life_time * 0.8, 1)"}}}}}
 
 
 # =============================================================================
@@ -948,6 +1071,9 @@ def render_controllers():
         "controller.render.claudenpc_golden": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES]},
+        "controller.render.claudenpc_aura": {
+            "geometry": "Geometry.default", "textures": ["Texture.default"],
+            "materials": [{"*": "Material.default"}, {"brillo*": "Material.brillo"}]},
         "controller.render.claudenpc_maestro": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}, {"pin": "Material.glow"}, {"vidrio": "Material.vidrio"}]},
@@ -991,33 +1117,39 @@ def client_entities():
         "enable_attachables": True,
         "spawn_egg": {"base_color": "#74543A", "overlay_color": "#D97757"}}}})
     golden_anims = dict(base_anims)
-    for name in ("flotar", "halo", "aura", "poder", "chasquido", "dirigir", "pensar"):
+    for name in ("flotar", "halo", "aura", "poder", "chasquido", "dirigir", "pensar", "ojo", "golpe", "aturdido", "risa", "picada"):
         golden_anims[name] = f"animation.claudenpc.golden.{name}"
-    write_json(RP / "entity/claude_golden.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
-        "identifier": "claudenpc:claude_golden",
-        "materials": {"default": "entity_emissive_alpha", "aura": "entity_alphablend"},
-        "textures": {"default": "textures/entity/claudenpc/golden"},
-        "geometry": {"default": "geometry.claudenpc.golden"},
-        "animations": golden_anims,
-        "scripts": {"animate": ["mirar", "respirar", "parpadeo", "flotar", "halo", "aura"]},
-        "render_controllers": ["controller.render.claudenpc_golden"],
-        "enable_attachables": True}}})
+    golden_anims["ctrl_ojo"] = "controller.animation.claudenpc.golden.ojo"
+    for ident, archivo in (("claudenpc:claude_golden", "claude_golden"), ("claudenpc:espejismo", "espejismo")):
+        write_json(RP / f"entity/{archivo}.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+            "identifier": ident,
+            "materials": {"default": "entity_emissive_alpha", "aura": "entity_alphablend"},
+            "textures": {"default": "textures/entity/claudenpc/golden"},
+            "geometry": {"default": "geometry.claudenpc.golden"},
+            "animations": golden_anims,
+            "particle_effects": {"ojo": "claudenpc:ojo_golden", "halo_ojo": "claudenpc:ojo_halo"},
+            "scripts": {"animate": ["mirar", "respirar", "parpadeo", "flotar", "halo", "aura", "ojo", "ctrl_ojo"]},
+            "render_controllers": ["controller.render.claudenpc_golden"],
+            "enable_attachables": True}}})
     write_json(RP / "entity/eco.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:eco",
         "materials": {"default": "entity_alphablend", "glow": "entity_alphablend"},
         "textures": {"default": "textures/entity/claudenpc/eco"},
         "geometry": {"default": "geometry.claudenpc.claude"},
-        "animations": dict(base_anims, celebrar="animation.claudenpc.celebrar"),
+        "animations": dict(base_anims, celebrar="animation.claudenpc.celebrar", golpe="animation.claudenpc.golpe"),
         "scripts": {"animate": ["mirar", "caminar", "respirar"]},
         "render_controllers": ["controller.render.claudenpc"]}}})
     write_json(RP / "entity/aura.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:aura",
-        "materials": {"default": "entity_alphablend"},
+        "materials": {"default": "entity_alphablend", "brillo": "entity_emissive_alpha"},
         "textures": {"default": "textures/entity/claudenpc/aura"},
         "geometry": {"default": "geometry.claudenpc.aura"},
         "animations": {"idle": "animation.claudenpc.aura.idle"},
         "scripts": {"animate": ["idle"]},
-        "render_controllers": ["controller.render.default"]}}})
+        "render_controllers": ["controller.render.claudenpc_aura"]}}})
+    write_json(RP / "animation_controllers/golden.animation_controllers.json", {"format_version": "1.10.0", "animation_controllers": {
+        "controller.animation.claudenpc.golden.ojo": {"initial_state": "brillar", "states": {"brillar": {
+            "particle_effects": [{"effect": "ojo", "locator": "ojo_derecho"}, {"effect": "halo_ojo", "locator": "ojo_derecho"}]}}}}})
 
 
 def main():

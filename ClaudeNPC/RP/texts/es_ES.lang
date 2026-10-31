@@ -2,6 +2,7 @@ pack.description=Claudes con personalidad propia: pelean con espada y escudo, co
 entity.claudenpc:claude.name=Claude
 entity.claudenpc:maestro.name=Claude Maestro
 entity.claudenpc:claude_golden.name=Claude Golden
+entity.claudenpc:espejismo.name=Espejismo de Claude Golden
 entity.claudenpc:eco.name=Eco de Claude
 entity.claudenpc:aura.name=Aura de fusión
 item.spawn_egg.entity.claudenpc:claude.name=Generar a Claude

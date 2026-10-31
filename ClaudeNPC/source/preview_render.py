@@ -309,15 +309,19 @@ def main(out):
     sc.add_geometry(models / "maestro.geo.json", tex / "maestro.png", emissive=("pin",), pose=libro)
     shots.append(sc.render(-20, 4, 26, size=(260, 340), center=(0, 28, -2), bg=(150, 132, 112)))
     labels.append("Lentes y cabello")
-    for yaw, label in ((0, "Claude Golden"),):
+    brillan = ("head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg", "ojos", "emblema", "halo", "orbes", "ojo_brillo", "ojo_rayos")
+    auras = ("aura_head", "aura_body", "aura_rarm", "aura_larm", "aura_rleg", "aura_lleg")
+    for yaw, pitch, escala, centro_, label in ((0, 8, 8, (0, 18, 0), "Claude Golden"), (-25, 4, 26, (0, 28, -2), "Ojo derecho")):
         sc = Scene()
-        sc.add_geometry(models / "golden.geo.json", tex / "golden.png",
-                        hidden=("aura_head", "aura_body", "aura_rarm", "aura_larm", "aura_rleg", "aura_lleg"),
-                        emissive=("head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg", "ojos", "emblema", "halo", "orbes"))
-        sc.add_geometry(models / "golden.geo.json", tex / "golden.png",
-                        hidden=("head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg", "ojos", "emblema", "halo", "orbes"))
-        shots.append(sc.render(yaw, 8, 8, size=(260, 340), center=(0, 18, 0), bg=(40, 44, 70)))
+        sc.add_geometry(models / "golden.geo.json", tex / "golden.png", hidden=auras, emissive=brillan)
+        sc.add_geometry(models / "golden.geo.json", tex / "golden.png", hidden=brillan)
+        shots.append(sc.render(yaw, pitch, escala, size=(260, 340), center=centro_, bg=(40, 44, 70)))
         labels.append(label)
+    sc = Scene()
+    sc.add_geometry(models / "aura.geo.json", tex / "aura.png", emissive=tuple(f"brillo_meridiano_{i}" for i in range(8))
+                    + ("brillo_anillo", "brillo_orbita_a", "brillo_orbita_b"))
+    shots.append(sc.render(-20, 15, 1.4, size=(260, 340), center=(0, 40, 0), bg=(30, 32, 52)))
+    labels.append("Esfera de fusion")
     # Dos filas para que se vea bien en el móvil.
     mitad = (len(shots) + 1) // 2
     fila1, fila2 = Path(out).with_suffix(".a.png"), Path(out).with_suffix(".b.png")

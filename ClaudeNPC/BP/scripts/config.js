@@ -3,12 +3,13 @@
 export const NPC = "claudenpc:claude";
 export const MAESTRO = "claudenpc:maestro";
 export const GOLDEN = "claudenpc:claude_golden";
+export const ESPEJISMO = "claudenpc:espejismo";
 export const ECO = "claudenpc:eco";
 export const AURA = "claudenpc:aura";
 export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
 // Propiedades de entidad (las ve el paquete de recursos para las posturas).
-export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado" };
+export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia" };
 
 // Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
 export const EVENTO = {
@@ -31,6 +32,15 @@ export const PARTICLES = {
   tiza: "claudenpc:tiza",
   polvo: "claudenpc:polvo",
   zzz: "claudenpc:zzz",
+  aviso: "claudenpc:aviso",
+  estallido: "claudenpc:estallido",
+  chispaCae: "claudenpc:chispa_cae",
+  ondaChispa: "claudenpc:onda_chispa",
+  sol: "claudenpc:sol",
+  solRayo: "claudenpc:sol_rayo",
+  agujero: "claudenpc:agujero",
+  nota: "claudenpc:nota",
+  espejo: "claudenpc:espejo",
   auraDorada: "claudenpc:aura_dorada",
   fusionAnillo: "claudenpc:fusion_anillo",
   fusionDestello: "claudenpc:fusion_destello",
@@ -75,6 +85,10 @@ export const ANIM = {
   goldenChasquido: "animation.claudenpc.golden.chasquido",
   goldenDirigir: "animation.claudenpc.golden.dirigir",
   goldenPensar: "animation.claudenpc.golden.pensar",
+  goldenGolpe: "animation.claudenpc.golden.golpe",
+  goldenAturdido: "animation.claudenpc.golden.aturdido",
+  goldenRisa: "animation.claudenpc.golden.risa",
+  goldenPicada: "animation.claudenpc.golden.picada",
   maestroLeer: "animation.claudenpc.maestro.leer",
   maestroExplicar: "animation.claudenpc.maestro.explicar",
   maestroEscribir: "animation.claudenpc.maestro.escribir",
@@ -132,7 +146,16 @@ export const CASA = {
   alcanceTecho: 6.4,
 };
 
-export const FUSION = { cantidad: 5, iq: 300, radio: 20, busqueda: 64 };
+export const FUSION = { cantidad: 5, iq: 300, radio: 20, busqueda: 160 };
+
+// Claude Golden (jefe hostil): a qué distancia te ve, cada cuánto usa un poder
+// (fase 1 y fase 2, con la mitad de vida), golpe cuerpo a cuerpo y flechas que devuelve.
+export const GOLDEN_CFG = {
+  vista: 48,
+  poderCada: [[110, 170], [60, 105]],
+  golpe: { dano: [6, 8], cada: 30, alcance: 2.8 },
+  reflejo: [0.7, 0.85],
+};
 
 // Claude Maestro: IQ fijo, alcance de la campana, cada cuánto da clase, cuánto
 // dura, IQ que gana cada alumno cada 2 s y el bono de aprendizaje después.

@@ -133,7 +133,7 @@ export function ejecutarPlano(npc, state, obra) {
       return false;
     }
     case "andamio":
-      iniciarTorre(npc, state, paso.hasta, "minecraft:dirt");
+      iniciarTorre(npc, state, paso.hasta, "minecraft:dirt", true);
       obra.i++;
       return false;
     case "bajar": {

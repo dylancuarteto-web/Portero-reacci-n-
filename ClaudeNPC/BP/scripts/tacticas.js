@@ -2,6 +2,7 @@ import { EntityDamageCause, system } from "@minecraft/server";
 import { ANIM, ARMAS, CONSTRUCCION, MODIFICA_MUNDO, PARTICLES } from "./config.js";
 import { ponerElytra, quitarElytra, sostener } from "./equipo.js";
 import { estados } from "./estado.js";
+import { velocidad } from "./movimiento.js";
 import { nivel } from "./iq.js";
 import { alturaSuelo, animate, blockAt, burst, colocar, flat, impulse, mirarA, now, sound } from "./util.js";
 
@@ -38,6 +39,9 @@ export function arco(npc, state, jugador) {
   mirarA(npc, jugador.getHeadLocation());
   animate(npc, ANIM.arco);
   sound(npc, "random.bow", 0.6);
+  // Como un jugador: al tensar el arco camina despacio y no te quita la vista de encima.
+  velocidad(npc, 0.07);
+  for (const t of [6, 12, 18]) system.runTimeout(() => npc.isValid && jugador.isValid && mirarA(npc, jugador.getHeadLocation()), t);
   system.runTimeout(() => {
     if (!npc.isValid || !jugador.isValid) return;
     const n = nivel(state);
@@ -102,6 +106,20 @@ export function perla(npc, state, jugador) {
     sound(npc, "mob.endermen.portal");
     volverAlArma(npc, state);
   }, 18);
+}
+
+// Lanza una perla y aparece en "destino" (para llegar a tiempo a clase o a la fusión).
+export function perlaHasta(npc, destino) {
+  sostener(npc, "minecraft:ender_pearl");
+  animate(npc, ANIM.lanzar);
+  burst(npc, PARTICLES.teletransporte);
+  try {
+    npc.teleport({ x: destino.x, y: destino.y, z: destino.z }, { checkForBlocks: false });
+  } catch {
+    return;
+  }
+  burst(npc, PARTICLES.teletransporte);
+  sound(npc, "mob.endermen.portal", 1.2, 0.7);
 }
 
 function impactoMaza(npc, state, caida) {

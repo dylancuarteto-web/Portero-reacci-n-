@@ -3,7 +3,7 @@ import { ANIM, ESCUDO, NPC, PARTICLES } from "./config.js";
 import { estados } from "./estado.js";
 import { aprender, nivel } from "./iq.js";
 import { poseEscudo } from "./postura.js";
-import { animate, burst, mirarA, now, sound } from "./util.js";
+import { animate, burst, now, sound } from "./util.js";
 
 // Escudo contra flechas, como un jugador: cuando ve que le apuntas con un arco,
 // ballesta o tridente (o ve venir un proyectil) levanta el escudo, camina despacio
@@ -117,8 +117,6 @@ system.runInterval(() => {
           bajarEscudo(npc, s, 30);
           continue;
         }
-        const a = s.escudo.amenaza;
-        if (a?.isValid && (now() - s.escudo.desde) % 4 < 2) mirarA(npc, a.location);
       }
       if (!puedeCubrirse(s) && !s.escudoArriba) continue;
       const centro = { x: npc.location.x, y: npc.location.y + 1, z: npc.location.z };

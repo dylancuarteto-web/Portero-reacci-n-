@@ -2,6 +2,7 @@ import { system } from "@minecraft/server";
 import { ANIM, MINERIA, MODIFICA_MUNDO } from "../config.js";
 import { romper } from "../construccion.js";
 import { pico, sostener } from "../equipo.js";
+import { ocupado } from "../estructuras.js";
 import { aprender } from "../iq.js";
 import { caminando } from "../movimiento.js";
 import { animate, blockAt, impulse, mirarA, now, rand, superficie } from "../util.js";
@@ -102,7 +103,8 @@ function paso(npc, state) {
 
 export const minar = {
   nombre: "minando",
-  puede: () => MODIFICA_MUNDO,
+  // Nunca empieza a minar dentro o al lado de una casa o del aula.
+  puede: (npc) => MODIFICA_MUNDO && !ocupado(npc.location.x, npc.location.z, 3),
   duracion: () => 9000, // termina al volver a la superficie
   iniciar(npc, state, a) {
     state.mina ??= nuevaMina(npc);
