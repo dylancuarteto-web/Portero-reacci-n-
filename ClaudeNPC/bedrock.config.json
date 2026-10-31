@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "Claude NPC",
+    "namespace": "claudenpc"
+  },
+  "compatibility": {
+    "minimumBedrock": "26.60",
+    "latestStableVerifiedAtBuild": "26.60",
+    "snapshotDate": "2026-10-30",
+    "policy": "1.21+; test every target version; create separate Script API profiles when required"
+  },
+  "scriptApi": {
+    "enabled": true,
+    "modules": {
+      "@minecraft/server": "2.11.0"
+    }
+  },
+  "audio": {
+    "included": false,
+    "note": "El usuario a\u00f1adir\u00e1 archivos de sonido manualmente."
+  }
+}

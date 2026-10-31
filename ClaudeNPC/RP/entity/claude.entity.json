@@ -1,0 +1,44 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:claude",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/claude"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.claude"
+      },
+      "animations": {
+        "mirar": "animation.claudenpc.mirar",
+        "caminar": "animation.claudenpc.caminar",
+        "respirar": "animation.claudenpc.respirar",
+        "golpe": "animation.claudenpc.golpe",
+        "martillazo": "animation.claudenpc.martillazo",
+        "escudo": "animation.claudenpc.escudo",
+        "lanzar": "animation.claudenpc.lanzar",
+        "colocar": "animation.claudenpc.colocar",
+        "crafteo": "animation.claudenpc.crafteo",
+        "minar": "animation.claudenpc.minar"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "caminar",
+          "respirar"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "enable_attachables": true,
+      "spawn_egg": {
+        "base_color": "#D97757",
+        "overlay_color": "#F5ECDC"
+      }
+    }
+  }
+}

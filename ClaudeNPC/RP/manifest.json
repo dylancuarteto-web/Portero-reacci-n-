@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Claude NPC Resources",
+    "description": "pack.description",
+    "uuid": "aa12d358-5bb0-4128-90e4-313caa14d735",
+    "version": [
+      1,
+      0,
+      0
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "7e2b3efb-da3e-47ea-8b26-415d9b461aa4",
+      "version": [
+        1,
+        0,
+        0
+      ]
+    }
+  ]
+}

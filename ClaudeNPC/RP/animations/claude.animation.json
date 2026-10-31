@@ -1,0 +1,455 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.claudenpc.mirar": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            "query.target_x_rotation",
+            "query.target_y_rotation",
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.caminar": {
+      "loop": true,
+      "bones": {
+        "rightArm": {
+          "rotation": [
+            "-(math.cos(query.modified_distance_moved * 38.17) * 57.3 * math.min(query.modified_move_speed, 1)) * 0.6 - 10",
+            0,
+            0
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "(math.cos(query.modified_distance_moved * 38.17) * 57.3 * math.min(query.modified_move_speed, 1)) * 0.6",
+            0,
+            0
+          ]
+        },
+        "rightLeg": {
+          "rotation": [
+            "(math.cos(query.modified_distance_moved * 38.17) * 57.3 * math.min(query.modified_move_speed, 1)) * 0.8",
+            0,
+            0
+          ]
+        },
+        "leftLeg": {
+          "rotation": [
+            "-(math.cos(query.modified_distance_moved * 38.17) * 57.3 * math.min(query.modified_move_speed, 1)) * 0.8",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.respirar": {
+      "loop": true,
+      "bones": {
+        "body": {
+          "scale": [
+            1,
+            "1 + math.sin(query.life_time * 120) * 0.01",
+            1
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.golpe": {
+      "animation_length": 0.35,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.10": [
+              -120,
+              20,
+              0
+            ],
+            "0.22": [
+              20,
+              -10,
+              0
+            ],
+            "0.35": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "body": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.12": [
+              0,
+              -15,
+              0
+            ],
+            "0.35": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.martillazo": {
+      "animation_length": 0.9,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.30": [
+              -170,
+              0,
+              0
+            ],
+            "0.70": [
+              -170,
+              0,
+              0
+            ],
+            "0.80": [
+              -20,
+              0,
+              0
+            ],
+            "0.90": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "leftArm": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.30": [
+              -160,
+              0,
+              0
+            ],
+            "0.70": [
+              -160,
+              0,
+              0
+            ],
+            "0.80": [
+              -20,
+              0,
+              0
+            ],
+            "0.90": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.escudo": {
+      "animation_length": 0.6,
+      "bones": {
+        "leftArm": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.10": [
+              -80,
+              -30,
+              0
+            ],
+            "0.45": [
+              -80,
+              -30,
+              0
+            ],
+            "0.60": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "body": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              10,
+              0,
+              0
+            ],
+            "0.60": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.lanzar": {
+      "animation_length": 0.5,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              -170,
+              0,
+              0
+            ],
+            "0.30": [
+              -60,
+              0,
+              0
+            ],
+            "0.50": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.colocar": {
+      "animation_length": 0.3,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.12": [
+              -60,
+              0,
+              0
+            ],
+            "0.30": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.crafteo": {
+      "animation_length": 3.0,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              -50,
+              0,
+              0
+            ],
+            "0.30": [
+              -85,
+              10,
+              0
+            ],
+            "0.60": [
+              -50,
+              0,
+              0
+            ],
+            "0.90": [
+              -85,
+              10,
+              0
+            ],
+            "1.20": [
+              -50,
+              0,
+              0
+            ],
+            "1.50": [
+              -85,
+              10,
+              0
+            ],
+            "1.80": [
+              -50,
+              0,
+              0
+            ],
+            "2.10": [
+              -85,
+              10,
+              0
+            ],
+            "2.40": [
+              -50,
+              0,
+              0
+            ],
+            "2.70": [
+              -85,
+              10,
+              0
+            ],
+            "3.00": [
+              -50,
+              0,
+              0
+            ]
+          }
+        },
+        "leftArm": {
+          "rotation": {
+            "0.00": [
+              -40,
+              0,
+              0
+            ],
+            "0.30": [
+              -28,
+              -10,
+              0
+            ],
+            "0.60": [
+              -40,
+              0,
+              0
+            ],
+            "0.90": [
+              -28,
+              -10,
+              0
+            ],
+            "1.20": [
+              -40,
+              0,
+              0
+            ],
+            "1.50": [
+              -28,
+              -10,
+              0
+            ],
+            "1.80": [
+              -40,
+              0,
+              0
+            ],
+            "2.10": [
+              -28,
+              -10,
+              0
+            ],
+            "2.40": [
+              -40,
+              0,
+              0
+            ],
+            "2.70": [
+              -28,
+              -10,
+              0
+            ],
+            "3.00": [
+              -40,
+              0,
+              0
+            ]
+          }
+        },
+        "head": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.20": [
+              25,
+              0,
+              0
+            ],
+            "2.80": [
+              25,
+              0,
+              0
+            ],
+            "3.00": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.minar": {
+      "animation_length": 0.8,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              -60,
+              0,
+              0
+            ],
+            "0.20": [
+              -110,
+              0,
+              0
+            ],
+            "0.40": [
+              -60,
+              0,
+              0
+            ],
+            "0.60": [
+              -110,
+              0,
+              0
+            ],
+            "0.80": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,3 @@
+pack.description=Claude como NPC: pelea, cambia de armas, construye, mina, craftea y arma trampas. Bedrock 26.60.
+entity.claudenpc:claude.name=Claude
+item.spawn_egg.entity.claudenpc:claude.name=Generar a Claude

@@ -1,0 +1,3 @@
+pack.description=Claude as an NPC: fights, swaps weapons, builds, mines, crafts and sets traps. Bedrock 26.60.
+entity.claudenpc:claude.name=Claude
+item.spawn_egg.entity.claudenpc:claude.name=Spawn Claude
