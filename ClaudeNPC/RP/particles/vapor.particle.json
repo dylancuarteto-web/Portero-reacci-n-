@@ -1,0 +1,68 @@
+{
+  "format_version": "1.10.0",
+  "particle_effect": {
+    "description": {
+      "identifier": "claudenpc:vapor",
+      "basic_render_parameters": {
+        "material": "particles_alpha",
+        "texture": "textures/particle/claudenpc"
+      }
+    },
+    "components": {
+      "minecraft:emitter_local_space": {
+        "position": false,
+        "rotation": false
+      },
+      "minecraft:emitter_rate_steady": {
+        "spawn_rate": 6,
+        "max_particles": 60
+      },
+      "minecraft:emitter_lifetime_looping": {
+        "active_time": 1
+      },
+      "minecraft:emitter_shape_sphere": {
+        "radius": 0.08
+      },
+      "minecraft:particle_lifetime_expression": {
+        "max_lifetime": 1.4
+      },
+      "minecraft:particle_initial_speed": 0,
+      "minecraft:particle_motion_dynamic": {
+        "linear_acceleration": [
+          0,
+          1.2,
+          0
+        ],
+        "linear_drag_coefficient": 1
+      },
+      "minecraft:particle_appearance_billboard": {
+        "size": [
+          "0.15 + variable.particle_age / variable.particle_lifetime * 0.4",
+          "0.15 + variable.particle_age / variable.particle_lifetime * 0.4"
+        ],
+        "facing_camera_mode": "lookat_xyz",
+        "uv": {
+          "texture_width": 64,
+          "texture_height": 32,
+          "uv": [
+            0,
+            16
+          ],
+          "uv_size": [
+            16,
+            16
+          ]
+        }
+      },
+      "minecraft:particle_appearance_tinting": {
+        "color": {
+          "gradient": {
+            "0.0": "#78E6E6F0",
+            "1.0": "#00C8C8D2"
+          },
+          "interpolant": "variable.particle_age / variable.particle_lifetime"
+        }
+      }
+    }
+  }
+}

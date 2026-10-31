@@ -11,6 +11,8 @@ import { revisarFusion } from "./fusion.js";
 import "./golden/index.js";
 import { aprender, ponerHaciendo } from "./iq.js";
 import "./maestro.js";
+import { revisarRobot } from "./robot/construccion.js";
+import { tickPiloto } from "./robot/index.js";
 import { caminarA, caminando, destinoActual, velocidad } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
@@ -49,8 +51,16 @@ function cerebro(npc) {
     s.hogarCargado = true;
   }
   if (s.fusion) return;
+  if (s.robot) return tickPiloto(npc, s);
   vigilarCaida(npc, s);
   if (s.clase) return tickAlumno(npc, s);
+  if (s.robotObra && s.robotObra.fase !== "reunion") {
+    // Construyendo el robot: el turno lo maneja robot/construccion.js.
+    hostil(npc, s, false);
+    velocidad(npc, 0);
+    pausarRutina(npc, s);
+    return;
+  }
   const [jugador] = npc.dimension.getPlayers({
     location: npc.location, maxDistance: COMBATE.radio, closest: 1,
     excludeGameModes: [GameMode.Creative, GameMode.Spectator],
@@ -68,7 +78,7 @@ function cerebro(npc) {
   if (s.reunion) {
     hostil(npc, s, false);
     pausarRutina(npc, s);
-    ponerHaciendo(npc, s, "§d¡buscando al jugador!");
+    ponerHaciendo(npc, s, s.robotObra ? "§b¡a construir el robot!" : "§d¡buscando al jugador!");
     const lejos = Math.hypot(npc.location.x - s.reunion.x, npc.location.z - s.reunion.z);
     if (lejos > 6 && s.reunionDesde && now() - s.reunionDesde > 600) {
       s.reunionDesde = now(); // tarda demasiado: llega con una perla
@@ -115,6 +125,7 @@ system.runInterval(() => {
 }, 4);
 
 system.runInterval(revisarFusion, 40);
+system.runInterval(revisarRobot, 40);
 
 // Observa al jugador: construir, romper, subir en torre para escapar.
 world.afterEvents.playerPlaceBlock.subscribe(({ player, block }) => {

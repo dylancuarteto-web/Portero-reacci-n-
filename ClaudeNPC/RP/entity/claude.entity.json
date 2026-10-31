@@ -45,6 +45,7 @@
         "pescar": "animation.claudenpc.pescar",
         "pescar_espera": "animation.claudenpc.pescar_espera",
         "recoger": "animation.claudenpc.recoger",
+        "pilotar": "animation.claudenpc.pilotar",
         "mirar_alrededor": "animation.claudenpc.mirar_alrededor",
         "danza": "animation.claudenpc.danza",
         "fusion": "animation.claudenpc.fusion"

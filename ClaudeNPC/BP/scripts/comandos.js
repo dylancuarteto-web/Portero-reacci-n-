@@ -1,18 +1,18 @@
 import { CommandPermissionLevel, CustomCommandParamType, CustomCommandStatus, Player, system } from "@minecraft/server";
-import { IQ, NPC } from "./config.js";
+import { IQ, MAESTRO, NPC, PROP, VARIANTES } from "./config.js";
 import { obtenerEstado } from "./estado.js";
 import { aprender } from "./iq.js";
 import { claseAhora } from "./maestro.js";
 
 // /claudenpc:iq <valor>: pone el IQ de los Claudes cercanos. Sirve para probar la
-// fusión (5 Claudes con IQ 300) sin esperar a que aprendan solos. Requiere trucos.
+// robot (5 Claudes con IQ 500) o la fusión (5 con IQ 1000) sin esperar. Requiere trucos.
 // /claudenpc:clase: el Claude Maestro más cercano toca la campana y empieza la clase.
 export function registrarComandos() {
   system.beforeEvents.startup.subscribe(({ customCommandRegistry }) => {
     customCommandRegistry.registerCommand(
       {
         name: "claudenpc:iq",
-        description: "Pone el IQ de los Claudes cercanos (300 activa la fusión con 5 Claudes)",
+        description: "Pone el IQ de los Claudes cercanos (500: robot, 1000: fusión, con 5 Claudes)",
         permissionLevel: CommandPermissionLevel.GameDirectors,
         cheatsRequired: true,
         mandatoryParameters: [{ name: "valor", type: CustomCommandParamType.Integer }],
@@ -28,6 +28,33 @@ export function registrarComandos() {
             aprender(npc, s, 0);
           }
           p.sendMessage(`§aIQ ${valor} para ${lista.length} Claude(s) cercano(s).`);
+        });
+        return { status: CustomCommandStatus.Success };
+      },
+    );
+    // /claudenpc:maestro <einstein|tesla|curie|newton|lovelace|maestro>: trae a ese maestro.
+    customCommandRegistry.registerEnum("claudenpc:genio", VARIANTES.map((v) => v.id));
+    customCommandRegistry.registerCommand(
+      {
+        name: "claudenpc:maestro",
+        description: "Genera a un maestro: maestro, einstein, tesla, curie, newton o lovelace",
+        permissionLevel: CommandPermissionLevel.GameDirectors,
+        cheatsRequired: true,
+        mandatoryParameters: [{ name: "claudenpc:genio", type: CustomCommandParamType.Enum }],
+      },
+      (origin, id) => {
+        const p = origin.sourceEntity;
+        if (!(p instanceof Player)) return { status: CustomCommandStatus.Failure, message: "Úsalo como jugador." };
+        const i = Math.max(0, VARIANTES.findIndex((v) => v.id === id));
+        system.run(() => {
+          try {
+            const v = p.getViewDirection();
+            const e = p.dimension.spawnEntity(MAESTRO, { x: p.location.x + v.x * 2, y: p.location.y, z: p.location.z + v.z * 2 });
+            e.setProperty(PROP.variante, i);
+            p.sendMessage(`§6Llegó ${VARIANTES[i].nombre} (IQ ${VARIANTES[i].iq}).`);
+          } catch {
+            p.sendMessage("§cNo se pudo generar al maestro aquí.");
+          }
         });
         return { status: CustomCommandStatus.Success };
       },

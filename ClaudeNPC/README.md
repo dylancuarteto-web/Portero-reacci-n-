@@ -1,13 +1,23 @@
 # Claude NPC — Bedrock 26.60
 
-NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema de estrella luminoso, de diseño propio (no es el logo oficial). **Cada Claude tiene su propia personalidad** y hace lo que quiere: pelea con espada y escudo, construye, mina, tala, pesca, cultiva, rema en bote, se hace su casa, va a clase con **Claude Maestro**, sube de IQ y, cuando cinco Claudes llegan a IQ 300, se fusionan en **Claude Golden**. Namespace `claudenpc`.
+NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema de estrella luminoso, de diseño propio (no es el logo oficial). **Cada Claude tiene su propia personalidad** y hace lo que quiere: pelea con espada y escudo, construye, mina, tala, pesca, cultiva, rema en bote, se hace su casa y va a clase con **Claude Maestro** o con maestros genios (Einstein, Tesla, Curie, Newton y Lovelace). Su IQ sube hasta 1000: con **IQ 500**, cinco Claudes construyen un **robot** y lo manejan; con **IQ 1000**, cinco Claudes se fusionan en **Claude Golden**. Namespace `claudenpc`.
 
 ## Instalación
 
 1. Abre `dist/ClaudeNPC.mcaddon` con Minecraft y activa el paquete de comportamiento en el mundo.
 2. Genera a Claude con el huevo "Generar a Claude" y al maestro con "Generar a Claude Maestro" (o `/summon claudenpc:claude` y `/summon claudenpc:maestro`).
 3. Para que te ataquen: PvP activado y estar en Supervivencia o Aventura.
-4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:iq 300` (con trucos) pone el IQ de los Claudes cercanos, útil para probar la fusión con 5 Claudes.
+4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes.
+
+## Novedades de la v6
+
+| Antes | Ahora |
+|---|---|
+| No podían subir un bloque y se quedaban trabados | Saltan los escalones de un bloque; si el salto no alcanza, terminan de subir solos. Vale para todos los Claudes y los maestros. |
+| Se estancaban picando o construyendo | La mina avanza con pasos reales (sube escalones), cambia de rumbo si no puede romper algo y, si sigue trabada, sale a la superficie con una perla. No insisten más de 2 veces con el mismo bloque, y dejan una torre o un puente si no pueden seguir. |
+| La fusión era con IQ 300 | El IQ sube hasta **1000**: la habilidad para pelear y construir llega a su tope en 300, con **500** cinco Claudes construyen el **robot** y con **1000** se fusionan en **Claude Golden**. |
+| Un solo maestro | Hay **maestros genios con IQ 500** inspirados en científicos reales: **Einstein, Tesla, Curie, Newton y Lovelace**. Cada uno tiene su aspecto, da clases de su ciencia y enseña más rápido (los alumnos salen aprendiendo el triple). |
+| — | **Robot de los Claudes**: cinco Claudes con IQ 500 te buscan, lo construyen con bloques frente a ti, se suben y lo manejan durante 5 minutos (ver abajo). |
 
 ## Novedades de la v5
 
@@ -18,7 +28,7 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 | Ojo normal | **Su ojo derecho brilla** con un esplendor reluciente: núcleo blanco que late, rayos en cruz que giran y destellos pegados al ojo (más grandes en fase 2). |
 | Al pegarte o tirarte flechas retrocedían "temblando" | Sin pasos atrás bruscos ni tirones: para mirarte ya no se teletransportan. A media distancia te rodean con un paso lateral suave y al tensar el arco caminan despacio sin quitarte la vista. |
 | La clase no subía el IQ de 280 | Las clases suben el IQ **hasta 300**. |
-| Con IQ 300 se transformaban al instante | Los 5 genios te avisan, **te buscan**, se ponen en círculo frente a ti y recién ahí empieza la danza y la cinemática (si alguno se atrasa, llega con una perla). |
+| Se transformaban al instante | Los 5 genios te avisan, **te buscan**, se ponen en círculo frente a ti y recién ahí empieza la danza y la cinemática (si alguno se atrasa, llega con una perla). |
 | Después de clase se quedaban encerrados picando | Al terminar se levantan y **salen en orden por el pasillo y la puerta**, que el maestro deja abierta hasta que salgan todos. Ya no minan ni rompen bloques dentro o al lado de sus casas y del aula. |
 
 ## Novedades de la v4
@@ -51,7 +61,7 @@ Al nacer, cada Claude recibe una personalidad (se evita repetir la de los Claude
 
 Además: cada uno tiene su radio para fijarse en ti (de 12 a 32 bloques), su velocidad, su profundidad de mina, el bloque de sus torres y puentes (piedra, roble, ladrillo de piedra, arenisca...) y el estilo de su casa (roble, abeto, abedul, piedra o ladrillo). Si lo golpeas, pelea aunque estuviera tranquilo. De noche vuelve a su casa a dormir.
 
-## Claude Maestro (IQ 280)
+## Claude Maestro (IQ 280) y los maestros genios (IQ 500)
 
 No ataca. Lleva lentes, cabello formal peinado de lado, saco de tweed con coderas, camisa, corbata, una insignia luminosa y un libro.
 
@@ -62,9 +72,38 @@ No ataca. Lleva lentes, cabello formal peinado de lado, saco de tweed con codera
 
 **Tócalo** (botón "Hablar") para ver su estado y la próxima lección, o para empezar la clase en ese momento. Si lo golpeas suspende la clase y los Claudes cercanos lo defienden.
 
+### Maestros genios
+
+Con el huevo de Claude Maestro, la mitad de las veces sale el maestro normal y la otra mitad un genio (o tráelo con `/claudenpc:maestro <nombre>`). Enseñan casi el doble de rápido y, después de su clase, los alumnos aprenden el triple durante 5 minutos (verás "x3" junto a su IQ).
+
+| Maestro | Aspecto | Enseña |
+|---|---|---|
+| Claude Einstein | Pelo blanco alborotado, bigote, cárdigan | Relatividad (E = mc², la velocidad de la luz), imaginación y fotones |
+| Claude Tesla | Pelo negro engominado, bigote, traje oscuro | Corriente alterna, la bobina de Tesla y magnetismo (suelta chispas) |
+| Claude Curie | Moño, vestido negro con cuello blanco | Radiactividad, sus dos Premios Nobel y seguridad en el laboratorio (brillo verde) |
+| Claude Newton | Peluca blanca de rizos, levita, medias y hebillas | Gravedad, las tres leyes del movimiento y la luz (a veces le cae una manzana) |
+| Claude Lovelace | Tirabuzones, vestido morado con encaje | Algoritmos, bucles y la "ciencia poética" de las máquinas |
+
 ## IQ
 
-Encima del nombre lleva su **IQ** (70 a 300). Sube cuando te ve construir, romper o subir en torre, cuando recibe golpes y flechas, cuando bloquea una flecha, cuando una táctica le funciona, al minar, talar, pescar, cultivar, explorar o terminar su casa, y en clase (hasta 300). Se guarda: un Claude nuevo hereda gran parte de lo aprendido. Con más IQ piensa más rápido, apunta mejor, levanta antes el escudo, construye más rápido y desbloquea tácticas (perla 85, water drop 100, clutch 110, torreta 110, trampa 120, elytra + maza 125).
+Encima del nombre lleva su **IQ** (de 70 a **1000**). Sube cuando te ve construir, romper o subir en torre, cuando recibe golpes y flechas, cuando bloquea una flecha, cuando una táctica le funciona, al minar, talar, pescar, cultivar, explorar o terminar su casa, y sobre todo en clase. Se guarda: un Claude nuevo hereda gran parte de lo aprendido. Hasta 300 mejora su habilidad (piensa más rápido, apunta mejor, levanta antes el escudo, construye más rápido y desbloquea tácticas: perla 85, water drop 100, clutch 110, torreta 110, trampa 120, elytra + maza 125). Con **500** (rojo) cinco Claudes construyen el robot y con **1000** (dorado) se fusionan.
+
+## Robot de los Claudes (IQ 500)
+
+1. Cuando hay **cinco Claudes con IQ 500**, avisan ("¡IQ 500 × 5!"), te buscan y eligen un sitio libre a unos 14 bloques de ti.
+2. **Lo construyen con bloques**, por turnos: piernas de hierro, torso con núcleo de redstone y placas de cobre, brazos, lanzamisiles en los hombros y una cabina de vidrio con visor.
+3. Saltan chispas, los bloques **se transforman en el robot** y los cinco **se suben**: uno en la cabina, dos sobre los hombros y dos en la espalda.
+4. El robot te persigue durante **5 minutos** (verás su vida arriba y el tiempo que le queda):
+
+| Arma | Cómo esquivarla |
+|---|---|
+| Misiles teledirigidos desde los hombros | Corre de lado: giran despacio |
+| Láser del visor que barre el suelo (se carga 1 s) | Sal de la línea del rayo |
+| Metralla de flechas desde el brazo | Escudo o cúbrete |
+| Pisotón con onda expansiva | Salta cuando pase la onda |
+| Puñetazo si estás cerca | Aléjate |
+
+5. A los 5 minutos suena la **alarma** y se **autodestruye** con una gran explosión (no rompe bloques): aléjate. Los Claudes saltan a tiempo y no construyen otro hasta 20 minutos después. Si lo destruyes antes, deja hierro, redstone, cobre y diamantes.
 
 ## Combate
 
@@ -72,7 +111,7 @@ Se mueve como un jugador (camina, corre, salta al correr y te rodea con pasos la
 
 ## Fusión y Claude Golden
 
-Cuando hay **cinco Claudes con IQ 300** (y no están en clase), dejan lo que hacían y **te buscan**. Se colocan en círculo frente a ti, bailan una danza propia, los envuelve una **esfera dorada luminosa** y, tras una **cinemática de 10 s**, nace **Claude Golden**.
+Cuando hay **cinco Claudes con IQ 1000** (y no están en clase ni en el robot), dejan lo que hacían y **te buscan**. Se colocan en círculo frente a ti, bailan una danza propia, los envuelve una **esfera dorada luminosa** y, tras una **cinemática de 10 s**, nace **Claude Golden**.
 
 **Claude Golden** (300 de vida, jefe hostil) brilla entero, su **ojo derecho** despide un destello que gira y late, y lleva **IQ: ???** con letras que rebotan en colores. Al verte chasquea los dedos: se hace de noche y empieza la pelea. Verás su vida en la barra de acción.
 
@@ -97,7 +136,7 @@ Para que no toquen bloques de tu mundo: `BP/scripts/config.js` → `MODIFICA_MUN
 
 ## Estado
 
-Validado con las herramientas del kit (0 errores, 0 advertencias) y con los tipos oficiales de `@minecraft/server` 2.11.0 y `@minecraft/server-ui` 2.3.0. El plano del aula y de las casas se revisó con una vista 3D generada desde el mismo código (`source/vista_aula.png`) y los modelos con `source/vista_previa.png`. **No probado en el juego.** Puntos a revisar: postura sentada sobre las sillas, el escudo en la mano al levantarlo, que las flechas reboten, el bote con un mob como remero, las partículas del ojo de Claude Golden (van pegadas al ojo) y el brillo de la esfera de fusión.
+Validado con las herramientas del kit (0 errores, 0 advertencias) y con los tipos oficiales de `@minecraft/server` 2.11.0 y `@minecraft/server-ui` 2.3.0. El plano del aula y de las casas se revisó con una vista 3D generada desde el mismo código (`source/vista_aula.png`) y los modelos con `source/vista_previa.png`. **No probado en el juego.** Puntos a revisar: dónde quedan sentados los cinco Claudes sobre el robot, que el robot camine bien por terrenos con árboles (es alto), la orientación de los misiles, el salto de escalones, la postura sentada en las sillas, el escudo en la mano, el bote con un mob como remero y las partículas del ojo de Claude Golden.
 
 ## Regenerar arte
 

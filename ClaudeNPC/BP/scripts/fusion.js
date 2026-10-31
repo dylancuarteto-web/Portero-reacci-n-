@@ -5,7 +5,7 @@ import { registrarGolden } from "./golden/index.js";
 import { caminarA, detener, velocidad } from "./movimiento.js";
 import { animate, burst, distancia, now, particleAt, soundAt, superficie } from "./util.js";
 
-// Fusión: cinco Claudes con IQ 300 dejan de perseguir al jugador, se reúnen en
+// Fusión: cinco Claudes con IQ 1000 dejan de perseguir al jugador, se reúnen en
 // círculo, bailan una danza propia, los envuelve una esfera de aura y, tras una
 // cinemática de 10 s, nace Claude Golden.
 
@@ -50,7 +50,7 @@ function liberar(lista) {
   }
 }
 
-// Cada 2 s: con 5 genios (IQ 300) no se fusionan al instante. Primero avisan, buscan
+// Cada 2 s: con 5 genios (IQ 1000) no se fusionan al instante. Primero avisan, buscan
 // al jugador y se colocan en círculo frente a él; recién entonces empieza la danza,
 // la esfera y la cinemática.
 export function revisarFusion() {
@@ -64,7 +64,7 @@ export function revisarFusion() {
     }
     const genios = lista.filter((n) => {
       const s = estados.get(n.id);
-      return s && s.iq >= FUSION.iq && !s.bote && !s.clase;
+      return s && s.iq >= FUSION.iq && !s.bote && !s.clase && !s.robot && !s.robotObra;
     });
     if (genios.length < FUSION.cantidad) {
       liberar(lista);
@@ -94,7 +94,7 @@ export function revisarFusion() {
     if (!busqueda.avisado) {
       busqueda.avisado = true;
       try {
-        jugador.onScreenDisplay.setTitle("§d§l5 genios", { subtitle: "§fCinco Claudes con IQ 300 te están buscando...",
+        jugador.onScreenDisplay.setTitle("§d§l5 genios", { subtitle: "§fCinco Claudes con IQ 1000 te están buscando...",
           fadeInDuration: 10, stayDuration: 50, fadeOutDuration: 15 });
         soundAt(jugador.dimension, jugador.location, "ambient.weather.thunder", 0.6, 0.5);
       } catch {
@@ -163,7 +163,7 @@ function iniciar(grupo, punto) {
   });
   activa = { dimension, centro, miembros, t: 0, jugadores: [], aura: undefined };
   for (const p of jugadoresCerca(centro, dimension)) {
-    p.onScreenDisplay.setActionBar("§d¡Cinco Claudes con IQ 300 se están reuniendo...!");
+    p.onScreenDisplay.setActionBar("§d¡Cinco Claudes con IQ 1000 se están reuniendo...!");
   }
   soundAt(dimension, centro, "beacon.activate", 0.7);
   activa.id = system.runInterval(tickFusion, 1);
@@ -304,7 +304,7 @@ function tickFusion() {
           p.onScreenDisplay.setHudVisibility(HudVisibility.Hide);
           p.inputPermissions.setPermissionCategory(InputPermissionCategory.Movement, false);
           p.inputPermissions.setPermissionCategory(InputPermissionCategory.Camera, false);
-          p.onScreenDisplay.setTitle("§6§lFUSIÓN", { subtitle: "§eIQ 300 × 5", fadeInDuration: 10, stayDuration: 40, fadeOutDuration: 10 });
+          p.onScreenDisplay.setTitle("§6§lFUSIÓN", { subtitle: "§eIQ 1000 × 5", fadeInDuration: 10, stayDuration: 40, fadeOutDuration: 10 });
         } catch {
           // Jugador no disponible.
         }

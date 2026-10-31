@@ -20,7 +20,7 @@ const FILAS = [-1, 1, 3];     // pupitres; la silla va en a + 1
 const COLUMNAS = [-3, -1, 1, 3];
 const pasilloDe = (b) => (Math.abs(b) === 1 ? 0 : Math.sign(b) * 2);
 
-export function planAula(c, frente, perm) {
+export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280) {
   const f = FRENTES[frente];
   const der = { x: -f.z, z: f.x };
   const P = (a, h, b) => ({ x: c.x + f.x * a + der.x * b, y: c.y + h, z: c.z + f.z * a + der.z * b });
@@ -102,7 +102,8 @@ export function planAula(c, frente, perm) {
   }
 
   // 6. Carteles de la pizarra (el maestro escribe en ellos durante la clase).
-  const textos = ["§lLección§r\n\nClaude\nMaestro", "§l¡Bienvenidos!§r\n\nIQ 280", "Apuntes:\n\n"];
+  const [nombre1, ...resto] = titulo.split(" ");
+  const textos = [`§lLección§r\n\n${nombre1}\n${resto.join(" ")}`, `§l¡Bienvenidos!§r\n\nIQ ${iq}`, "Apuntes:\n\n"];
   [-1, 0, 1].forEach((b, k) => add({ tipo: "letrero", pos: P(-5, 3, b), desde: P(-3, 1, 0),
     bloque: perm("minecraft:darkoak_wall_sign", { facing_direction: FACING[frente] }), texto: textos[k] }));
 
@@ -131,7 +132,7 @@ export function planAula(c, frente, perm) {
   add({ tipo: "ir", pos: P(AULA.a + 2, 1, 0) });
   add({ tipo: "puerta", pos: P(AULA.a, 1, 0), abrir: false });
   add({ tipo: "letrero", pos: P(AULA.a + 1, 3, 0), desde: P(AULA.a + 3, 1, 0), blanco: false,
-    bloque: perm("minecraft:darkoak_wall_sign", { facing_direction: FACING[frente] }), texto: "§lAULA§r\nClaude Maestro\n\nClases de IQ" });
+    bloque: perm("minecraft:darkoak_wall_sign", { facing_direction: FACING[frente] }), texto: `§lAULA§r\n${titulo}\n\nClases de IQ` });
   for (let a = AULA.a + 1; a <= AULA.a + 4; a++) add({ tipo: "camino", pos: P(a, 0, 0), desde: P(a, 1, 1) });
   for (const b of [-2, 2]) {
     const desde = P(AULA.a + 3, 1, 0);

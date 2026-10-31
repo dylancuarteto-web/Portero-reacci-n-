@@ -141,6 +141,13 @@ export function iniciarExcavar(npc, state, objetivo) {
 function picar(npc, state, block, o) {
   const pos = { ...block.location };
   const tipo = block.typeId;
+  const k = `${pos.x},${pos.y},${pos.z}`;
+  o.intentos ??= {};
+  o.intentos[k] = (o.intentos[k] ?? 0) + 1;
+  if (o.intentos[k] > 2) {
+    o.rendido = true; // ese bloque no sale: deja de insistir
+    return;
+  }
   const t = tiempoRotura(block, state);
   const c = { x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 };
   sostener(npc, herramienta(block, state));
@@ -158,7 +165,16 @@ function picar(npc, state, block, o) {
     if (!npc.isValid) return;
     const b = blockAt(npc.dimension, pos);
     if (b?.typeId !== tipo) return;
-    if (romperDestruyendo(npc.dimension, pos)) {
+    let roto = romperDestruyendo(npc.dimension, pos);
+    if (!roto) {
+      try {
+        b.setType("minecraft:air"); // plan B si el comando no pudo
+        roto = true;
+      } catch {
+        roto = false;
+      }
+    }
+    if (roto) {
       puestosPorJugador.delete(clave(npc.dimension, pos));
       state.minados++;
       aprender(npc, state, 0.05);
@@ -173,7 +189,7 @@ export function tickExcavar(npc, state) {
   const o = state.obra;
   if (now() < state.ocupadoHasta) return false;
   const objetivo = o.objetivo;
-  if (!objetivo?.isValid || now() - o.desde > 700 || o.rotos >= EXCAVAR.maxBloques || o.pasos > EXCAVAR.maxPasos) return true;
+  if (!objetivo?.isValid || o.rendido || now() - o.desde > 700 || o.rotos >= EXCAVAR.maxBloques || o.pasos > EXCAVAR.maxPasos) return true;
   const t = objetivo.location;
   if (Math.hypot(t.x - npc.location.x, t.z - npc.location.z) < 1.8 && Math.abs(t.y - npc.location.y) < 1.5) return true;
   if (!npc.isOnGround && !npc.isInWater) return false;

@@ -1,0 +1,39 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.claudenpc.robot.vapor": {
+      "initial_state": "humea",
+      "states": {
+        "humea": {
+          "particle_effects": [
+            {
+              "effect": "vapor",
+              "locator": "escape_der"
+            },
+            {
+              "effect": "vapor",
+              "locator": "escape_izq"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.claudenpc.misil.humo": {
+      "initial_state": "vuela",
+      "states": {
+        "vuela": {
+          "particle_effects": [
+            {
+              "effect": "humo",
+              "locator": "cola"
+            },
+            {
+              "effect": "llama",
+              "locator": "cola"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

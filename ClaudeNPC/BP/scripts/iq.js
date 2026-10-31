@@ -16,8 +16,8 @@ export function cargarIQ(npc) {
 // Nombre de tres líneas: IQ, "Claude · personalidad" y lo que está haciendo.
 export function mostrarIQ(npc, state) {
   const iq = Math.floor(state.iq);
-  const color = iq >= 200 ? "§d" : iq >= 140 ? "§b" : iq >= 100 ? "§a" : "§e";
-  const bono = state.bono && now() < state.bono.hasta ? " §6x2" : "";
+  const color = iq >= 1000 ? "§6§l" : iq >= 500 ? "§c" : iq >= 200 ? "§d" : iq >= 140 ? "§b" : iq >= 100 ? "§a" : "§e";
+  const bono = state.bono && now() < state.bono.hasta ? ` §6x${state.bono.x}` : "";
   const titulo = state.pers ? ` §8·§7 ${state.pers.titulo}` : "";
   const haciendo = state.haciendo ? `\n§o§7${state.haciendo}` : "";
   const texto = `${color}IQ ${iq}${bono}§r\nClaude${titulo}§r${haciendo}`;
@@ -48,20 +48,27 @@ export function aprender(npc, state, puntos) {
     // Entidad descargada.
   }
   if (Math.floor(state.iq / 5) > antes) burst(npc, PARTICLES.idea, { x: 0, y: 2.4, z: 0 });
+  if (!state.aviso500 && state.iq >= IQ.robot) {
+    state.aviso500 = true;
+    avisarCerca(npc, "§c¡Un Claude llegó a IQ 500! Cinco así juntos construyen un robot...");
+  }
   if (!state.genio && state.iq >= IQ.maximo) {
     state.genio = true;
-    try {
-      for (const p of npc.dimension.getPlayers({ location: npc.location, maxDistance: 48 })) {
-        p.onScreenDisplay.setActionBar("§d¡Un Claude alcanzó IQ 300! Con cinco juntos pasa algo especial...");
-      }
-    } catch {
-      // Sin jugadores.
-    }
+    avisarCerca(npc, "§6§l¡IQ 1000! §r§dCon cinco Claudes así pasa algo legendario...");
   }
   mostrarIQ(npc, state);
 }
 
-// 0 con IQ inicial, 1 con IQ máximo: escala la habilidad en todas las tácticas.
+function avisarCerca(npc, texto) {
+  try {
+    for (const p of npc.dimension.getPlayers({ location: npc.location, maxDistance: 48 })) p.onScreenDisplay.setActionBar(texto);
+  } catch {
+    // Sin jugadores.
+  }
+}
+
+// 0 con IQ inicial, 1 desde IQ 300: escala la habilidad en todas las tácticas
+// (más allá de 300 el IQ sirve para el robot y la fusión).
 export function nivel(state) {
-  return (state.iq - IQ.inicial) / (IQ.maximo - IQ.inicial);
+  return Math.max(0, Math.min(1, (state.iq - IQ.inicial) / (IQ.habilidad - IQ.inicial)));
 }

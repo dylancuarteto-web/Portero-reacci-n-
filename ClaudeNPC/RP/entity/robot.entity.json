@@ -1,0 +1,46 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:robot",
+      "materials": {
+        "default": "entity_emissive_alpha",
+        "cristal": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/robot"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.robot"
+      },
+      "animations": {
+        "caminar": "animation.claudenpc.robot.caminar",
+        "reposo": "animation.claudenpc.robot.reposo",
+        "misiles": "animation.claudenpc.robot.misiles",
+        "laser": "animation.claudenpc.robot.laser",
+        "metralla": "animation.claudenpc.robot.metralla",
+        "pisoton": "animation.claudenpc.robot.pisoton",
+        "golpe": "animation.claudenpc.robot.golpe",
+        "alarma": "animation.claudenpc.robot.alarma",
+        "ensamblaje": "animation.claudenpc.robot.ensamblaje",
+        "ctrl_vapor": "controller.animation.claudenpc.robot.vapor"
+      },
+      "particle_effects": {
+        "vapor": "claudenpc:vapor"
+      },
+      "scripts": {
+        "animate": [
+          "caminar",
+          "reposo",
+          {
+            "alarma": "query.property('claudenpc:alarma')"
+          },
+          "ctrl_vapor"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_robot"
+      ]
+    }
+  }
+}

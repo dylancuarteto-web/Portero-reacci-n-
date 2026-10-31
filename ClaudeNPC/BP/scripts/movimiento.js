@@ -100,6 +100,29 @@ function delante(npc, d, alto) {
   return blockAt(npc.dimension, { x: npc.location.x + d.x * 0.7, y: npc.location.y + alto, z: npc.location.z + d.z * 0.7 });
 }
 
+// Sube un escalón de un bloque: salta hacia delante y, si el salto no alcanzó (el
+// motor de físicas a veces frena a los mobs contra el borde), termina de subir como
+// lo haría un salto bien hecho. Así nunca se quedan trabados frente a un bloque.
+export function escalar(npc, d) {
+  const y0 = npc.location.y;
+  impulse(npc, { x: d.x * 0.14, y: 0.46, z: d.z * 0.14 });
+  system.runTimeout(() => {
+    try {
+      if (!npc.isValid || npc.location.y >= y0 + 0.75) return;
+      const dim = npc.dimension;
+      const x = Math.floor(npc.location.x + d.x * 0.85);
+      const z = Math.floor(npc.location.z + d.z * 0.85);
+      const y = Math.floor(y0) + 1;
+      const suelo = blockAt(dim, { x, y: y - 1, z });
+      if (!suelo || reemplazable(suelo) || suelo.isLiquid) return;
+      if (!reemplazable(blockAt(dim, { x, y, z })) || !reemplazable(blockAt(dim, { x, y: y + 1, z }))) return;
+      npc.teleport({ x: x + 0.5, y, z: z + 0.5 }, { keepVelocity: false, rotation: npc.getRotation() });
+    } catch {
+      // Sin ayuda.
+    }
+  }, 9);
+}
+
 system.runInterval(() => {
   for (const [id, m] of motores) {
     const npc = m.npc;
@@ -143,10 +166,14 @@ system.runInterval(() => {
       }
       impulse(npc, { x: d.x * quiero * k - v.x * freno, y: vy, z: d.z * quiero * k - v.z * freno });
       npc.setRotation({ x: 0, y: yawHacia(npc.location, m.destino) });
-      if (npc.isOnGround) {
+      if (npc.isOnGround && now() >= (m.saltoHasta ?? 0)) {
         const pie = delante(npc, d, 0.3);
-        const cabeza = delante(npc, d, 1.3);
-        if (pie && !reemplazable(pie) && !pie.isLiquid && reemplazable(cabeza)) impulse(npc, { x: 0, y: 0.42, z: 0 });
+        if (pie && !reemplazable(pie) && !pie.isLiquid && reemplazable(delante(npc, d, 1.3)) && reemplazable(delante(npc, d, 2.3))) {
+          m.saltoHasta = now() + 14;
+          escalar(npc, d);
+          m.control = { ...npc.location }; // el salto cuenta como avance
+          m.revision = now();
+        }
       }
     } catch {
       motores.delete(id);

@@ -4,8 +4,9 @@ import { romper } from "../construccion.js";
 import { pico, sostener } from "../equipo.js";
 import { ocupado } from "../estructuras.js";
 import { aprender } from "../iq.js";
-import { caminando } from "../movimiento.js";
-import { animate, blockAt, impulse, mirarA, now, rand, superficie } from "../util.js";
+import { caminarA, caminando, seAtasco } from "../movimiento.js";
+import { perlaHasta } from "../tacticas.js";
+import { animate, blockAt, mirarA, now, rand, superficie } from "../util.js";
 
 // Minería: baja en escalera (cada Claude hasta su propia profundidad), sigue en
 // túnel y vuelve a subir a la superficie, un bloque por golpe, con antorchas y
@@ -34,6 +35,24 @@ function cambiarRumbo(state) {
   const opciones = CARDINALES.filter((d) => d.x !== -state.mina.dir.x || d.z !== -state.mina.dir.z);
   state.mina.dir = opciones[rand(0, opciones.length - 1)];
   state.mina.cola = [];
+  state.mina.fallos = (state.mina.fallos ?? 0) + 1;
+}
+
+// Si la mina no avanza (bloques que no puede romper, atascos), primero sube; si
+// tampoco puede, sale a la superficie con una perla. Nunca se queda picando sin fin.
+function revisarAtasco(npc, state) {
+  const mina = state.mina;
+  if ((mina.fallos ?? 0) < 4) return false;
+  if (mina.modo !== "subida") {
+    mina.modo = "subida";
+    mina.fallos = 0;
+    mina.cola = [];
+    return false;
+  }
+  const top = superficie(npc.dimension, npc.location.x, npc.location.z);
+  if (top) perlaHasta(npc, { x: Math.floor(npc.location.x) + 0.5, y: top.location.y + 1, z: Math.floor(npc.location.z) + 0.5 });
+  state.mina = undefined;
+  return true;
 }
 
 function ponerAntorcha(npc, donde) {
@@ -61,6 +80,8 @@ function paso(npc, state) {
     state.mina = undefined;
     return;
   }
+  if (revisarAtasco(npc, state)) return;
+  if (seAtasco(npc)) mina.fallos = (mina.fallos ?? 0) + 1;
   if (!mina.cola.length) planificarPaso(npc, mina);
   const pos = mina.cola[0];
   const block = blockAt(npc.dimension, pos);
@@ -76,6 +97,7 @@ function paso(npc, state) {
       if (!npc.isValid || !state.mina) return;
       if (!romper(npc, state, blockAt(npc.dimension, pos))) return cambiarRumbo(state);
       mina.cola.shift();
+      mina.fallos = 0;
       aprender(npc, state, 0.05);
     }, t - 4);
     return;
@@ -84,9 +106,11 @@ function paso(npc, state) {
   if (mina.cola.length) return;
 
   const atras = { ...npc.location };
-  if (mina.modo === "subida") impulse(npc, { x: mina.dir.x * 0.17, y: 0.42, z: mina.dir.z * 0.17 });
-  else impulse(npc, { x: mina.dir.x * 0.22, y: 0, z: mina.dir.z * 0.22 });
-  state.ocupadoHasta = now() + 10;
+  // Avanza un paso con el motor (sube el escalón solo si hace falta).
+  const sube = mina.modo === "subida" ? 1 : 0;
+  caminarA(npc, { x: Math.floor(npc.location.x) + mina.dir.x + 0.5, y: Math.floor(npc.location.y) + sube,
+    z: Math.floor(npc.location.z) + mina.dir.z + 0.5 }, 0.2);
+  state.ocupadoHasta = now() + 6;
   mina.pasos++;
   if (mina.pasos % MINERIA.antorchaCada === 0) system.runTimeout(() => npc.isValid && ponerAntorcha(npc, atras), 12);
   const profundidad = state.pers?.profundidad ?? 20;

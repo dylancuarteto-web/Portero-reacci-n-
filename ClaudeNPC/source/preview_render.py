@@ -210,9 +210,11 @@ class Scene:
                 warped = Image.merge("RGBA", (*rgb.split(), warped.getchannel("A")))
             alpha = Image.composite(warped.getchannel("A"), Image.new("L", warped.size, 0), mask)
             if emissive:
-                # Material emisivo: el alfa marca el brillo, el color se ve opaco.
+                # Material emisivo: el color se ve opaco y solo brilla donde el alfa es bajo.
+                brillo = warped.getchannel("A").point(lambda a: 255 if a < 128 else 0)
+                brillo = Image.composite(brillo, Image.new("L", warped.size, 0), mask)
                 alpha = mask
-                g = warped.copy(); g.putalpha(mask)
+                g = warped.copy(); g.putalpha(brillo)
                 glow.alpha_composite(g, (bx0, by0))
             warped.putalpha(alpha)
             canvas.alpha_composite(warped, (bx0, by0))
@@ -316,6 +318,12 @@ def main(out):
         sc.add_geometry(models / "golden.geo.json", tex / "golden.png", hidden=auras, emissive=brillan)
         sc.add_geometry(models / "golden.geo.json", tex / "golden.png", hidden=brillan)
         shots.append(sc.render(yaw, pitch, escala, size=(260, 340), center=centro_, bg=(40, 44, 70)))
+        labels.append(label)
+    huesos = [b["name"] for b in json.loads((models / "robot.geo.json").read_text())["minecraft:geometry"][0]["bones"]]
+    for yaw, label in ((0, "Robot"), (-35, "Robot 3/4")):
+        sc = Scene()
+        sc.add_geometry(models / "robot.geo.json", tex / "robot.png", emissive=tuple(b for b in huesos if b != "cupula"))
+        shots.append(sc.render(yaw, 10, 3.2, size=(260, 340), center=(0, 42, 0), bg=(120, 160, 210)))
         labels.append(label)
     sc = Scene()
     sc.add_geometry(models / "aura.geo.json", tex / "aura.png", emissive=tuple(f"brillo_meridiano_{i}" for i in range(8))

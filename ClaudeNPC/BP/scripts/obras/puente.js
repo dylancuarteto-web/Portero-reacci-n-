@@ -23,6 +23,9 @@ export function iniciarPuente(npc, state, destino, bloque = CONSTRUCCION.bloque)
 export function tickPuente(npc, state) {
   const o = state.obra;
   if (now() < state.ocupadoHasta) return false;
+  // Si lleva muchos intentos sin avanzar, lo deja (no se queda trabado en el borde).
+  o.turnos = (o.turnos ?? 0) + 1;
+  if (o.turnos > 80 || (o.turnos > 20 && o.puestos === 0)) return true;
   const d = flat(npc.location, o.destino);
   if (d.d < 1.5 || o.puestos >= CONSTRUCCION.puenteMax) return true;
   if (!npc.isOnGround && o.modo !== "salto") return false;

@@ -16,7 +16,7 @@ const PROYECTILES = new Set(["minecraft:arrow", "minecraft:thrown_trident", "min
   "minecraft:wind_charge_projectile"]);
 
 function puedeCubrirse(s) {
-  return !s.fusion && !s.clase && !s.bote && !s.sentado && !s.obra && !s.aguaActiva && now() >= (s.cd.escudo ?? 0);
+  return !s.fusion && !s.clase && !s.bote && !s.sentado && !s.obra && !s.aguaActiva && !s.robot && now() >= (s.cd.escudo ?? 0);
 }
 
 export function subirEscudo(npc, s, amenaza, ticks) {

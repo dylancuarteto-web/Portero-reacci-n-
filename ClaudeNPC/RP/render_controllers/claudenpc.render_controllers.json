@@ -44,6 +44,20 @@
         }
       ]
     },
+    "controller.render.claudenpc_robot": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "cupula": "Material.cristal"
+        }
+      ]
+    },
     "controller.render.claudenpc_aura": {
       "geometry": "Geometry.default",
       "textures": [
@@ -59,9 +73,21 @@
       ]
     },
     "controller.render.claudenpc_maestro": {
+      "arrays": {
+        "textures": {
+          "Array.pieles": [
+            "Texture.default",
+            "Texture.einstein",
+            "Texture.tesla",
+            "Texture.curie",
+            "Texture.newton",
+            "Texture.lovelace"
+          ]
+        }
+      },
       "geometry": "Geometry.default",
       "textures": [
-        "Texture.default"
+        "Array.pieles[query.property('claudenpc:variante')]"
       ],
       "materials": [
         {
@@ -72,6 +98,38 @@
         },
         {
           "vidrio": "Material.vidrio"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "lentes": "query.property('claudenpc:variante') == 0"
+        },
+        {
+          "vidrio": "query.property('claudenpc:variante') == 0"
+        },
+        {
+          "corbata": "query.property('claudenpc:variante') == 0 || query.property('claudenpc:variante') == 2 || query.property('claudenpc:variante') == 4"
+        },
+        {
+          "bigote": "query.property('claudenpc:variante') == 1 || query.property('claudenpc:variante') == 2"
+        },
+        {
+          "pelo_alborotado": "query.property('claudenpc:variante') == 1"
+        },
+        {
+          "mono": "query.property('claudenpc:variante') == 3"
+        },
+        {
+          "peluca": "query.property('claudenpc:variante') == 4"
+        },
+        {
+          "rizos": "query.property('claudenpc:variante') == 5"
+        },
+        {
+          "falda": "query.property('claudenpc:variante') == 3 || query.property('claudenpc:variante') == 5"
         }
       ]
     }

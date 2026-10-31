@@ -1,6 +1,7 @@
 // Lecciones de Claude Maestro. "nodo" es la táctica que los alumnos usarán más
 // después de la clase; "pizarra" son los apuntes cortos que escribe en el cartel
 // (máximo ~14 letras por línea) y "frases" lo que explica en voz alta.
+// Los maestros genios (IQ 500) enseñan su propia ciencia (más abajo).
 
 export const LECCIONES = [
   {
@@ -88,3 +89,122 @@ export const LECCIONES = [
     pregunta: "¿Cuántos objetos hay en un stack?", respuesta: "¡64!",
   },
 ];
+
+// Lecciones de los maestros genios, con datos reales de cada científico.
+export const LECCIONES_GENIOS = {
+  einstein: [
+    {
+      tema: "Relatividad", nodo: "perla",
+      pizarra: ["E = mc²", "Luz: 300000km/s", "Tiempo relativo"],
+      frases: ["La energía y la masa son dos caras de lo mismo: E = mc².", "Nada viaja más rápido que la luz: unos 300.000 km por segundo.",
+        "Si viajas muy, muy rápido, para ti el tiempo pasa más lento."],
+      pregunta: "¿Qué tan rápido viaja la luz?", respuesta: "¡Unos 300.000 km por segundo!",
+    },
+    {
+      tema: "Imaginación", nodo: null,
+      pizarra: ["Imaginar", "Preguntar", "Experimentar"],
+      frases: ["La imaginación es más importante que el conocimiento.", "Nunca dejes de hacer preguntas.",
+        "Los experimentos mentales también son ciencia: imagina y razona."],
+      pregunta: "¿Qué es más importante que el conocimiento?", respuesta: "¡La imaginación!",
+    },
+    {
+      tema: "Fotones", nodo: "arco",
+      pizarra: ["Luz = fotones", "Fotoeléctrico", "Nobel 1921"],
+      frases: ["La luz viaja en paquetitos de energía llamados fotones.", "La luz puede arrancar electrones de un metal: el efecto fotoeléctrico.",
+        "Por explicarlo ganó el Premio Nobel de Física de 1921."],
+      pregunta: "¿Cómo se llaman los paquetitos de luz?", respuesta: "¡Fotones!",
+    },
+  ],
+  tesla: [
+    {
+      tema: "Corriente alterna", nodo: "torreta",
+      pizarra: ["Va y vuelve", "Viaja lejos", "En tu casa"],
+      frases: ["La corriente alterna cambia de sentido muchas veces por segundo.", "Así la electricidad puede viajar muy lejos por los cables.",
+        "Hoy casi todas las casas del mundo usan corriente alterna."],
+      pregunta: "¿Qué corriente usan casi todas las casas?", respuesta: "¡La corriente alterna!",
+    },
+    {
+      tema: "Bobina de Tesla", nodo: "trampa",
+      pizarra: ["Dos bobinas", "Alto voltaje", "¡Rayos!"],
+      frases: ["Una bobina de Tesla crea chispas y rayos con muchísimo voltaje.", "Funciona con dos bobinas que se pasan la energía una a otra.",
+        "Nunca toques la electricidad sin protección."],
+      pregunta: "¿Qué crea una bobina de Tesla?", respuesta: "¡Rayos de alto voltaje!",
+    },
+    {
+      tema: "Magnetismo", nodo: "torreta",
+      pizarra: ["Polo N y S", "Imán + corriente", "Motor"],
+      frases: ["Un imán tiene un polo norte y un polo sur.", "Electricidad e imanes juntos pueden hacer girar un motor.",
+        "Su motor de inducción todavía se usa en muchas máquinas."],
+      pregunta: "¿Qué polos tiene un imán?", respuesta: "¡Norte y sur!",
+    },
+  ],
+  curie: [
+    {
+      tema: "Radiactividad", nodo: "cavar",
+      pizarra: ["Radiactivo", "Polonio", "Radio"],
+      frases: ["Algunos elementos emiten energía por sí solos: eso es la radiactividad.", "Descubrió dos elementos nuevos: el polonio y el radio.",
+        "Llamó polonio a uno en honor a su país, Polonia."],
+      pregunta: "¿Qué dos elementos descubrió?", respuesta: "¡El polonio y el radio!",
+    },
+    {
+      tema: "Dos Nobel", nodo: null,
+      pizarra: ["Nobel Física", "Nobel Química", "Perseverar"],
+      frases: ["Fue la primera persona en ganar dos Premios Nobel.", "Uno de Física y otro de Química.",
+        "Trabajó años en un laboratorio muy sencillo y nunca se rindió."],
+      pregunta: "¿Cuántos Premios Nobel ganó?", respuesta: "¡Dos!",
+    },
+    {
+      tema: "Laboratorio seguro", nodo: "escudo",
+      pizarra: ["Protección", "Medir", "Anotar"],
+      frases: ["En su época no se sabía lo peligrosa que era la radiación.", "Hoy los científicos usan protección y miden con cuidado.",
+        "Anota todo: una buena científica deja apuntes claros."],
+      pregunta: "¿Qué usan hoy los científicos con la radiación?", respuesta: "¡Protección!",
+    },
+  ],
+  newton: [
+    {
+      tema: "Gravedad", nodo: "vacio",
+      pizarra: ["Todo se atrae", "La manzana", "La Luna cae"],
+      frases: ["Todo lo que tiene masa atrae a lo demás: eso es la gravedad.", "Se cuenta que una manzana al caer le hizo pensar en ella.",
+        "La misma fuerza mantiene a la Luna girando alrededor de la Tierra."],
+      pregunta: "¿Qué fuerza hace caer las cosas?", respuesta: "¡La gravedad!",
+    },
+    {
+      tema: "Leyes del movimiento", nodo: "martillazo",
+      pizarra: ["1 Inercia", "2 F = m·a", "3 Acc.-reacc."],
+      frases: ["Primera: un objeto sigue igual si nada lo empuja.", "Segunda: fuerza es masa por aceleración, F = m·a.",
+        "Tercera: a toda acción le corresponde una reacción igual y opuesta."],
+      pregunta: "¿Cuál es la segunda ley?", respuesta: "¡Fuerza es igual a masa por aceleración!",
+    },
+    {
+      tema: "Luz y colores", nodo: "arco",
+      pizarra: ["Prisma", "Arcoíris", "Telescopio"],
+      frases: ["Con un prisma separó la luz blanca en colores.", "La luz blanca tiene dentro todos los colores del arcoíris.",
+        "También construyó un telescopio con espejos."],
+      pregunta: "¿Qué hay dentro de la luz blanca?", respuesta: "¡Todos los colores del arcoíris!",
+    },
+  ],
+  lovelace: [
+    {
+      tema: "Algoritmos", nodo: "torre",
+      pizarra: ["Paso 1, 2, 3", "Orden claro", "Programa"],
+      frases: ["Un algoritmo es una lista de pasos para resolver algo.", "Ada escribió uno de los primeros programas de la historia.",
+        "Lo hizo para la máquina analítica de Charles Babbage."],
+      pregunta: "¿Qué es un algoritmo?", respuesta: "¡Una lista de pasos para resolver algo!",
+    },
+    {
+      tema: "Bucles", nodo: "puente",
+      pizarra: ["Repetir", "Bucle", "Hasta acabar"],
+      frases: ["Un bucle repite los mismos pasos varias veces.", "Así una máquina hace mucho trabajo con pocas instrucciones.",
+        "Los Claudes construyen sus casas con bucles: hilera tras hilera."],
+      pregunta: "¿Para qué sirve un bucle?", respuesta: "¡Para repetir pasos!",
+    },
+    {
+      tema: "Ciencia poética", nodo: null,
+      pizarra: ["Números", "Música", "Imaginación"],
+      frases: ["Ada imaginó que las máquinas podrían hacer más que cuentas.", "Pensó que algún día podrían componer música.",
+        "Unir ciencia e imaginación: ella lo llamó ciencia poética."],
+      pregunta: "¿Qué imaginó Ada que harían las máquinas?", respuesta: "¡Componer música!",
+    },
+  ],
+};

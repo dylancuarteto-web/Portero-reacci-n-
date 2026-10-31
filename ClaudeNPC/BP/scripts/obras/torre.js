@@ -53,9 +53,13 @@ export function tickTorre(npc, state) {
     if (!npc.isValid || falla) return;
     if (colocar(npc.dimension, p, o.bloque)) {
       o.puestos++;
+      o.fallos = 0;
       sound(npc, "use.stone", 1);
+    } else {
+      o.fallos = (o.fallos ?? 0) + 1;
     }
   }, 5 + rand(0, 1));
+  if ((o.fallos ?? 0) > 4) return true; // no puede poner el bloque: deja de intentarlo
   state.ocupadoHasta = now() + 9 + rand(0, 2) - Math.round(nivel(state) * 3);
   return false;
 }

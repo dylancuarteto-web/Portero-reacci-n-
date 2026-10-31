@@ -69,7 +69,7 @@ export function convocar(sesion) {
   for (const npc of lista) {
     if (!libres.length || sesion.alumnos.size >= MAESTRO_CFG.maxAlumnos) break;
     const s = obtenerEstado(npc);
-    if (s.fusion || s.clase || s.reunion) continue;
+    if (s.fusion || s.clase || s.reunion || s.robot || s.robotObra) continue;
     unirse(npc, s, sesion, libres.shift());
   }
   return sesion.alumnos.size;
@@ -227,7 +227,7 @@ export function salirDeClase(npc, s, conBono) {
   sostener(npc, pico(s));
   sostener(npc, "minecraft:shield", "slot.weapon.offhand");
   if (conBono) {
-    s.bono = { x: MAESTRO_CFG.bono.x, hasta: now() + MAESTRO_CFG.bono.duracion };
+    s.bono = { x: c.sesion.bono ?? MAESTRO_CFG.bono.x, hasta: now() + MAESTRO_CFG.bono.duracion };
     burst(npc, PARTICLES.confeti, { x: 0, y: 2, z: 0 });
   }
   ponerHaciendo(npc, s, "");
@@ -254,10 +254,10 @@ export function sentados(sesion) {
   return alumnos(sesion).filter(({ s }) => s.clase.fase === "sentado");
 }
 
-// IQ por atender: suben hasta el máximo (300), incluso por encima del IQ del maestro.
+// IQ por atender: suben hasta el máximo (1000), incluso por encima del IQ del maestro.
 export function darPuntos(sesion) {
   for (const { npc, s } of sentados(sesion)) {
-    if (s.iq < IQ.maximo) aprender(npc, s, MAESTRO_CFG.puntos);
+    if (s.iq < IQ.maximo) aprender(npc, s, sesion.puntos ?? MAESTRO_CFG.puntos);
   }
 }
 

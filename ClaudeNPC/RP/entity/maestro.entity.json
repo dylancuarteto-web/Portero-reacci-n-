@@ -9,7 +9,12 @@
         "vidrio": "entity_alphablend"
       },
       "textures": {
-        "default": "textures/entity/claudenpc/maestro"
+        "default": "textures/entity/claudenpc/maestro",
+        "einstein": "textures/entity/claudenpc/maestro_einstein",
+        "tesla": "textures/entity/claudenpc/maestro_tesla",
+        "curie": "textures/entity/claudenpc/maestro_curie",
+        "newton": "textures/entity/claudenpc/maestro_newton",
+        "lovelace": "textures/entity/claudenpc/maestro_lovelace"
       },
       "geometry": {
         "default": "geometry.claudenpc.maestro"

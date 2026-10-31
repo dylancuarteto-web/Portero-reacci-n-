@@ -1,13 +1,13 @@
-import { BlockPermutation, Player, system, world } from "@minecraft/server";
+import { BlockPermutation, ItemStack, Player, system, world } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
-import { ANIM, DIMENSIONES, IQ, MAESTRO, MAESTRO_CFG, MODIFICA_MUNDO, NPC, PARTICLES } from "./config.js";
+import { ANIM, DIMENSIONES, IQ, MAESTRO, MAESTRO_CFG, MODIFICA_MUNDO, NPC, PARTICLES, PROP, VARIANTES } from "./config.js";
 import {
   acierta, alumnos, aplausos, convocar, darPuntos, gestos, levantarMano, saliendo, sentados, terminarClase,
 } from "./clase.js";
 import { estados } from "./estado.js";
 import { aprender } from "./iq.js";
 import { listar, ocupado, registrar } from "./estructuras.js";
-import { LECCIONES } from "./lecciones.js";
+import { LECCIONES, LECCIONES_GENIOS } from "./lecciones.js";
 import { caminarA, caminando, detener, velocidad } from "./movimiento.js";
 import { candidatosAlrededor, frenteHacia, sitioPlano } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
@@ -18,7 +18,8 @@ import {
   superficie,
 } from "./util.js";
 
-// Claude Maestro (IQ 280). No ataca: construye un aula como un jugador (pizarra,
+// Claude Maestro (IQ 280) y los maestros genios (IQ 500: Einstein, Tesla, Curie,
+// Newton y Lovelace, cada uno con su ciencia). No atacan: construyen un aula como un jugador (pizarra,
 // mesa con campana, atril, pupitres y sillas), y cada cierto tiempo toca la campana.
 // Los Claudes cercanos dejan lo que hacen, van a clase y se sientan; él escribe en la
 // pizarra, explica, señala, hace una pregunta y reparte IQ. Si lo golpeas, suspende
@@ -56,8 +57,19 @@ function dentro(aula, p) {
   return Math.abs(a) <= AULA.a - 0.5 && Math.abs(b) <= AULA.b - 0.5;
 }
 
+function variante(e) {
+  try {
+    const v = e.getProperty(PROP.variante);
+    return VARIANTES[typeof v === "number" ? v : 0] ?? VARIANTES[0];
+  } catch {
+    return VARIANTES[0];
+  }
+}
+
 function nombre(e, estado) {
-  const t = `§dIQ ${MAESTRO_CFG.iq}§r\nClaude Maestro${estado ? `\n§o§7${estado}` : ""}`;
+  const v = maestros.get(e.id)?.variante ?? variante(e);
+  const color = v.iq >= 500 ? "§c" : "§d";
+  const t = `${color}IQ ${v.iq}§r\n${v.nombre}${estado ? `\n§o§7${estado}` : ""}`;
   try {
     if (e.nameTag !== t) e.nameTag = t;
   } catch {
@@ -88,7 +100,7 @@ function puntosAlAire(dimension, c, frente) {
 
 function prepararAula(dimension, datos) {
   if (datos.aire) return { ...datos, puntos: puntosAlAire(dimension, datos.c, datos.frente) };
-  const plano = planAula(datos.c, datos.frente, perm);
+  const plano = planAula(datos.c, datos.frente, perm, datos.titulo ?? "Claude Maestro", datos.iq ?? 280);
   return { ...datos, puntos: plano.puntos, pasos: plano.pasos };
 }
 
@@ -96,7 +108,7 @@ function guardar(e, m) {
   try {
     const a = m.aula;
     e.setDynamicProperty(PROP_AULA, JSON.stringify({
-      c: a?.c, frente: a?.frente, listo: a?.listo, aire: a?.aire, leccion: m.leccion, dadas: m.dadas,
+      c: a?.c, frente: a?.frente, listo: a?.listo, aire: a?.aire, leccion: m.leccion, dadas: m.dadas, titulo: m.titulo, iq: m.iq,
     }));
   } catch {
     // No se pudo guardar.
@@ -121,8 +133,11 @@ function obtener(e) {
   if (!m) {
     m = {
       e, ocupadoHasta: now() + 20, cd: {}, iq: MAESTRO_CFG.iq, pers: { ritmo: 0.85, paso: 0.21 },
-      memoria: { exitos: {} }, minados: 0, nivelPico: 2, fase: "inicio", leccion: rand(0, LECCIONES.length - 1), dadas: 0,
+      memoria: { exitos: {} }, minados: 0, nivelPico: 2, fase: "inicio", leccion: rand(0, 11), dadas: 0,
     };
+    m.variante = variante(e);
+    m.iq = m.variante.iq;
+    m.titulo = m.variante.nombre;
     maestros.set(e.id, m);
     cargar(e, m);
     velocidad(e, 0);
@@ -132,8 +147,36 @@ function obtener(e) {
   return m;
 }
 
+function lecciones(m) {
+  return LECCIONES_GENIOS[m.variante?.materia] ?? LECCIONES;
+}
+
 function leccionActual(m) {
-  return LECCIONES[m.leccion % LECCIONES.length];
+  const lista = lecciones(m);
+  return lista[m.leccion % lista.length];
+}
+
+// Firma de cada genio (chispas eléctricas, brillo verde, una manzana, ceros y unos...).
+function firma(e, m) {
+  const id = m.variante?.id;
+  const cabeza = e.getHeadLocation();
+  try {
+    if (id === "tesla") {
+      for (const lado of [-0.4, 0.4]) particleAt(e.dimension, PARTICLES.chispaElectrica, { x: e.location.x + lado, y: e.location.y + 0.9, z: e.location.z });
+      sound(e, "random.fizz", 1.8, 0.3);
+    } else if (id === "curie") {
+      particleAt(e.dimension, PARTICLES.brilloVerde, { x: e.location.x, y: e.location.y + 1, z: e.location.z });
+    } else if (id === "einstein") {
+      particleAt(e.dimension, PARTICLES.idea, { x: cabeza.x, y: cabeza.y + 0.6, z: cabeza.z });
+    } else if (id === "lovelace") {
+      particleAt(e.dimension, PARTICLES.binario, { x: cabeza.x, y: cabeza.y + 0.5, z: cabeza.z });
+    } else if (id === "newton" && Math.random() < 0.35) {
+      // Una manzana cae del cielo... sobre su cabeza.
+      e.dimension.spawnItem(new ItemStack("minecraft:apple", 1), { x: cabeza.x, y: cabeza.y + 3, z: cabeza.z });
+    }
+  } catch {
+    // Sin firma.
+  }
 }
 
 function letrero(m, i, texto) {
@@ -212,7 +255,7 @@ function inicio(e, m) {
   const enUso = new Set([...maestros.values()].filter((x) => x !== m && x.aula).map((x) => `${x.aula.c.x},${x.aula.c.z}`));
   const cercana = listar("aula").find((a) => Math.hypot(a.x - e.location.x, a.z - e.location.z) < 48 && !enUso.has(`${a.x},${a.z}`));
   if (cercana?.frente) {
-    m.aula = prepararAula(e.dimension, { c: { x: cercana.x, y: cercana.y, z: cercana.z }, frente: cercana.frente, listo: true });
+    m.aula = prepararAula(e.dimension, { c: { x: cercana.x, y: cercana.y, z: cercana.z }, frente: cercana.frente, listo: true, titulo: m.titulo, iq: m.iq });
     guardar(e, m);
     m.fase = "recreo";
     return;
@@ -229,7 +272,7 @@ function alAireLibre(e, m) {
   m.aula = prepararAula(e.dimension, { c, frente, listo: true, aire: true });
   guardar(e, m);
   m.fase = "recreo";
-  avisar(e.dimension, e.location, "§6Claude Maestro:§r Hoy daremos la clase al aire libre.", 32);
+  avisar(e.dimension, e.location, `§6${m.titulo}:§r Hoy daremos la clase al aire libre.`, 32);
 }
 
 function buscar(e, m) {
@@ -250,11 +293,11 @@ function buscar(e, m) {
   const sitio = sitioPlano(e.dimension, cand.x, cand.z, 7, 7, 2);
   if (!sitio) return;
   const frente = frenteHacia(sitio, e);
-  m.aula = prepararAula(e.dimension, { c: sitio, frente, listo: false });
+  m.aula = prepararAula(e.dimension, { c: sitio, frente, listo: false, titulo: m.titulo, iq: m.iq });
   registrar("aula", { x: sitio.x, y: sitio.y, z: sitio.z, frente });
   guardar(e, m);
   prepararObra(m);
-  avisar(e.dimension, e.location, "§6Claude Maestro:§r ¡Aquí construiré el aula para mis alumnos!", 40);
+  avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡Aquí construiré el aula para mis alumnos!`, 40);
   m.fase = "construir";
 }
 
@@ -284,7 +327,7 @@ function construir(e, m) {
   m.fase = "recreo";
   m.cd.clase = now() + MAESTRO_CFG.primeraClase;
   letrero(m, 1, `§lPróxima:§r\n${leccionActual(m).tema}`);
-  avisar(e.dimension, e.location, "§6Claude Maestro:§r ¡El aula está lista! La primera clase empieza muy pronto.", 48);
+  avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡El aula está lista! La primera clase empieza muy pronto.`, 48);
 }
 
 // Recreo: lee en el atril, prepara la pizarra, revisa pupitres, mira por la ventana
@@ -306,7 +349,7 @@ function recreo(e, m) {
     if (p && cada(m, "saludo", 1200)) {
       mirarA(e, p.getHeadLocation());
       animate(e, ANIM.maestroSaludar);
-      avisar(e.dimension, e.location, "§6Claude Maestro:§r ¡Hola! Soy el maestro de los Claudes. Tócame para hablar.", 10);
+      avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡Hola! Soy ${m.titulo}. Tócame para hablar.`, 10);
       m.ocupadoHasta = now() + 50;
       return;
     }
@@ -381,7 +424,8 @@ function tocarCampana(e, m, veces) {
 function llamar(e, m) {
   m.tarea = undefined;
   m.fase = "campana";
-  m.sesion = { maestro: e, aula: m.aula, alumnos: new Map(), activa: true, leccion: leccionActual(m) };
+  m.sesion = { maestro: e, aula: m.aula, alumnos: new Map(), activa: true, leccion: leccionActual(m),
+    puntos: m.variante?.puntos ?? MAESTRO_CFG.puntos, bono: m.variante?.bono ?? MAESTRO_CFG.bono.x };
 }
 
 function campana(e, m) {
@@ -390,11 +434,11 @@ function campana(e, m) {
   mirarA(e, centroBloque(m.aula.puntos.campanaBloque));
   tocarCampana(e, m, 3);
   abrirPuerta(m, true);
-  avisar(e.dimension, e.location, `§6Claude Maestro:§r ¡A clase! Hoy veremos: §e${m.sesion.leccion.tema}`, MAESTRO_CFG.llamada);
+  avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡A clase! Hoy veremos: §e${m.sesion.leccion.tema}`, MAESTRO_CFG.llamada);
   const n = convocar(m.sesion);
   m.ocupadoHasta = now() + 40;
   if (!n) {
-    avisar(e.dimension, e.location, "§6Claude Maestro:§r Nadie vino a clase... lo intentaré más tarde.", 32);
+    avisar(e.dimension, e.location, `§6${m.titulo}:§r Nadie vino a clase... lo intentaré más tarde.`, 32);
     m.sesion.activa = false;
     m.sesion = undefined;
     m.fase = "recreo";
@@ -428,7 +472,7 @@ function empezarClase(e, m) {
   letrero(m, 0, `§lLección ${m.dadas}§r\n\nDía ${dia}`);
   letrero(m, 1, "");
   letrero(m, 2, "Apuntes:\n");
-  avisar(e.dimension, e.location, `§6Claude Maestro:§r Buenos días, clase. Hoy aprenderemos: §e${L.tema}`, 28);
+  avisar(e.dimension, e.location, `§6${m.titulo}:§r Buenos días, clase. Hoy aprenderemos: §e${L.tema}`, 28);
   irYMirar(e, m, m.aula.puntos.pizarra, haciaPizarra(m));
 }
 
@@ -474,7 +518,7 @@ function clase(e, m) {
   for (let k = 0; k < 3; k++) {
     const base = 180 + k * 280;
     if (llega(base)) {
-      avisar(e.dimension, e.location, `§6Claude Maestro:§r ${L.frases[k]}`, 28);
+      avisar(e.dimension, e.location, `§6${m.titulo}:§r ${L.frases[k]}`, 28);
       animate(e, ANIM.maestroExplicar);
     }
     if (llega(base + 90)) {
@@ -496,7 +540,7 @@ function clase(e, m) {
   }
   // 3. Pregunta: un alumno levanta la mano y responde.
   if (llega(1000)) {
-    avisar(e.dimension, e.location, `§6Claude Maestro:§r Pregunta: ${L.pregunta}`, 28);
+    avisar(e.dimension, e.location, `§6${m.titulo}:§r Pregunta: ${L.pregunta}`, 28);
     animate(e, ANIM.maestroPensar);
     c.alumno = levantarMano(ses);
   }
@@ -509,17 +553,17 @@ function clase(e, m) {
       burst(a.npc, PARTICLES.confeti, { x: 0, y: 2, z: 0 });
       if (a.s.iq < IQ.maximo) aprender(a.npc, a.s, 2);
     } else {
-      avisar(e.dimension, e.location, `§6Claude Maestro:§r Casi... ${L.respuesta}`, 28);
+      avisar(e.dimension, e.location, `§6${m.titulo}:§r Casi... ${L.respuesta}`, 28);
       animate(e, ANIM.maestroPensar);
     }
   }
   // 4. Repaso y tarea.
   if (llega(1180)) {
-    avisar(e.dimension, e.location, "§6Claude Maestro:§r Repasemos los apuntes de la pizarra...", 28);
+    avisar(e.dimension, e.location, `§6${m.titulo}:§r Repasemos los apuntes de la pizarra...`, 28);
     animate(e, ANIM.maestroLeer);
   }
   if (llega(1320)) {
-    avisar(e.dimension, e.location, `§6Claude Maestro:§r Tarea: practicar ${L.tema.toLowerCase()}. ¡Hasta la próxima!`, 28);
+    avisar(e.dimension, e.location, `§6${m.titulo}:§r Tarea: practicar ${L.tema.toLowerCase()}. ¡Hasta la próxima!`, 28);
     animate(e, ANIM.maestroLentes);
   }
   if (llega(1440)) tocarCampana(e, m, 2);
@@ -539,7 +583,7 @@ function terminar(e, m, completa) {
   if (completa) {
     m.leccion++;
     m.cd.clase = now() + rand(...MAESTRO_CFG.cadaClase);
-    avisar(e.dimension, e.location, "§6Claude Maestro:§r ¡Muy bien, clase! Ahora aprenderán el doble durante un rato.", 32);
+    avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡Muy bien, clase! Ahora aprenderán ${(m.variante?.bono ?? 2) >= 3 ? "el triple" : "el doble"} durante un rato.`, 32);
     animate(e, ANIM.maestroAplaudir);
   }
   guardar(e, m);
@@ -557,7 +601,7 @@ function vigilarSalida(m) {
 }
 
 function cancelar(e, m, motivo) {
-  avisar(e.dimension, e.location, `§6Claude Maestro:§r ${motivo}`, 32);
+  avisar(e.dimension, e.location, `§6${m.titulo}:§r ${motivo}`, 32);
   terminar(e, m, false);
   m.cd.clase = now() + 1200;
 }
@@ -575,6 +619,7 @@ function tickMaestro(e) {
     }
   }
   vigilarSalida(m);
+  if (m.variante?.id !== "maestro" && cada(m, "firma", 60)) firma(e, m);
   if (tickObra(e, m)) return;
   if (m.fase === "clase" && m.sesion) return clase(e, m); // la clase avanza aunque esté gesticulando
   if (now() < m.ocupadoHasta) return;
@@ -613,7 +658,7 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
   if (hurtEntity.typeId !== MAESTRO || !(damageSource.damagingEntity instanceof Player)) return;
   const m = maestros.get(hurtEntity.id);
   animate(hurtEntity, ANIM.maestroLentes);
-  avisar(hurtEntity.dimension, hurtEntity.location, "§6Claude Maestro:§r ¡Ay! ¡Al maestro no se le pega!", 24);
+  avisar(hurtEntity.dimension, hurtEntity.location, `§6${m?.titulo ?? "Claude Maestro"}:§r ¡Ay! ¡Al maestro no se le pega!`, 24);
   if (m?.sesion) cancelar(hurtEntity, m, "§c¡Se suspende la clase!");
   try {
     for (const npc of hurtEntity.dimension.getEntities({ type: NPC, location: hurtEntity.location, maxDistance: 32 })) {
@@ -646,13 +691,14 @@ function menu(player, e, m) {
     // Sin Claudes.
   }
   const progreso = m.fase === "construir" && m.obraAula ? ` (${Math.floor((m.obraAula.i / m.obraAula.plan.length) * 100)}%)` : "";
+  const v = m.variante ?? VARIANTES[0];
   const form = new ActionFormData()
-    .title("§lClaude Maestro")
-    .body(`§dIQ ${MAESTRO_CFG.iq}§r · Maestro de los Claudes\n\n`
+    .title(`§l${v.nombre}`)
+    .body(`${v.iq >= 500 ? "§c" : "§d"}IQ ${v.iq}§r · ${v.lema}\n\n`
       + `§7Estado:§r ${ESTADOS[m.fase] ?? "Pensando"}${progreso}\n`
       + `§7Claudes cerca:§r ${cerca}\n§7Clases dadas:§r ${m.dadas ?? 0}\n`
       + `§7Próxima lección:§r ${m.sesion?.leccion.tema ?? L.tema}\n\n`
-      + "§7En clase los Claudes ganan IQ y después aprenden el doble durante 5 minutos.");
+      + `§7En clase los Claudes ganan IQ y después aprenden ${v.bono >= 3 ? "el triple" : "el doble"} durante 5 minutos.`);
   const acciones = [];
   if (m.fase === "recreo") {
     form.button("§l¡Empezar la clase ahora!");
@@ -667,7 +713,7 @@ function menu(player, e, m) {
     const accion = acciones[r.selection];
     if (accion === "clase") {
       m.cd.clase = now();
-      player.sendMessage("§6Claude Maestro:§r ¡Muy bien! Voy a tocar la campana.");
+      player.sendMessage(`§6${m.titulo}:§r ¡Muy bien! Voy a tocar la campana.`);
     } else if (accion === "leccion") {
       new ActionFormData()
         .title(`§lLección: ${L.tema}`)
@@ -701,7 +747,7 @@ export function claseAhora(player) {
     }
   }
   if (!mejor || md > 96) return "No hay ningún Claude Maestro cerca.";
-  if (mejor.fase !== "recreo") return `Claude Maestro está ocupado: ${ESTADOS[mejor.fase] ?? mejor.fase}.`;
+  if (mejor.fase !== "recreo") return `${mejor.titulo} está ocupado: ${ESTADOS[mejor.fase] ?? mejor.fase}.`;
   mejor.cd.clase = now();
-  return "Claude Maestro va a tocar la campana.";
+  return `${mejor.titulo} va a tocar la campana.`;
 }

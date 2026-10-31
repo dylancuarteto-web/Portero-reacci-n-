@@ -9,6 +9,15 @@
         "claudenpc:charla": {
           "type": "bool",
           "default": false
+        },
+        "claudenpc:variante": {
+          "type": "int",
+          "range": [
+            0,
+            5
+          ],
+          "default": 0,
+          "client_sync": true
         }
       }
     },
@@ -104,6 +113,76 @@
       "claudenpc:hablar": {
         "set_property": {
           "claudenpc:charla": "!query.property('claudenpc:charla')"
+        }
+      },
+      "minecraft:entity_spawned": {
+        "randomize": [
+          {
+            "weight": 50,
+            "set_property": {
+              "claudenpc:variante": 0
+            }
+          },
+          {
+            "weight": 10,
+            "set_property": {
+              "claudenpc:variante": 1
+            }
+          },
+          {
+            "weight": 10,
+            "set_property": {
+              "claudenpc:variante": 2
+            }
+          },
+          {
+            "weight": 10,
+            "set_property": {
+              "claudenpc:variante": 3
+            }
+          },
+          {
+            "weight": 10,
+            "set_property": {
+              "claudenpc:variante": 4
+            }
+          },
+          {
+            "weight": 10,
+            "set_property": {
+              "claudenpc:variante": 5
+            }
+          }
+        ]
+      },
+      "claudenpc:maestro": {
+        "set_property": {
+          "claudenpc:variante": 0
+        }
+      },
+      "claudenpc:einstein": {
+        "set_property": {
+          "claudenpc:variante": 1
+        }
+      },
+      "claudenpc:tesla": {
+        "set_property": {
+          "claudenpc:variante": 2
+        }
+      },
+      "claudenpc:curie": {
+        "set_property": {
+          "claudenpc:variante": 3
+        }
+      },
+      "claudenpc:newton": {
+        "set_property": {
+          "claudenpc:variante": 4
+        }
+      },
+      "claudenpc:lovelace": {
+        "set_property": {
+          "claudenpc:variante": 5
         }
       }
     }

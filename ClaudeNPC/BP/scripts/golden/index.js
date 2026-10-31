@@ -4,7 +4,7 @@ import { animate, blockAt, burst, distancia, now, particleAt, piso, rand, sortea
 import { danar, empujar, estallido, goldens, historial, objetivos } from "./comun.js";
 import { PODERES } from "./poderes/index.js";
 
-// Claude Golden: nace de la fusión de cinco Claudes con IQ 300 y es un jefe HOSTIL.
+// Claude Golden: nace de la fusión de cinco Claudes con IQ 1000 y es un jefe HOSTIL.
 // Vuela en órbita a tu alrededor, se lanza a golpearte con la palma dorada, te devuelve
 // las flechas y usa poderes creativos (cada uno en golden/poderes). Con la mitad de
 // vida entra en fase 2: piensa al 200%, usa poderes más seguido y su ojo derecho brilla

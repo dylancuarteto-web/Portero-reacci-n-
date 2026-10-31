@@ -4,12 +4,15 @@ export const NPC = "claudenpc:claude";
 export const MAESTRO = "claudenpc:maestro";
 export const GOLDEN = "claudenpc:claude_golden";
 export const ESPEJISMO = "claudenpc:espejismo";
+export const ROBOT = "claudenpc:robot";
+export const MISIL = "claudenpc:misil";
 export const ECO = "claudenpc:eco";
 export const AURA = "claudenpc:aura";
 export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
 // Propiedades de entidad (las ve el paquete de recursos para las posturas).
-export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia" };
+export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia", variante: "claudenpc:variante",
+  alarma: "claudenpc:alarma" };
 
 // Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
 export const EVENTO = {
@@ -41,6 +44,11 @@ export const PARTICLES = {
   agujero: "claudenpc:agujero",
   nota: "claudenpc:nota",
   espejo: "claudenpc:espejo",
+  chispaElectrica: "claudenpc:chispa_electrica",
+  brilloVerde: "claudenpc:brillo_verde",
+  binario: "claudenpc:binario",
+  laser: "claudenpc:laser",
+  carga: "claudenpc:carga",
   auraDorada: "claudenpc:aura_dorada",
   fusionAnillo: "claudenpc:fusion_anillo",
   fusionDestello: "claudenpc:fusion_destello",
@@ -89,6 +97,13 @@ export const ANIM = {
   goldenAturdido: "animation.claudenpc.golden.aturdido",
   goldenRisa: "animation.claudenpc.golden.risa",
   goldenPicada: "animation.claudenpc.golden.picada",
+  robotMisiles: "animation.claudenpc.robot.misiles",
+  robotLaser: "animation.claudenpc.robot.laser",
+  robotMetralla: "animation.claudenpc.robot.metralla",
+  robotPisoton: "animation.claudenpc.robot.pisoton",
+  robotGolpe: "animation.claudenpc.robot.golpe",
+  robotEnsamblaje: "animation.claudenpc.robot.ensamblaje",
+  pilotar: "animation.claudenpc.pilotar",
   maestroLeer: "animation.claudenpc.maestro.leer",
   maestroExplicar: "animation.claudenpc.maestro.explicar",
   maestroEscribir: "animation.claudenpc.maestro.escribir",
@@ -126,8 +141,10 @@ export const EXCAVAR = { maxBloques: 14, atascado: 40, maxPasos: 18 };
 // Velocidad de movimiento: caminar y correr como un jugador.
 export const VELOCIDAD = { caminar: 0.25, correr: 0.33 };
 
-// IQ: empieza en 70 y sube con la experiencia hasta 300.
-export const IQ = { inicial: 70, maximo: 300, propiedad: "claudenpc:iq", global: "claudenpc:iq_global" };
+// IQ: empieza en 70 y sube con la experiencia hasta 1000. La habilidad en combate y
+// construcción llega a su tope en 300; con 500 cinco Claudes construyen el robot y
+// con 1000 cinco Claudes se fusionan en Claude Golden.
+export const IQ = { inicial: 70, maximo: 1000, habilidad: 300, robot: 500, propiedad: "claudenpc:iq", global: "claudenpc:iq_global" };
 
 export const CONSTRUCCION = {
   bloque: "minecraft:cobblestone",
@@ -146,7 +163,17 @@ export const CASA = {
   alcanceTecho: 6.4,
 };
 
-export const FUSION = { cantidad: 5, iq: 300, radio: 20, busqueda: 160 };
+export const FUSION = { cantidad: 5, iq: 1000, radio: 20, busqueda: 160 };
+
+// Robot de los Claudes: con IQ 500, cinco Claudes lo construyen, se suben y lo manejan.
+// Dura 5 minutos de batalla y luego se autodestruye; no lo vuelven a construir en 20 min.
+export const ROBOT_CFG = {
+  cantidad: 5,
+  duracion: 6000,
+  descanso: 24000,
+  vista: 48,
+  ataqueCada: [36, 64],
+};
 
 // Claude Golden (jefe hostil): a qué distancia te ve, cada cuánto usa un poder
 // (fase 1 y fase 2, con la mitad de vida), golpe cuerpo a cuerpo y flechas que devuelve.
@@ -170,6 +197,17 @@ export const MAESTRO_CFG = {
   bono: { x: 2, duracion: 6000 },
   maxAlumnos: 16,
 };
+
+// Variantes de Claude Maestro: el normal (IQ 280) y genios inspirados en científicos
+// y matemáticos reales (IQ 500), que enseñan su ciencia y hacen subir el IQ más rápido.
+export const VARIANTES = [
+  { id: "maestro", nombre: "Claude Maestro", iq: 280, puntos: 0.5, bono: 2, materia: "general", lema: "Maestro de los Claudes" },
+  { id: "einstein", nombre: "Claude Einstein", iq: 500, puntos: 0.9, bono: 3, materia: "einstein", lema: "Genio de la física" },
+  { id: "tesla", nombre: "Claude Tesla", iq: 500, puntos: 0.9, bono: 3, materia: "tesla", lema: "Genio de la electricidad" },
+  { id: "curie", nombre: "Claude Curie", iq: 500, puntos: 0.9, bono: 3, materia: "curie", lema: "Genia de la química y la física" },
+  { id: "newton", nombre: "Claude Newton", iq: 500, puntos: 0.9, bono: 3, materia: "newton", lema: "Genio de la física y las matemáticas" },
+  { id: "lovelace", nombre: "Claude Lovelace", iq: 500, puntos: 0.9, bono: 3, materia: "lovelace", lema: "Genia de las matemáticas y los programas" },
+];
 
 export const PICOS = [
   "minecraft:wooden_pickaxe",
