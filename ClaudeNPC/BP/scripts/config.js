@@ -1,10 +1,22 @@
-// Ajustes del NPC Claude y de Claude Golden. Tiempos en ticks (20 ticks = 1 segundo).
+// Ajustes del NPC Claude, Claude Maestro y Claude Golden. Tiempos en ticks (20 ticks = 1 segundo).
 
 export const NPC = "claudenpc:claude";
+export const MAESTRO = "claudenpc:maestro";
 export const GOLDEN = "claudenpc:claude_golden";
 export const ECO = "claudenpc:eco";
 export const AURA = "claudenpc:aura";
 export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
+
+// Propiedades de entidad (las ve el paquete de recursos para las posturas).
+export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado" };
+
+// Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
+export const EVENTO = {
+  hostil: "claudenpc:volverse_hostil",
+  calmar: "claudenpc:calmarse",
+  sentar: "claudenpc:sentarse",
+  levantar: "claudenpc:levantarse",
+};
 
 export const PARTICLES = {
   cambio: "claudenpc:cambio",
@@ -15,6 +27,10 @@ export const PARTICLES = {
   cohete: "claudenpc:cohete",
   idea: "claudenpc:idea",
   remo: "claudenpc:remo",
+  bloqueo: "claudenpc:bloqueo",
+  tiza: "claudenpc:tiza",
+  polvo: "claudenpc:polvo",
+  zzz: "claudenpc:zzz",
   auraDorada: "claudenpc:aura_dorada",
   fusionAnillo: "claudenpc:fusion_anillo",
   fusionDestello: "claudenpc:fusion_destello",
@@ -28,8 +44,12 @@ export const PARTICLES = {
 
 export const ANIM = {
   golpe: "animation.claudenpc.golpe",
+  espadazo: "animation.claudenpc.espadazo",
+  espadazo2: "animation.claudenpc.espadazo2",
+  hachazo: "animation.claudenpc.hachazo",
+  estocada: "animation.claudenpc.estocada",
+  bloqueo: "animation.claudenpc.bloqueo",
   martillazo: "animation.claudenpc.martillazo",
-  escudo: "animation.claudenpc.escudo",
   lanzar: "animation.claudenpc.lanzar",
   colocar: "animation.claudenpc.colocar",
   colocarAbajo: "animation.claudenpc.colocar_abajo",
@@ -42,29 +62,52 @@ export const ANIM = {
   torre: "animation.claudenpc.torre",
   remar: "animation.claudenpc.remar",
   celebrar: "animation.claudenpc.celebrar",
+  tomarNotas: "animation.claudenpc.tomar_notas",
+  levantarMano: "animation.claudenpc.levantar_mano",
+  aplaudir: "animation.claudenpc.aplaudir",
+  pescar: "animation.claudenpc.pescar",
+  pescarEspera: "animation.claudenpc.pescar_espera",
+  recoger: "animation.claudenpc.recoger",
+  mirarAlrededor: "animation.claudenpc.mirar_alrededor",
   danza: "animation.claudenpc.danza",
   fusion: "animation.claudenpc.fusion",
   goldenPoder: "animation.claudenpc.golden.poder",
   goldenChasquido: "animation.claudenpc.golden.chasquido",
   goldenDirigir: "animation.claudenpc.golden.dirigir",
   goldenPensar: "animation.claudenpc.golden.pensar",
+  maestroLeer: "animation.claudenpc.maestro.leer",
+  maestroExplicar: "animation.claudenpc.maestro.explicar",
+  maestroEscribir: "animation.claudenpc.maestro.escribir",
+  maestroSenalar: "animation.claudenpc.maestro.senalar",
+  maestroLentes: "animation.claudenpc.maestro.lentes",
+  maestroCampana: "animation.claudenpc.maestro.campana",
+  maestroAplaudir: "animation.claudenpc.maestro.aplaudir",
+  maestroPensar: "animation.claudenpc.maestro.pensar",
+  maestroSaludar: "animation.claudenpc.maestro.saludar",
 };
 
-// Armas cuerpo a cuerpo que alterna constantemente; arco, maza y escudo
-// los saca cuando una táctica los necesita.
+// Armas cuerpo a cuerpo. Casi siempre ataca con espada; a veces cambia a hacha o
+// tridente. La maza, el arco y el escudo los usan las tácticas (el escudo solo
+// sirve para cubrirse de flechas, nunca para golpear).
 export const ARMAS = [
-  "minecraft:diamond_sword",
-  "minecraft:diamond_axe",
-  "minecraft:netherite_sword",
-  "minecraft:trident",
-  "minecraft:mace",
-  "minecraft:shield",
+  { id: "minecraft:diamond_sword", tipo: "espada", peso: 5 },
+  { id: "minecraft:netherite_sword", tipo: "espada", peso: 4 },
+  { id: "minecraft:iron_sword", tipo: "espada", peso: 2 },
+  { id: "minecraft:diamond_axe", tipo: "hacha", peso: 1.2 },
+  { id: "minecraft:trident", tipo: "tridente", peso: 0.8 },
 ];
 
 export const COMBATE = {
-  radio: 32,
-  cambioArma: [60, 100],
+  radio: 32,              // a qué distancia mira si hay jugadores
+  cambioArma: [90, 170],
 };
+
+// Escudo contra flechas: reacción (ticks) con IQ mínimo y máximo, cuánto lo
+// mantiene arriba, velocidad mientras se cubre y desde qué distancia ve un arco.
+export const ESCUDO = { reaccion: [14, 3], duracion: 70, lento: 0.12, vista: 40 };
+
+// Abrirse paso: rompe paredes y bloques que pone el jugador para esconderse.
+export const EXCAVAR = { maxBloques: 14, atascado: 40, maxPasos: 18 };
 
 // Velocidad de movimiento: caminar y correr como un jugador.
 export const VELOCIDAD = { caminar: 0.25, correr: 0.33 };
@@ -84,7 +127,6 @@ export const BOTE = {
 };
 
 export const CASA = {
-  primeraVez: 1200,     // empieza su casa tras ~1 minuto trabajando
   reintento: 1800,
   alcance: 4.6,
   alcanceTecho: 6.4,
@@ -92,12 +134,42 @@ export const CASA = {
 
 export const FUSION = { cantidad: 5, iq: 300, radio: 20, busqueda: 64 };
 
+// Claude Maestro: IQ fijo, alcance de la campana, cada cuánto da clase, cuánto
+// dura, IQ que gana cada alumno cada 2 s y el bono de aprendizaje después.
+export const MAESTRO_CFG = {
+  iq: 280,
+  llamada: 64,
+  primeraClase: 600,
+  cadaClase: [2400, 3600],
+  espera: 700,
+  duracion: 1500,
+  puntos: 0.5,
+  bono: { x: 2, duracion: 6000 },
+  maxAlumnos: 16,
+};
+
 export const PICOS = [
   "minecraft:wooden_pickaxe",
   "minecraft:stone_pickaxe",
   "minecraft:iron_pickaxe",
   "minecraft:diamond_pickaxe",
   "minecraft:netherite_pickaxe",
+];
+
+export const HACHAS = [
+  "minecraft:wooden_axe",
+  "minecraft:stone_axe",
+  "minecraft:iron_axe",
+  "minecraft:diamond_axe",
+  "minecraft:netherite_axe",
+];
+
+export const PALAS = [
+  "minecraft:wooden_shovel",
+  "minecraft:stone_shovel",
+  "minecraft:iron_shovel",
+  "minecraft:diamond_shovel",
+  "minecraft:netherite_shovel",
 ];
 
 export const NIVEL_BLOQUE = {
@@ -114,20 +186,19 @@ export const NIVEL_BLOQUE = {
 };
 
 export const MINERIA = {
-  profundidad: 20,     // bloques que baja en escalera
-  tunel: 10,           // bloques de túnel recto
-  pasoCada: 24,        // ticks por bloque minado (ritmo humano)
+  profundidad: [12, 24], // bloques que baja en escalera (cada Claude elige)
+  tunel: [6, 14],        // bloques de túnel recto
+  pasoCada: 16,          // ticks por bloque minado
   antorchaCada: 7,
 };
 
 export const CRAFTEO = {
-  duracion: 180,       // ~9 s mirando la mesa
-  espera: [900, 1400], // entre crafteos
-  picoCuesta: 12,      // bloques minados para mejorar el pico
+  duracion: 140,
+  picoCuesta: 12,        // bloques minados para mejorar el pico
   armaduraCuesta: 18,
 };
 
 export const ARMADURAS = ["leather", "chainmail", "iron", "diamond", "netherite"];
 
-// Desactiva esto si no quieres que rompa ni coloque bloques en tu mundo.
+// Desactiva esto si no quieres que rompan ni coloquen bloques en tu mundo.
 export const MODIFICA_MUNDO = true;

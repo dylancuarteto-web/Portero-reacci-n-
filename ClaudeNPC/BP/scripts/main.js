@@ -1,22 +1,27 @@
 import { EntityDamageCause, GameMode, Player, system, world } from "@minecraft/server";
-import { COMBATE, DIMENSIONES, MODIFICA_MUNDO, NPC } from "./config.js";
-import { aguaProfunda, buscarOrilla, rumboBote, subirABote, tickBote } from "./bote.js";
-import { tickCombate } from "./combate.js";
+import { COMBATE, DIMENSIONES, NPC } from "./config.js";
+import { pausarRutina, tickRutina } from "./actividades/index.js";
+import { rumboBote, tickAgua, tickBote } from "./bote.js";
+import { tickAlumno } from "./clase.js";
+import { animarGolpe, tickCombate } from "./combate.js";
 import { registrarComandos } from "./comandos.js";
+import { bloqueaProyectil, efectoBloqueo } from "./escudo.js";
 import { estados, obtenerEstado } from "./estado.js";
 import { revisarFusion } from "./fusion.js";
 import "./golden.js";
-import { aprender, nivel } from "./iq.js";
-import { caminarA, caminando, wTap } from "./movimiento.js";
+import { aprender, ponerHaciendo } from "./iq.js";
+import "./maestro.js";
+import { caminarA, caminando, velocidad, wTap } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
+import { hostil } from "./postura.js";
 import { vigilarCaida } from "./tacticas.js";
-import { tickTrabajo } from "./trabajo.js";
-import { animate, now } from "./util.js";
+import { cada, now } from "./util.js";
 
-// Cerebro del NPC Claude. Prioridades en cada turno:
-// fusión > bote > reunión con otros genios > nadar sacando un bote > obra en curso
-// (torre o puente) > combate si hay un jugador cerca > trabajo (casa, mina, crafteo).
+// Cerebro de cada Claude. Prioridades en cada turno:
+// fusión > clase > bote > agua (nadar a la orilla) > reunión de genios > obra corta
+// (torre, puente, abrir paso) > pelea (si el jugador está dentro de su radio o lo
+// provocó) > rutina libre según su personalidad.
 registrarComandos();
 
 function npcsCerca(location, dimension, radio = 24) {
@@ -25,6 +30,59 @@ function npcsCerca(location, dimension, radio = 24) {
   } catch {
     return [];
   }
+}
+
+// ¿Pelea con este jugador? Cada Claude tiene su propio radio; si lo atacaron, pelea igual.
+function quierePelear(npc, s, jugador) {
+  if (!jugador) return false;
+  const d = Math.hypot(jugador.location.x - npc.location.x, jugador.location.z - npc.location.z);
+  if (now() < (s.provocadoHasta ?? 0)) return true;
+  if (!s.hostil && s.mina && jugador.location.y - npc.location.y > 6) return false; // está minando y no lo ve
+  const radio = s.pers?.radio ?? 20;
+  return d <= radio || (s.hostil && d <= radio + 8);
+}
+
+function cerebro(npc) {
+  const s = obtenerEstado(npc);
+  if (!s.hogarCargado) {
+    s.hogar = cargarHogar(npc);
+    s.hogarCargado = true;
+  }
+  if (s.fusion) return;
+  vigilarCaida(npc, s);
+  if (s.clase) return tickAlumno(npc, s);
+  const [jugador] = npc.dimension.getPlayers({
+    location: npc.location, maxDistance: COMBATE.radio, closest: 1,
+    excludeGameModes: [GameMode.Creative, GameMode.Spectator],
+  });
+  const pelea = quierePelear(npc, s, jugador);
+  if (s.bote) {
+    if (jugador && pelea) rumboBote(npc, jugador.location);
+    return tickBote(npc, s);
+  }
+  if (tickAgua(npc, s, pelea ? jugador : undefined)) {
+    hostil(npc, s, pelea);
+    pausarRutina(npc, s);
+    return;
+  }
+  if (s.reunion) {
+    hostil(npc, s, false);
+    ponerHaciendo(npc, s, "§d¡buscando a los genios!");
+    if (!caminando(npc)) caminarA(npc, s.reunion, 0.28);
+    return;
+  }
+  hostil(npc, s, pelea);
+  if (tickObra(npc, s)) return;
+  if (pelea) {
+    pausarRutina(npc, s);
+    s.combateHasta = now() + 40;
+    ponerHaciendo(npc, s, "§c¡a pelear!");
+    tickCombate(npc, s, jugador);
+    if (cada(s, "xpPelea", 20)) aprender(npc, s, 0.02); // experiencia por tiempo de pelea
+    return;
+  }
+  if (now() < (s.combateHasta ?? 0) + 20) velocidad(npc, 0); // recién salido de una pelea: se calma
+  tickRutina(npc, s);
 }
 
 system.runInterval(() => {
@@ -37,38 +95,7 @@ system.runInterval(() => {
     }
     for (const npc of npcs) {
       try {
-        const s = obtenerEstado(npc);
-        if (!s.hogarCargado) {
-          s.hogar = cargarHogar(npc);
-          s.hogarCargado = true;
-        }
-        if (s.fusion) continue;
-        vigilarCaida(npc, s);
-        const [jugador] = npc.dimension.getPlayers({
-          location: npc.location, maxDistance: COMBATE.radio, closest: 1,
-          excludeGameModes: [GameMode.Creative, GameMode.Spectator],
-        });
-        if (s.bote) {
-          if (jugador) rumboBote(npc, jugador.location);
-          tickBote(npc, s);
-          continue;
-        }
-        if (s.reunion) {
-          if (!caminando(npc)) caminarA(npc, s.reunion, 0.28);
-          continue;
-        }
-        if (MODIFICA_MUNDO && !s.obra && aguaProfunda(npc)) {
-          const destino = jugador?.location ?? buscarOrilla(npc.dimension, npc.location) ?? npc.location;
-          subirABote(npc, s, destino);
-          continue;
-        }
-        if (tickObra(npc, s)) continue;
-        if (jugador) {
-          tickCombate(npc, s, jugador);
-          if (now() % 20 === 0) aprender(npc, s, 0.02); // experiencia por tiempo de pelea
-        } else {
-          tickTrabajo(npc, s);
-        }
+        cerebro(npc);
       } catch {
         // NPC descargado durante el tick.
       }
@@ -97,7 +124,8 @@ world.afterEvents.playerBreakBlock.subscribe(({ player }) => {
   }
 });
 
-// Golpes: aprende de los que recibe y de los que acierta.
+// Golpes: aprende de los que recibe y de los que acierta. Si un jugador lo ataca,
+// pelea aunque estuviera tranquilo.
 world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
   const atacante = damageSource.damagingEntity;
   if (hurtEntity.typeId === NPC && atacante instanceof Player) {
@@ -105,13 +133,17 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
     if (!s) return;
     if (damageSource.cause === EntityDamageCause.projectile) s.memoria.arco++;
     else s.memoria.golpes++;
+    if (!s.clase) s.provocadoHasta = now() + 1200;
     aprender(hurtEntity, s, 0.4);
   } else if (hurtEntity instanceof Player && atacante?.typeId === NPC) {
     const s = estados.get(atacante.id);
     if (!s) return;
     if (s.ultima) s.memoria.exitos[s.ultima] = (s.memoria.exitos[s.ultima] ?? 0) + 1;
     aprender(atacante, s, 0.5);
-    if (damageSource.cause === EntityDamageCause.entityAttack) wTap(atacante, hurtEntity, s);
+    if (damageSource.cause === EntityDamageCause.entityAttack) {
+      animarGolpe(atacante); // por si el juego no avisó del golpe
+      wTap(atacante, hurtEntity, s);
+    }
   }
 });
 
@@ -123,8 +155,9 @@ world.afterEvents.entityDie.subscribe(({ deadEntity, damageSource }) => {
   }
 });
 
-// Escudo en la otra mano: con más IQ bloquea más golpes. Tras un water drop, un clutch
-// o una picada con maza no recibe daño por caída. Durante la fusión es intocable.
+// Escudo: solo para flechas y proyectiles que llegan por delante con el escudo
+// levantado. Tras un water drop, un clutch o una picada con maza no recibe daño
+// por caída. Durante la fusión es intocable.
 world.beforeEvents.entityHurt.subscribe((event) => {
   const s = estados.get(event.hurtEntity.id);
   if (!s) return;
@@ -137,15 +170,10 @@ world.beforeEvents.entityHurt.subscribe((event) => {
     event.cancel = true;
     return;
   }
-  if (cause === EntityDamageCause.entityAttack && event.damageSource.damagingEntity instanceof Player
-    && Math.random() < 0.15 + nivel(s) * 0.45) {
+  const npc = event.hurtEntity;
+  if (bloqueaProyectil(npc, s, event.damageSource)) {
     event.cancel = true;
-    const npc = event.hurtEntity;
-    system.run(() => {
-      if (!npc.isValid) return;
-      animate(npc, "animation.claudenpc.escudo");
-      npc.dimension.playSound("item.shield.block", npc.location);
-    });
+    system.run(() => efectoBloqueo(npc, s));
   }
 }, { entityFilter: { type: NPC } });
 

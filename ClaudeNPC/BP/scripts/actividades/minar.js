@@ -1,0 +1,123 @@
+import { system } from "@minecraft/server";
+import { ANIM, MINERIA, MODIFICA_MUNDO } from "../config.js";
+import { romper } from "../construccion.js";
+import { pico, sostener } from "../equipo.js";
+import { aprender } from "../iq.js";
+import { caminando } from "../movimiento.js";
+import { animate, blockAt, impulse, mirarA, now, rand, superficie } from "../util.js";
+
+// Minería: baja en escalera (cada Claude hasta su propia profundidad), sigue en
+// túnel y vuelve a subir a la superficie, un bloque por golpe, con antorchas y
+// evitando la lava. Solo rompe lo que su pico permite.
+
+const CARDINALES = [{ x: 1, z: 0 }, { x: -1, z: 0 }, { x: 0, z: 1 }, { x: 0, z: -1 }];
+const centro = (b) => ({ x: b.x + 0.5, y: b.y + 0.5, z: b.z + 0.5 });
+
+function nuevaMina(npc) {
+  const v = npc.getViewDirection();
+  const dir = Math.abs(v.x) > Math.abs(v.z) ? { x: Math.sign(v.x) || 1, z: 0 } : { x: 0, z: Math.sign(v.z) || 1 };
+  return { dir, pasos: 0, modo: "escalera", cola: [] };
+}
+
+function planificarPaso(npc, mina) {
+  const x = Math.floor(npc.location.x) + mina.dir.x;
+  const y = Math.floor(npc.location.y);
+  const z = Math.floor(npc.location.z) + mina.dir.z;
+  const aqui = { x: Math.floor(npc.location.x), z: Math.floor(npc.location.z) };
+  if (mina.modo === "escalera") mina.cola = [{ x, y: y + 1, z }, { x, y, z }, { x, y: y - 1, z }];
+  else if (mina.modo === "tunel") mina.cola = [{ x, y: y + 1, z }, { x, y, z }];
+  else mina.cola = [{ x: aqui.x, y: y + 2, z: aqui.z }, { x, y: y + 2, z }, { x, y: y + 1, z }]; // subida
+}
+
+function cambiarRumbo(state) {
+  const opciones = CARDINALES.filter((d) => d.x !== -state.mina.dir.x || d.z !== -state.mina.dir.z);
+  state.mina.dir = opciones[rand(0, opciones.length - 1)];
+  state.mina.cola = [];
+}
+
+function ponerAntorcha(npc, donde) {
+  const b = blockAt(npc.dimension, donde);
+  const suelo = blockAt(npc.dimension, { x: donde.x, y: donde.y - 1, z: donde.z });
+  if (!b?.isAir || !suelo || suelo.isAir) return;
+  try {
+    sostener(npc, "minecraft:torch");
+    animate(npc, ANIM.colocar);
+    b.setType("minecraft:torch");
+  } catch {
+    // No se pudo colocar.
+  }
+}
+
+export function enSuperficie(npc) {
+  const top = superficie(npc.dimension, npc.location.x, npc.location.z);
+  return !top || top.location.y < npc.location.y + 1;
+}
+
+// Un golpe de pico (o un paso) del ciclo escalera → túnel → subida.
+function paso(npc, state) {
+  const mina = state.mina;
+  if (mina.modo === "subida" && enSuperficie(npc)) {
+    state.mina = undefined;
+    return;
+  }
+  if (!mina.cola.length) planificarPaso(npc, mina);
+  const pos = mina.cola[0];
+  const block = blockAt(npc.dimension, pos);
+  if (!block || block.typeId.includes("lava") || (block.isLiquid && !block.isAir)) return cambiarRumbo(state);
+
+  if (!block.isAir) {
+    sostener(npc, pico(state));
+    mirarA(npc, centro(pos));
+    animate(npc, ANIM.minar);
+    const t = Math.round(MINERIA.pasoCada * (state.pers?.ritmo ?? 1));
+    state.ocupadoHasta = now() + t;
+    system.runTimeout(() => {
+      if (!npc.isValid || !state.mina) return;
+      if (!romper(npc, state, blockAt(npc.dimension, pos))) return cambiarRumbo(state);
+      mina.cola.shift();
+      aprender(npc, state, 0.05);
+    }, t - 4);
+    return;
+  }
+  mina.cola.shift();
+  if (mina.cola.length) return;
+
+  const atras = { ...npc.location };
+  if (mina.modo === "subida") impulse(npc, { x: mina.dir.x * 0.17, y: 0.42, z: mina.dir.z * 0.17 });
+  else impulse(npc, { x: mina.dir.x * 0.22, y: 0, z: mina.dir.z * 0.22 });
+  state.ocupadoHasta = now() + 10;
+  mina.pasos++;
+  if (mina.pasos % MINERIA.antorchaCada === 0) system.runTimeout(() => npc.isValid && ponerAntorcha(npc, atras), 12);
+  const profundidad = state.pers?.profundidad ?? 20;
+  const tunel = state.pers?.tunel ?? 10;
+  if (mina.modo === "escalera" && (mina.pasos >= profundidad || npc.location.y < -54)) {
+    mina.modo = "tunel";
+    mina.pasos = 0;
+    cambiarRumbo(state);
+  } else if (mina.modo === "tunel" && mina.pasos >= tunel) {
+    mina.modo = "subida";
+    mina.pasos = 0;
+  }
+}
+
+export const minar = {
+  nombre: "minando",
+  puede: () => MODIFICA_MUNDO,
+  duracion: () => 9000, // termina al volver a la superficie
+  iniciar(npc, state, a) {
+    state.mina ??= nuevaMina(npc);
+    a.subirEn = now() + rand(1800, 3200);
+    return true;
+  },
+  tick(npc, state, a) {
+    if (!state.mina) return true;
+    if (caminando(npc)) return false;
+    // Ya minó bastante: empieza a subir.
+    if (now() > a.subirEn && state.mina.modo !== "subida") {
+      state.mina.modo = "subida";
+      state.mina.cola = [];
+    }
+    paso(npc, state);
+    return !state.mina;
+  },
+};

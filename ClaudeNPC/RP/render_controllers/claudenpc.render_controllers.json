@@ -43,6 +43,23 @@
           "aura_lleg": "Material.aura"
         }
       ]
+    },
+    "controller.render.claudenpc_maestro": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "pin": "Material.glow"
+        },
+        {
+          "vidrio": "Material.vidrio"
+        }
+      ]
     }
   }
 }

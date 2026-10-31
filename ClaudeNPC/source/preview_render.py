@@ -4,7 +4,7 @@ Dibuja las geometrías del add-on con sus texturas sobre un maniquí gris genér
 para revisar forma, colores y proporciones sin abrir Minecraft. No es exacto al
 motor (sin iluminación real ni orden de transparencias perfecto).
 
-Uso (desde EvilMortyAddon):  python source/preview_render.py <salida.png>
+Uso (desde ClaudeNPC):  python source/preview_render.py <salida.png>
 """
 import json
 import math
@@ -104,7 +104,12 @@ class Scene:
             b = bones[name]
             local = about(b.get("pivot", [0, 0, 0]), b.get("rotation"))
             extra = pose.get(name)
-            if extra:
+            if isinstance(extra, dict):
+                if extra.get("rot"):
+                    local = local.then(about(b.get("pivot", [0, 0, 0]), extra["rot"]))
+                if extra.get("pos"):
+                    local = local.then(Affine(np.eye(3), np.asarray(extra["pos"], dtype=float)))
+            elif extra:
                 local = local.then(about(b.get("pivot", [0, 0, 0]), extra))
             if scale and name in scale:
                 piv = np.asarray(b.get("pivot", [0, 0, 0]), dtype=float)
@@ -243,29 +248,88 @@ def sheet(images, labels, out):
     s.save(out)
 
 
+def pose_de(anim_file, nombre):
+    """Postura fija (primer valor) de una animación en bucle, para dibujarla."""
+    data = json.loads(Path(anim_file).read_text())["animations"][nombre]["bones"]
+    pose = {}
+    for bone, canales in data.items():
+        entrada = {}
+        for canal, clave in (("rotation", "rot"), ("position", "pos")):
+            v = canales.get(canal)
+            if isinstance(v, list) and all(isinstance(c, (int, float)) for c in v):
+                entrada[clave] = v
+        if entrada:
+            pose[bone] = entrada
+    return pose
+
+
+def sumar(*poses):
+    total = {}
+    for pose in poses:
+        for bone, e in pose.items():
+            t = total.setdefault(bone, {})
+            for clave, v in e.items():
+                t[clave] = [a + b for a, b in zip(t.get(clave, [0, 0, 0]), v)]
+    return total
+
+
 def main(out):
     models = RP / "models/entity"
     tex = RP / "textures/entity/claudenpc"
+    anims = RP / "animations"
     shots, labels = [], []
-    for yaw, label in ((0, "Claude - frente"), (-35, "Claude - 3/4")):
+    cielo = (120, 160, 210)
+    for yaw, label in ((0, "Claude"), (-35, "Claude 3/4")):
         sc = Scene()
         sc.add_geometry(models / "claude.geo.json", tex / "claude.png", emissive=("emblema",))
-        shots.append(sc.render(yaw, 8, 9, size=(300, 340), center=(0, 16, 0), bg=(120, 160, 210)))
+        shots.append(sc.render(yaw, 8, 9, size=(260, 340), center=(0, 16, 0), bg=cielo))
         labels.append(label)
-    for yaw, label in ((0, "Claude Golden - frente"), (-35, "Claude Golden - 3/4")):
+    sc = Scene()
+    sc.add_geometry(models / "claude.geo.json", tex / "claude.png", emissive=("emblema",),
+                    pose=pose_de(anims / "claude.animation.json", "animation.claudenpc.cubrirse"))
+    shots.append(sc.render(-30, 8, 9, size=(260, 340), center=(0, 16, 0), bg=cielo))
+    labels.append("Escudo arriba")
+    sc = Scene()
+    sc.add_geometry(models / "claude.geo.json", tex / "claude.png", emissive=("emblema",),
+                    pose=pose_de(anims / "claude.animation.json", "animation.claudenpc.sentado"))
+    shots.append(sc.render(-60, 8, 9, size=(260, 340), center=(0, 10, 0), bg=cielo))
+    labels.append("Sentado en clase")
+    libro = pose_de(anims / "maestro.animation.json", "animation.claudenpc.maestro.libro")
+    for yaw, label in ((0, "Claude Maestro"), (-35, "Maestro 3/4"), (150, "Maestro espalda")):
+        sc = Scene()
+        sc.add_geometry(models / "maestro.geo.json", tex / "maestro.png", emissive=("pin",), pose=libro)
+        shots.append(sc.render(yaw, 8, 9, size=(260, 340), center=(0, 16, 0), bg=(150, 132, 112)))
+        labels.append(label)
+    sc = Scene()
+    sc.add_geometry(models / "maestro.geo.json", tex / "maestro.png", emissive=("pin",), pose=sumar(libro, {
+        "leftArm": {"rot": [-38, 0, -16]}, "rightArm": {"rot": [-62, 0, 24]}, "head": {"rot": [24, 0, 0]}}))
+    shots.append(sc.render(-25, 8, 9, size=(260, 340), center=(0, 16, 0), bg=(150, 132, 112)))
+    labels.append("Maestro leyendo")
+    sc = Scene()
+    sc.add_geometry(models / "maestro.geo.json", tex / "maestro.png", emissive=("pin",), pose=libro)
+    shots.append(sc.render(-20, 4, 26, size=(260, 340), center=(0, 28, -2), bg=(150, 132, 112)))
+    labels.append("Lentes y cabello")
+    for yaw, label in ((0, "Claude Golden"),):
         sc = Scene()
         sc.add_geometry(models / "golden.geo.json", tex / "golden.png",
                         hidden=("aura_head", "aura_body", "aura_rarm", "aura_larm", "aura_rleg", "aura_lleg"),
                         emissive=("head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg", "ojos", "emblema", "halo", "orbes"))
         sc.add_geometry(models / "golden.geo.json", tex / "golden.png",
                         hidden=("head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg", "ojos", "emblema", "halo", "orbes"))
-        shots.append(sc.render(yaw, 8, 8, size=(300, 340), center=(0, 18, 0), bg=(40, 44, 70)))
+        shots.append(sc.render(yaw, 8, 8, size=(260, 340), center=(0, 18, 0), bg=(40, 44, 70)))
         labels.append(label)
-    sc = Scene()
-    sc.add_geometry(models / "aura.geo.json", tex / "aura.png")
-    shots.append(sc.render(-20, 15, 1.4, size=(300, 340), center=(0, 40, 0), bg=(40, 44, 70)))
-    labels.append("Esfera de fusion")
-    sheet(shots, labels, out)
+    # Dos filas para que se vea bien en el móvil.
+    mitad = (len(shots) + 1) // 2
+    fila1, fila2 = Path(out).with_suffix(".a.png"), Path(out).with_suffix(".b.png")
+    sheet(shots[:mitad], labels[:mitad], fila1)
+    sheet(shots[mitad:], labels[mitad:], fila2)
+    a, b = Image.open(fila1), Image.open(fila2)
+    hoja = Image.new("RGBA", (max(a.width, b.width), a.height + b.height + 8), (20, 22, 26, 255))
+    hoja.alpha_composite(a.convert("RGBA"), (0, 0))
+    hoja.alpha_composite(b.convert("RGBA"), (0, a.height + 8))
+    hoja.save(out)
+    fila1.unlink()
+    fila2.unlink()
 
 
 if __name__ == "__main__":

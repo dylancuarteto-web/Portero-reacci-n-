@@ -1,11 +1,16 @@
 import { EntityDamageCause, system } from "@minecraft/server";
 import { ANIM, ARMAS, CONSTRUCCION, MODIFICA_MUNDO, PARTICLES } from "./config.js";
 import { ponerElytra, quitarElytra, sostener } from "./equipo.js";
+import { estados } from "./estado.js";
 import { nivel } from "./iq.js";
 import { alturaSuelo, animate, blockAt, burst, colocar, flat, impulse, mirarA, now, sound } from "./util.js";
 
 export function armaActual(state) {
-  return ARMAS[Math.max(0, state.arma)];
+  return (ARMAS[state.arma] ?? ARMAS[0]).id;
+}
+
+export function bloquePropio(state) {
+  return state.pers?.bloque ?? CONSTRUCCION.bloque;
 }
 
 function volverAlArma(npc, state) {
@@ -14,6 +19,8 @@ function volverAlArma(npc, state) {
 
 export function golpear(npc, jugador, dano, empuje, alto) {
   try {
+    const s = estados.get(npc.id);
+    if (s) s.ultimoGolpe = now(); // la táctica ya tiene su propia animación
     const dir = flat(npc.location, jugador.location);
     jugador.applyDamage(dano, { cause: EntityDamageCause.entityAttack, damagingEntity: npc });
     jugador.applyKnockback({ x: dir.x * empuje, z: dir.z * empuje }, alto);
@@ -123,15 +130,6 @@ export function martillazo(npc, state, jugador) {
   }, 18);
 }
 
-export function golpeEscudo(npc, state, jugador) {
-  state.ocupadoHasta = now() + 14;
-  sostener(npc, "minecraft:shield");
-  animate(npc, ANIM.escudo);
-  sound(npc, "item.shield.block", 0.8);
-  golpear(npc, jugador, 6, 1.8, 0.4);
-  system.runTimeout(() => volverAlArma(npc, state), 14);
-}
-
 // Elytra + maza: despega con un cohete, planea hacia el jugador y cae en picada
 // con la maza. El daño depende de la altura de la caída, como la maza real.
 export function elytraMartillo(npc, state, jugador) {
@@ -218,9 +216,10 @@ function clutch(npc, state) {
     return n && !n.isAir && !n.isLiquid;
   });
   if (!apoyo) return false;
-  sostener(npc, CONSTRUCCION.bloque);
+  const bloque = bloquePropio(state);
+  sostener(npc, bloque);
   animate(npc, ANIM.colocarAbajo);
-  if (!colocar(npc.dimension, bajo, CONSTRUCCION.bloque)) return false;
+  if (!colocar(npc.dimension, bajo, bloque)) return false;
   state.sinCaidaHasta = now() + 20;
   sound(npc, "use.stone", 1.2);
   return true;

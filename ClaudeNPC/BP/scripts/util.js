@@ -143,3 +143,72 @@ export function superficie(dimension, x, z) {
     return undefined;
   }
 }
+
+export function solido(block) {
+  return !!block && !block.isAir && !block.isLiquid && !reemplazable(block);
+}
+
+export function esAgua(block) {
+  return !!block && (block.typeId === "minecraft:water" || block.typeId === "minecraft:flowing_water");
+}
+
+export function distancia2D(a, b) {
+  return Math.hypot(a.x - b.x, a.z - b.z);
+}
+
+// Clave de un bloque en un mapa (dimensión + coordenadas enteras).
+export function clave(dimension, p) {
+  return `${dimension.id}|${Math.floor(p.x)},${Math.floor(p.y)},${Math.floor(p.z)}`;
+}
+
+// Rompe un bloque como lo haría un jugador: suelta el objeto (y lo que tenga dentro
+// un cofre o un horno) con las partículas y el sonido normales del juego.
+export function romperDestruyendo(dimension, p) {
+  try {
+    dimension.runCommand(`setblock ${Math.floor(p.x)} ${Math.floor(p.y)} ${Math.floor(p.z)} air destroy`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Orientaciones. "frente" es north/south/west/east.
+export const FRENTES = { north: { x: 0, z: -1 }, south: { x: 0, z: 1 }, west: { x: -1, z: 0 }, east: { x: 1, z: 0 } };
+export const OPUESTO = { north: "south", south: "north", west: "east", east: "west" };
+// facing_direction de carteles y dispensadores: 2 norte, 3 sur, 4 oeste, 5 este.
+export const FACING = { north: 2, south: 3, west: 4, east: 5 };
+// weirdo_direction de escaleras: lado donde queda el respaldo (0 este, 1 oeste, 2 sur, 3 norte).
+export const ESCALON = { east: 0, west: 1, south: 2, north: 3 };
+
+export function nombreDireccion(dx, dz) {
+  if (Math.abs(dx) > Math.abs(dz)) return dx > 0 ? "east" : "west";
+  return dz > 0 ? "south" : "north";
+}
+
+// Mensaje corto en la barra de acción para los jugadores cercanos.
+export function avisar(dimension, location, texto, radio = 24) {
+  try {
+    for (const p of dimension.getPlayers({ location, maxDistance: radio })) p.onScreenDisplay.setActionBar(texto);
+  } catch {
+    // Sin jugadores.
+  }
+}
+
+// Elige al azar según pesos: lista de { p, ... }.
+export function sortear(lista) {
+  const total = lista.reduce((t, c) => t + c.p, 0);
+  let r = Math.random() * total;
+  for (const c of lista) {
+    r -= c.p;
+    if (r <= 0) return c;
+  }
+  return lista[lista.length - 1];
+}
+
+// true cada "ticks" ticks para esa clave (sin depender de en qué tick empezó el bucle).
+export function cada(state, nombre, ticks) {
+  const t = now();
+  if (t - (state.cd[nombre] ?? -Infinity) < ticks) return false;
+  state.cd[nombre] = t;
+  return true;
+}

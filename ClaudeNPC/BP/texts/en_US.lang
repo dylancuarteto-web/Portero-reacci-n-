@@ -1,6 +1,9 @@
-pack.description=Claude as an NPC: fights, builds like a player, rows boats, builds a house, gains IQ and fuses into Claude Golden. Bedrock 26.60.
+pack.description=Claudes with their own personality: fight with sword and shield, build, fish, farm, attend Claude Teacher's classes, gain IQ and fuse into Claude Golden. Bedrock 26.60.
 entity.claudenpc:claude.name=Claude
+entity.claudenpc:maestro.name=Claude Teacher
 entity.claudenpc:claude_golden.name=Claude Golden
 entity.claudenpc:eco.name=Claude Echo
 entity.claudenpc:aura.name=Fusion Aura
 item.spawn_egg.entity.claudenpc:claude.name=Spawn Claude
+item.spawn_egg.entity.claudenpc:maestro.name=Spawn Claude Teacher
+action.interact.claudenpc.hablar=Talk

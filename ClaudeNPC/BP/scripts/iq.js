@@ -1,9 +1,10 @@
 import { world } from "@minecraft/server";
 import { IQ, PARTICLES } from "./config.js";
-import { burst } from "./util.js";
+import { burst, now } from "./util.js";
 
-// IQ del NPC: experiencia que gana observando al jugador y peleando. Se guarda en
-// la entidad y en el mundo, así cada Claude nuevo hereda parte de lo aprendido.
+// IQ del NPC: experiencia que gana observando al jugador, peleando, trabajando y
+// en las clases de Claude Maestro. Se guarda en la entidad y en el mundo, así cada
+// Claude nuevo hereda parte de lo aprendido.
 
 export function cargarIQ(npc) {
   const propio = npc.getDynamicProperty(IQ.propiedad);
@@ -12,14 +13,31 @@ export function cargarIQ(npc) {
   return typeof global === "number" ? Math.max(IQ.inicial, Math.round(global * 0.85)) : IQ.inicial;
 }
 
+// Nombre de tres líneas: IQ, "Claude · personalidad" y lo que está haciendo.
 export function mostrarIQ(npc, state) {
   const iq = Math.floor(state.iq);
   const color = iq >= 200 ? "§d" : iq >= 140 ? "§b" : iq >= 100 ? "§a" : "§e";
-  npc.nameTag = `${color}IQ ${iq}§r\nClaude`;
+  const bono = state.bono && now() < state.bono.hasta ? " §6x2" : "";
+  const titulo = state.pers ? ` §8·§7 ${state.pers.titulo}` : "";
+  const haciendo = state.haciendo ? `\n§o§7${state.haciendo}` : "";
+  const texto = `${color}IQ ${iq}${bono}§r\nClaude${titulo}§r${haciendo}`;
+  try {
+    if (npc.nameTag !== texto) npc.nameTag = texto;
+  } catch {
+    // Entidad descargada.
+  }
 }
 
-// Sube el IQ. Cada 5 puntos enteros muestra una chispa de "idea".
+export function ponerHaciendo(npc, state, texto) {
+  if (state.haciendo === texto) return;
+  state.haciendo = texto;
+  mostrarIQ(npc, state);
+}
+
+// Sube el IQ. Después de una clase aprende el doble durante un rato.
+// Cada 5 puntos enteros muestra una chispa de "idea".
 export function aprender(npc, state, puntos) {
+  if (puntos > 0 && state.bono && now() < state.bono.hasta) puntos *= state.bono.x;
   const antes = Math.floor(state.iq / 5);
   state.iq = Math.min(IQ.maximo, state.iq + puntos);
   try {

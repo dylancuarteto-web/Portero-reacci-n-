@@ -2,9 +2,11 @@ import { CommandPermissionLevel, CustomCommandParamType, CustomCommandStatus, Pl
 import { IQ, NPC } from "./config.js";
 import { obtenerEstado } from "./estado.js";
 import { aprender } from "./iq.js";
+import { claseAhora } from "./maestro.js";
 
 // /claudenpc:iq <valor>: pone el IQ de los Claudes cercanos. Sirve para probar la
 // fusión (5 Claudes con IQ 300) sin esperar a que aprendan solos. Requiere trucos.
+// /claudenpc:clase: el Claude Maestro más cercano toca la campana y empieza la clase.
 export function registrarComandos() {
   system.beforeEvents.startup.subscribe(({ customCommandRegistry }) => {
     customCommandRegistry.registerCommand(
@@ -27,6 +29,20 @@ export function registrarComandos() {
           }
           p.sendMessage(`§aIQ ${valor} para ${lista.length} Claude(s) cercano(s).`);
         });
+        return { status: CustomCommandStatus.Success };
+      },
+    );
+    customCommandRegistry.registerCommand(
+      {
+        name: "claudenpc:clase",
+        description: "El Claude Maestro más cercano empieza la clase ahora",
+        permissionLevel: CommandPermissionLevel.GameDirectors,
+        cheatsRequired: false,
+      },
+      (origin) => {
+        const p = origin.sourceEntity;
+        if (!(p instanceof Player)) return { status: CustomCommandStatus.Failure, message: "Úsalo como jugador." };
+        system.run(() => p.sendMessage(`§6${claseAhora(p)}`));
         return { status: CustomCommandStatus.Success };
       },
     );

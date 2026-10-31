@@ -47,7 +47,7 @@ export function tickPuente(npc, state) {
       }
     }
     system.runTimeout(() => npc.isValid && impulse(npc, { x: eje.x * 0.17, y: 0.42, z: eje.z * 0.17 }), 5);
-    state.ocupadoHasta = now() + 14 + rand(0, 2);
+    state.ocupadoHasta = now() + 11 + rand(0, 2);
     return false;
   }
 
@@ -74,7 +74,7 @@ export function tickPuente(npc, state) {
       }
     }, 3);
     system.runTimeout(() => npc.isValid && caminarA(npc, centro(sig), 0.18), 6);
-    state.ocupadoHasta = now() + 9 + rand(0, 1);
+    state.ocupadoHasta = now() + 7 + rand(0, 1);
     return false;
   }
 
@@ -89,8 +89,8 @@ export function tickPuente(npc, state) {
       o.puestos++;
       sound(npc, "use.stone", 1);
     }
-  }, lento ? 6 : 3);
-  system.runTimeout(() => npc.isValid && caminarA(npc, centro(sig), lento ? 0.07 : 0.12), lento ? 10 : 6);
-  state.ocupadoHasta = now() + (lento ? 18 : 11) + rand(0, 3);
+  }, lento ? 4 : 3);
+  system.runTimeout(() => npc.isValid && caminarA(npc, centro(sig), lento ? 0.09 : 0.13), lento ? 7 : 5);
+  state.ocupadoHasta = now() + (lento ? 12 : 8) + rand(0, 2);
   return false;
 }

@@ -32,7 +32,7 @@ export function revisarFusion() {
     }
     const genios = lista.filter((n) => {
       const s = estados.get(n.id);
-      return s && s.iq >= FUSION.iq && !s.bote;
+      return s && s.iq >= FUSION.iq && !s.bote && !s.clase;
     });
     if (genios.length < FUSION.cantidad) {
       for (const n of lista) {

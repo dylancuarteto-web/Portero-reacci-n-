@@ -1,0 +1,52 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:maestro",
+      "materials": {
+        "default": "entity_alphatest",
+        "glow": "entity_emissive_alpha",
+        "vidrio": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/maestro"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.maestro"
+      },
+      "animations": {
+        "mirar": "animation.claudenpc.mirar",
+        "caminar": "animation.claudenpc.caminar",
+        "respirar": "animation.claudenpc.respirar",
+        "parpadeo": "animation.claudenpc.parpadeo",
+        "libro": "animation.claudenpc.maestro.libro",
+        "leer": "animation.claudenpc.maestro.leer",
+        "explicar": "animation.claudenpc.maestro.explicar",
+        "escribir": "animation.claudenpc.maestro.escribir",
+        "senalar": "animation.claudenpc.maestro.senalar",
+        "lentes": "animation.claudenpc.maestro.lentes",
+        "campana": "animation.claudenpc.maestro.campana",
+        "aplaudir": "animation.claudenpc.maestro.aplaudir",
+        "pensar": "animation.claudenpc.maestro.pensar",
+        "saludar": "animation.claudenpc.maestro.saludar"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "caminar",
+          "respirar",
+          "parpadeo",
+          "libro"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_maestro"
+      ],
+      "enable_attachables": true,
+      "spawn_egg": {
+        "base_color": "#74543A",
+        "overlay_color": "#D97757"
+      }
+    }
+  }
+}

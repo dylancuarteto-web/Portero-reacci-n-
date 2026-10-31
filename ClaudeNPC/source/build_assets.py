@@ -1,10 +1,11 @@
-"""Genera el arte del NPC Claude y de Claude Golden: modelos, skins, animaciones,
-partículas, entidades de cliente y render controllers.
+"""Genera el arte del NPC Claude, Claude Maestro y Claude Golden: modelos, skins,
+animaciones, partículas, entidades de cliente y render controllers.
 
 Uso (desde ClaudeNPC):  python source/build_assets.py   (requiere Pillow)
 Personajes originales: Claude es naranja, solo ojos y un emblema de estrella propio;
-Claude Golden es su versión dorada y luminosa. La danza de fusión es una coreografía
-propia.
+Claude Maestro lleva lentes, cabello formal peinado de lado, saco de tweed con coderas,
+camisa, corbata y un libro; Claude Golden es la versión dorada y luminosa. La danza de
+fusión es una coreografía propia.
 """
 import json
 import math
@@ -26,6 +27,32 @@ ORO_CLARO = (255, 240, 170)
 ORO_OSCURO = (206, 146, 34)
 BLANCO = (255, 252, 240)
 
+# Claude Maestro
+TWEED = (116, 84, 58)
+TWEED_OSC = (92, 66, 46)
+TWEED_CLARO = (140, 104, 72)
+PARCHE = (74, 54, 38)
+CAMISA = (240, 232, 214)
+CAMISA_SOMBRA = (212, 202, 184)
+CORBATA = (36, 92, 122)
+CORBATA_RAYA = (82, 152, 178)
+PANTALON = (64, 66, 76)
+PANTALON_CLARO = (84, 86, 98)
+ZAPATO = (74, 48, 32)
+SUELA = (40, 28, 20)
+PELO = (70, 46, 32)
+PELO_CLARO = (100, 68, 46)
+CANA = (180, 174, 164)
+MARCO = (52, 36, 28)
+MARCO_BRILLO = (196, 160, 90)
+VIDRIO = (196, 228, 255)
+TAPA = (122, 34, 44)
+TAPA_OSC = (92, 24, 32)
+TAPA_ORO = (222, 178, 84)
+HOJAS = (242, 234, 214)
+HOJAS_LINEA = (210, 198, 176)
+BOTON = (198, 158, 72)
+
 
 def write_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -37,7 +64,7 @@ def clamp(v):
 
 
 def k(*pairs):
-    return {f"{t:.2f}": v for t, v in pairs}
+    return {f"{t:.2f}": v for t, v in sorted(pairs, key=lambda par: par[0])}
 
 
 Z = [0, 0, 0]
@@ -51,6 +78,10 @@ Z = [0, 0, 0]
 REG = {
     "ojo": (0, 32, 2, 3), "ojo_lado": (2, 32, 1, 1), "emblema": (8, 32, 8, 8), "emblema_lado": (3, 32, 1, 1),
     "aura": (16, 32, 8, 8), "halo": (24, 32, 4, 4), "orbe": (28, 32, 4, 4),
+    # Solo en la textura de Claude Maestro (zona libre 0-16 x 48-64).
+    "pelo": (0, 48, 4, 4), "marco": (4, 48, 2, 2), "vidrio": (6, 48, 2, 3), "corbata": (8, 48, 2, 2),
+    "corbata_larga": (10, 48, 2, 6), "cuello": (12, 48, 2, 2), "libro_tapa": (0, 52, 6, 7),
+    "libro_hojas": (6, 52, 2, 7), "libro_lomo": (8, 52, 2, 7), "libro_canto": (10, 52, 6, 2),
 }
 FACES = ("north", "south", "east", "west", "up", "down")
 
@@ -59,6 +90,16 @@ def per_face(front, rest):
     uv = {}
     for face in FACES:
         u, v, w, h = REG[front if face == "north" else rest]
+        uv[face] = {"uv": [u, v], "uv_size": [w, h]}
+    return uv
+
+
+def caras(**por_cara):
+    """UV por cara con regiones de REG: caras(north="a", south="b", resto="c")."""
+    resto = por_cara.get("resto")
+    uv = {}
+    for face in FACES:
+        u, v, w, h = REG[por_cara.get(face, resto)]
         uv[face] = {"uv": [u, v], "uv_size": [w, h]}
     return uv
 
@@ -138,6 +179,59 @@ def golden_geometry():
                       "size": [1.5, 1.5, 1.5], "uv": per_face("orbe", "orbe")})
     bones.append(bone("orbes", [0, 15.75, 0], "root", orbes))
     return geo("geometry.claudenpc.golden", bones, bounds=(3, 3.5, 1.6))
+
+
+def maestro_geometry():
+    """Claude con saco (capa 3D sobre cuerpo y brazos), cabello formal, lentes,
+    corbata, insignia luminosa y un libro en la mano izquierda."""
+    bones = [b for b in humanoide() if b["name"] != "emblema"]
+    por_nombre = {b["name"]: b for b in bones}
+    por_nombre["body"]["cubes"].append(box([-4, 12, -2], [8, 12, 4], [16, 32], inflate=0.25))
+    por_nombre["rightArm"]["cubes"].append(box([-8, 12, -2], [4, 12, 4], [40, 32], inflate=0.25))
+    por_nombre["leftArm"]["cubes"].append(box([4, 12, -2], [4, 12, 4], [48, 48], inflate=0.25))
+    pelo = caras(resto="pelo")
+    bones.append(bone("cabello", [0, 24, 0], "head", [
+        box([-4, 24, -4], [8, 8, 8], [32, 0], inflate=0.45),
+        {"origin": [-4.55, 31.55, -4.6], "size": [5.6, 1.2, 4.4], "uv": pelo},   # copete peinado de lado
+        {"origin": [-4.6, 30.2, -4.6], "size": [2.2, 1.6, 1.0], "uv": pelo},     # mechón sobre la raya
+    ]))
+    marco = caras(resto="marco")
+    lentes = []
+    for x0 in (-3.6, 0.6):
+        lentes += [
+            {"origin": [x0, 29.0, -4.65], "size": [3.0, 0.6, 0.3], "uv": marco},
+            {"origin": [x0, 25.4, -4.65], "size": [3.0, 0.6, 0.3], "uv": marco},
+            {"origin": [x0, 26.0, -4.65], "size": [0.6, 3.0, 0.3], "uv": marco},
+            {"origin": [x0 + 2.4, 26.0, -4.65], "size": [0.6, 3.0, 0.3], "uv": marco},
+        ]
+    lentes += [
+        {"origin": [-0.6, 28.2, -4.65], "size": [1.2, 0.5, 0.3], "uv": marco},     # puente
+        {"origin": [-4.8, 28.4, -4.65], "size": [0.3, 0.45, 4.6], "uv": marco},    # patillas
+        {"origin": [4.5, 28.4, -4.65], "size": [0.3, 0.45, 4.6], "uv": marco},
+    ]
+    bones.append(bone("lentes", [0, 27.5, -4.5], "head", lentes))
+    u, v, w, h = REG["vidrio"]
+    vidrio = {"north": {"uv": [u, v], "uv_size": [w, h]}}  # una sola cara: vidrio fino
+    bones.append(bone("vidrio", [0, 27.5, -4.5], "lentes", [
+        {"origin": [-3.0, 26.0, -4.5], "size": [1.8, 3.0, 0], "uv": vidrio},
+        {"origin": [1.2, 26.0, -4.5], "size": [1.8, 3.0, 0], "uv": vidrio},
+    ]))
+    bones.append(bone("corbata", [0, 22, -2.3], "body", [
+        {"origin": [-0.75, 22.3, -2.55], "size": [1.5, 1.2, 0.45], "uv": caras(resto="corbata")},             # nudo
+        {"origin": [-0.6, 16.6, -2.4], "size": [1.2, 5.8, 0.3], "uv": caras(north="corbata_larga", resto="corbata")},
+        {"origin": [-0.4, 15.8, -2.4], "size": [0.8, 0.8, 0.3], "uv": caras(resto="corbata")},              # punta
+        {"origin": [-2.3, 22.9, -2.5], "size": [1.5, 1.1, 0.4], "uv": caras(resto="cuello")},               # cuello
+        {"origin": [0.8, 22.9, -2.5], "size": [1.5, 1.1, 0.4], "uv": caras(resto="cuello")},
+    ]))
+    bones.append(bone("pin", [2.5, 20.6, -2.4], "body", [
+        {"origin": [1.9, 20.0, -2.5], "size": [1.3, 1.3, 0.25], "uv": per_face("emblema", "emblema_lado")},
+    ]))
+    # Libro sujeto contra el pecho: la tapa mira al frente, el lomo a la izquierda.
+    bones.append(bone("libro", [6, 13, -2], "leftArm", [
+        {"origin": [3.2, 8.4, -3.9], "size": [5.6, 7.0, 1.6],
+         "uv": caras(north="libro_tapa", south="libro_tapa", west="libro_lomo", east="libro_hojas", resto="libro_canto")},
+    ]))
+    return geo("geometry.claudenpc.maestro", bones, bounds=(2, 3, 1.5))
 
 
 def sphere_geometry(identifier, radius, center_y, bands, n_lon, region="panel"):
@@ -309,6 +403,159 @@ def eco_skin():
     return img
 
 
+def region(px, x0, y0, w, h, fn):
+    for y in range(h):
+        for x in range(w):
+            c = fn(x, y, w, h)
+            if c is not None:
+                px[x0 + x, y0 + y] = c
+
+
+def tweed(x, y, alpha=255):
+    if (x + y * 2) % 5 == 0:
+        c = TWEED_CLARO
+    elif (x - y) % 4 == 0:
+        c = TWEED_OSC
+    else:
+        c = TWEED
+    return c + (alpha,)
+
+
+def maestro_skin():
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    px = img.load()
+    pintar_cuerpo(px, NARANJA_CLARO, NARANJA, NARANJA_OSCURO)
+    for ex in (1, 5):  # ojos pintados (debajo de los ojos 3D)
+        for dy in range(3):
+            for dx in range(2):
+                px[8 + ex + dx, 8 + 3 + dy] = OJO + (255,)
+    u, v, w, h = REG["ojo"]
+    region(px, u, v, w, h, lambda x, y, w, h: OJO + (255,))
+    px[u, v] = (110, 80, 64, 255)
+    px[REG["ojo_lado"][0], REG["ojo_lado"][1]] = OJO + (255,)
+    # Insignia (pin) con la estrella luminosa.
+    u, v, w, h = REG["emblema"]
+    region(px, u, v, w, h, lambda x, y, w, h: NARANJA + (255,))
+    estrella(px, u + 4, v + 4, CREMA, 0, u, v, u + w, v + h)
+    px[REG["emblema_lado"][0], REG["emblema_lado"][1]] = NARANJA_OSCURO + (255,)
+
+    # Camisa (capa base del cuerpo) con corbata pintada y cinturón.
+    for face, (x0, y0, w, h) in box_regions(16, 16, 8, 12, 4).items():
+        def camisa(x, y, w, h, face=face):
+            if y >= 10:
+                if face == "north" and y == 10 and x in (3, 4):
+                    return BOTON + (255,)
+                return (PANTALON if y == 11 else (58, 40, 30)) + (255,)
+            c = CAMISA_SOMBRA if face in ("south", "east", "west") else CAMISA
+            if face == "north" and x in (3, 4) and 1 <= y <= 8:
+                c = CORBATA_RAYA if (y + x) % 3 == 0 else CORBATA
+            return c + (255,)
+        region(px, x0, y0, w, h, camisa)
+    # Saco de tweed (capa exterior): abierto por delante, botones y bolsillo con pluma.
+    for face, (x0, y0, w, h) in box_regions(16, 32, 8, 12, 4).items():
+        def saco(x, y, w, h, face=face):
+            if face == "north":
+                abierto = (2 <= x <= 5) if y <= 2 else (3 <= x <= 4)
+                if abierto:
+                    return (0, 0, 0, 0)
+                if (x in (2, 5) and y <= 6) or (x in (1, 6) and y <= 1):
+                    return TWEED_OSC + (255,)  # solapas
+                if x == 2 and y in (7, 9):
+                    return BOTON + (255,)
+                if x in (5, 6) and y == 3:
+                    return TWEED_OSC + (255,)  # bolsillo
+                if x == 6 and y == 2:
+                    return (60, 90, 200, 255)  # pluma
+            if face == "south" and x in (3, 4) and y >= 8:
+                return TWEED_OSC + (255,)
+            return tweed(x, y)
+        region(px, x0, y0, w, h, saco)
+    # Mangas del saco con coderas; las 3 filas de abajo quedan abiertas (puño y mano).
+    for base_u, base_v in ((40, 32), (48, 48)):
+        for face, (x0, y0, w, h) in box_regions(base_u, base_v, 4, 12, 4).items():
+            def manga(x, y, w, h, face=face):
+                if face == "down" or (face != "up" and y >= 9):
+                    return (0, 0, 0, 0)
+                if face == "south" and 4 <= y <= 6 and 1 <= x <= 2:
+                    return PARCHE + (255,)
+                if face != "up" and y == 8:
+                    return TWEED_OSC + (255,)
+                return tweed(x, y)
+            region(px, x0, y0, w, h, manga)
+    # Brazos base: manga de camisa, puño blanco y mano naranja.
+    for base_u, base_v in ((40, 16), (32, 48)):
+        for face, (x0, y0, w, h) in box_regions(base_u, base_v, 4, 12, 4).items():
+            def brazo(x, y, w, h, face=face):
+                if face == "down" or y >= 10:
+                    return NARANJA + (255,) if face != "down" else NARANJA_OSCURO + (255,)
+                if y == 9:
+                    return BLANCO + (255,)
+                return (CAMISA_SOMBRA if face in ("south", "east", "west") else CAMISA) + (255,)
+            region(px, x0, y0, w, h, brazo)
+    # Pantalón gris con raya y zapatos marrones.
+    for base_u, base_v in ((0, 16), (16, 48)):
+        for face, (x0, y0, w, h) in box_regions(base_u, base_v, 4, 12, 4).items():
+            def pierna(x, y, w, h, face=face):
+                if face == "down":
+                    return SUELA + (255,)
+                if face == "up":
+                    return PANTALON + (255,)
+                if y == 11:
+                    return SUELA + (255,)
+                if y == 10:
+                    return ZAPATO + (255,)
+                if face == "north" and x == 1:
+                    return PANTALON_CLARO + (255,)
+                return PANTALON + (255,)
+            region(px, x0, y0, w, h, pierna)
+    # Cabello formal (capa de la cabeza): raya al costado, nuca recta y algunas canas.
+    reg = box_regions(32, 0, 8, 8, 8)
+    region(px, *reg["up"], lambda x, y, w, h: (PELO_CLARO if x == 2 or (x + y) % 4 == 0 else PELO) + (255,))
+    region(px, *reg["down"], lambda x, y, w, h: (0, 0, 0, 0))
+
+    def frente(x, y, w, h):
+        if y == 0 or (y == 1 and x <= 4):
+            return (PELO_CLARO if x == 2 else PELO) + (255,)
+        return (0, 0, 0, 0)
+
+    def lado(atras_izq):
+        def f(x, y, w, h):
+            atras = x if atras_izq else w - 1 - x  # 0 = nuca
+            if y <= 2:
+                return PELO + (255,)
+            if y <= 5 and atras <= 4:
+                return (CANA if atras == 4 and y >= 4 else PELO) + (255,)
+            if y <= 4 and atras == 5:
+                return CANA + (255,)  # patilla
+            return (0, 0, 0, 0)
+        return f
+
+    region(px, *reg["north"], frente)
+    region(px, *reg["east"], lado(True))
+    region(px, *reg["west"], lado(False))
+    region(px, *reg["south"], lambda x, y, w, h: (PELO + (255,)) if y <= 5 or (y == 6 and 1 <= x <= 6) else (0, 0, 0, 0))
+    # Piezas 3D: pelo, lentes, vidrio, corbata, cuello y libro.
+    region(px, *REG["pelo"], lambda x, y, w, h: (PELO_CLARO if (x + y) % 3 == 0 else PELO) + (255,))
+    region(px, *REG["marco"], lambda x, y, w, h: (MARCO_BRILLO if x == 0 and y == 0 else MARCO) + (255,))
+    region(px, *REG["vidrio"], lambda x, y, w, h: (BLANCO + (150,)) if x == 0 and y == 0 else VIDRIO + (52,))
+    region(px, *REG["corbata"], lambda x, y, w, h: CORBATA + (255,))
+    region(px, *REG["corbata_larga"], lambda x, y, w, h: (CORBATA_RAYA if y % 2 == 0 else CORBATA) + (255,))
+    region(px, *REG["cuello"], lambda x, y, w, h: CAMISA + (255,))
+
+    def tapa(x, y, w, h):
+        if x in (0, w - 1) or y in (0, h - 1):
+            return TAPA_ORO + (255,)
+        if (x, y) in ((2, 3), (3, 3), (2, 2), (3, 4), (1, 3), (4, 3)):
+            return TAPA_ORO + (255,)  # estrella dorada
+        return TAPA + (255,)
+
+    region(px, *REG["libro_tapa"], tapa)
+    region(px, *REG["libro_hojas"], lambda x, y, w, h: (HOJAS_LINEA if x % 2 else HOJAS) + (255,))
+    region(px, *REG["libro_lomo"], lambda x, y, w, h: (TAPA_ORO if y in (1, 5) else TAPA_OSC) + (255,))
+    region(px, *REG["libro_canto"], lambda x, y, w, h: (HOJAS_LINEA if x % 2 else HOJAS) + (255,))
+    return img
+
+
 def sphere_texture(color=(255, 214, 110)):
     img = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
     px = img.load()
@@ -328,7 +575,8 @@ def sphere_texture(color=(255, 214, 110)):
 # =============================================================================
 
 ATLAS = {"brillo": (0, 0, 16, 16), "anillo": (16, 0, 16, 16), "estrella": (32, 0, 16, 16),
-         "chispa": (48, 0, 8, 8), "cuadro": (56, 0, 8, 8), "humo": (0, 16, 16, 16), "nota": (16, 16, 16, 16)}
+         "chispa": (48, 0, 8, 8), "cuadro": (56, 0, 8, 8), "humo": (0, 16, 16, 16), "nota": (16, 16, 16, 16),
+         "z": (32, 16, 16, 16)}
 
 
 def particle_atlas():
@@ -361,6 +609,13 @@ def particle_atlas():
         return min(1, cabeza * 1.4 + palo + bandera)
 
     region("nota", nota)
+
+    def letra_z(x, y):  # una "Z" para cuando duermen
+        if abs(y + 0.62) < 0.16 or abs(y - 0.62) < 0.16:
+            return 1.0 if abs(x) < 0.62 else 0.0
+        return 1.0 if abs(x + y) < 0.2 and abs(x) < 0.62 else 0.0
+
+    region("z", letra_z)
     return img
 
 
@@ -410,6 +665,19 @@ def write_particles():
     p("remo", "chispa", {**inst(6), "minecraft:emitter_shape_disc": {"radius": 0.3, "plane_normal": "y"},
                          **life(0.4), **spd(0.8), **mot(linear_acceleration=[0, -6, 0])},
       {"0.0": "#DDBEE6FF", "1.0": "#004682C8"}, sz(0.1, 0.04))
+    # Escudo, polvo de bloques, tiza de la pizarra y sueño.
+    p("bloqueo", "chispa", {**inst(10), "minecraft:emitter_shape_sphere": {"radius": 0.2, "direction": "outwards"},
+                            **life(0.3), **spd(3), **mot(linear_drag_coefficient=4)},
+      {"0.0": "#FFFFFFFF", "0.5": "#FFFFE08C", "1.0": "#00FFC850"}, sz(0.12, 0.02))
+    p("polvo", "humo", {**inst(5), "minecraft:emitter_shape_box": {"half_dimensions": [0.45, 0.45, 0.45], "surface_only": True},
+                        **life(0.4), **spd(0.4), **mot(linear_drag_coefficient=2, linear_acceleration=[0, -1, 0])},
+      {"0.0": "#B4A08C78", "1.0": "#00A08C78"}, sz(0.14, 0.26), "particles_alpha")
+    p("tiza", "cuadro", {**inst(6), "minecraft:emitter_shape_box": {"half_dimensions": [0.45, 0.25, 0.08]},
+                         **life(0.9), **spd(0.05), **mot(linear_acceleration=[0, -0.7, 0])},
+      {"0.0": "#FFFFFFFF", "1.0": "#00FFFFFF"}, sz(0.05), "particles_alpha")
+    p("zzz", "z", {**inst(1), "minecraft:emitter_shape_point": {}, **life(1.8), **spd(0.15),
+                   **mot(linear_acceleration=[0.15, 0.45, 0])},
+      {"0.0": "#FFE6F0FF", "0.7": "#CCB4D2FF", "1.0": "#00B4D2FF"}, sz(0.14, 0.32), "particles_alpha")
     # Fusión y Claude Golden.
     p("aura_dorada", "estrella", {**inst(6), "minecraft:emitter_shape_box": {"half_dimensions": [0.45, 1.0, 0.45]},
                                   **life("0.8 + variable.particle_random_1 * 0.6"), **spd(0),
@@ -492,9 +760,52 @@ def claude_animations():
         "animation.claudenpc.martillazo": {"animation_length": 0.9, "bones": {
             "rightArm": {"rotation": k((0, Z), (0.3, [-170, 0, 0]), (0.7, [-170, 0, 0]), (0.8, [-20, 0, 0]), (0.9, Z))},
             "leftArm": {"rotation": k((0, Z), (0.3, [-160, 0, 0]), (0.7, [-160, 0, 0]), (0.8, [-20, 0, 0]), (0.9, Z))}}},
-        "animation.claudenpc.escudo": {"animation_length": 0.6, "bones": {
-            "leftArm": {"rotation": k((0, Z), (0.1, [-80, -30, 0]), (0.45, [-80, -30, 0]), (0.6, Z))},
-            "body": {"rotation": k((0, Z), (0.15, [10, 0, 0]), (0.6, Z))}}},
+        # Ataques con arma (cada golpe cuerpo a cuerpo) y escudo contra flechas.
+        "animation.claudenpc.espadazo": {"animation_length": 0.32, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.07, [-150, 0, -35]), (0.17, [-40, 0, 30]), (0.32, Z))},
+            "body": {"rotation": k((0, Z), (0.07, [0, -15, 0]), (0.17, [0, 20, 0]), (0.32, Z))}}},
+        "animation.claudenpc.espadazo2": {"animation_length": 0.32, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.08, [-95, 0, 40]), (0.18, [-80, 0, -40]), (0.32, Z))},
+            "body": {"rotation": k((0, Z), (0.08, [0, 18, 0]), (0.18, [0, -20, 0]), (0.32, Z))}}},
+        "animation.claudenpc.hachazo": {"animation_length": 0.45, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.14, [-170, 0, -8]), (0.26, [-30, 0, 5]), (0.45, Z))},
+            "body": {"rotation": k((0, Z), (0.14, [-6, 0, 0]), (0.26, [12, 0, 0]), (0.45, Z))}}},
+        "animation.claudenpc.estocada": {"animation_length": 0.4, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.12, [-70, 0, -10]), (0.2, [-95, 0, 4]), (0.4, Z))},
+            "body": {"rotation": k((0, Z), (0.12, [0, -12, 0]), (0.2, [8, 14, 0]), (0.4, Z))}}},
+        # Postura con el escudo arriba (la activa la propiedad claudenpc:escudo).
+        "animation.claudenpc.cubrirse": {"loop": True, "bones": {
+            "leftArm": {"rotation": [-72, 0, -22]}, "rightArm": {"rotation": [-12, 0, 0]},
+            "body": {"rotation": [6, 0, 0]}, "head": {"rotation": [4, 0, 0]}}},
+        "animation.claudenpc.bloqueo": {"animation_length": 0.25, "bones": {
+            "leftArm": {"rotation": k((0, Z), (0.06, [14, 0, 0]), (0.25, Z))},
+            "body": {"rotation": k((0, Z), (0.06, [-5, 0, 0]), (0.25, Z))}}},
+        # En clase: sentado (propiedad claudenpc:sentado), apuntes, mano arriba, aplausos.
+        "animation.claudenpc.sentado": {"loop": True, "bones": {
+            "root": {"position": [0, -10, 0]},
+            "rightLeg": {"rotation": [-90, 0, -6]}, "leftLeg": {"rotation": [-90, 0, 6]},
+            "rightArm": {"rotation": [-38, 0, 6]}, "leftArm": {"rotation": [-38, 0, -6]}}},
+        "animation.claudenpc.tomar_notas": {"animation_length": 2.0, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.3, [-22, 0, 10]), (0.6, [-18, 0, 4]), (0.9, [-24, 0, 12]),
+                                      (1.2, [-18, 0, 3]), (1.6, [-22, 0, 10]), (2.0, Z))},
+            "head": {"rotation": k((0, Z), (0.25, [24, 0, 0]), (1.75, [24, 0, 0]), (2.0, Z))}}},
+        "animation.claudenpc.levantar_mano": {"animation_length": 2.4, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.25, [-135, 0, 10]), (2.1, [-135, 0, 10]), (2.4, Z))},
+            "head": {"rotation": k((0, Z), (0.25, [-8, 0, 0]), (2.1, [-8, 0, 0]), (2.4, Z))}}},
+        "animation.claudenpc.aplaudir": {"animation_length": 1.4, "bones": {
+            "rightArm": {"rotation": k(*[(t * 0.15, [-55, 0, -18 if t % 2 == 0 else 12]) for t in range(1, 7)], (0, Z), (1.4, Z))},
+            "leftArm": {"rotation": k(*[(t * 0.15, [-55, 0, 18 if t % 2 == 0 else -12]) for t in range(1, 7)], (0, Z), (1.4, Z))}}},
+        # Pesca: lanzar, esperar con la caña al frente y recoger.
+        "animation.claudenpc.pescar": {"animation_length": 6.0, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.2, [-160, 0, -10]), (0.45, [-65, 0, 0]),
+                                      *[(0.45 + i * 0.5, [-65 + (3 if i % 2 else 0), 0, 0]) for i in range(1, 11)], (6.0, [-65, 0, 0]))}}},
+        "animation.claudenpc.pescar_espera": {"animation_length": 5.5, "bones": {
+            "rightArm": {"rotation": k(*[(i * 0.5, [-65 + (3 if i % 2 else 0), 0, 0]) for i in range(12)])}}},
+        "animation.claudenpc.recoger": {"animation_length": 0.7, "bones": {
+            "rightArm": {"rotation": k((0, [-65, 0, 0]), (0.25, [-150, 0, 0]), (0.7, Z))}}},
+        "animation.claudenpc.mirar_alrededor": {"animation_length": 3.0, "bones": {
+            "head": {"rotation": k((0, Z), (0.6, [0, -55, 0]), (1.4, [-10, -55, 0]), (1.9, [0, 50, 0]), (2.6, [0, 50, 0]), (3.0, Z))},
+            "body": {"rotation": k((0, Z), (1.0, [0, -10, 0]), (2.0, [0, 10, 0]), (3.0, Z))}}},
         "animation.claudenpc.lanzar": {"animation_length": 0.5, "bones": {
             "rightArm": {"rotation": k((0, Z), (0.15, [-170, 0, 0]), (0.3, [-60, 0, 0]), (0.5, Z))}}},
         "animation.claudenpc.colocar": {"animation_length": 0.35, "bones": {
@@ -544,6 +855,46 @@ def claude_animations():
             "rightArm": {"rotation": [0, 0, 90]}, "leftArm": {"rotation": [0, 0, -90]},
             "head": {"rotation": [-30, 0, 0]},
             "root": {"rotation": k((0, Z), (3.0, [0, 720, 0]))}}},
+    }}
+
+
+def maestro_animations():
+    m = "animation.claudenpc.maestro."
+    return {"format_version": "1.8.0", "animations": {
+        # Siempre: sostiene el libro contra el pecho.
+        m + "libro": {"loop": True, "bones": {"leftArm": {"rotation": [-32, 0, -10]}}},
+        m + "leer": {"animation_length": 3.0, "bones": {
+            "leftArm": {"rotation": k((0, Z), (0.3, [-38, 0, -16]), (2.7, [-38, 0, -16]), (3.0, Z))},
+            "rightArm": {"rotation": k((0, Z), (0.3, [-62, 0, 24]), (1.4, [-62, 0, 24]), (1.6, [-75, 0, 30]),
+                                      (1.8, [-62, 0, 24]), (2.7, [-62, 0, 24]), (3.0, Z))},
+            "head": {"rotation": k((0, Z), (0.3, [24, 0, 0]), (1.5, [24, 0, -6]), (2.7, [24, 0, 4]), (3.0, Z))}}},
+        m + "explicar": {"animation_length": 2.4, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.3, [-80, 0, -15]), (0.8, [-65, 0, 10]), (1.3, [-95, 0, -25]),
+                                      (1.8, [-70, 0, 5]), (2.4, Z))},
+            "head": {"rotation": k((0, Z), (0.4, [0, 12, 0]), (1.2, [0, -12, 0]), (2.0, [-5, 0, 0]), (2.4, Z))},
+            "body": {"rotation": k((0, Z), (0.6, [0, 8, 0]), (1.6, [0, -8, 0]), (2.4, Z))}}},
+        m + "escribir": {"animation_length": 2.0, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.2, [-150, 0, 0]), (0.45, [-150, 0, -12]), (0.7, [-140, 0, 8]),
+                                      (0.95, [-155, 0, -6]), (1.2, [-145, 0, 12]), (1.45, [-150, 0, -10]),
+                                      (1.7, [-140, 0, 6]), (2.0, Z))},
+            "head": {"rotation": k((0, Z), (0.2, [-12, 0, 0]), (1.8, [-12, 0, 0]), (2.0, Z))}}},
+        m + "senalar": {"animation_length": 1.4, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.25, [-95, 0, -8]), (1.1, [-95, 0, -8]), (1.4, Z))},
+            "head": {"rotation": k((0, Z), (0.25, [-5, 0, 0]), (1.1, [-5, 0, 0]), (1.4, Z))}}},
+        m + "lentes": {"animation_length": 1.2, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.3, [-150, 0, 28]), (0.7, [-148, 0, 24]), (1.2, Z))},
+            "head": {"rotation": k((0, Z), (0.3, [10, 0, 0]), (0.7, [10, 0, 0]), (1.2, Z))}}},
+        m + "campana": {"animation_length": 0.7, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.15, [-120, 0, -10]), (0.3, [-70, 0, 0]), (0.45, [-110, 0, -8]), (0.7, Z))}}},
+        m + "aplaudir": {"animation_length": 1.4, "bones": {
+            "rightArm": {"rotation": k(*[(t * 0.15, [-60, 0, -18 if t % 2 == 0 else 12]) for t in range(1, 7)], (0, Z), (1.4, Z))},
+            "leftArm": {"rotation": k(*[(t * 0.15, [-28, 0, 18 if t % 2 == 0 else -6]) for t in range(1, 7)], (0, Z), (1.4, Z))}}},
+        m + "pensar": {"animation_length": 2.0, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.3, [-130, 0, 30]), (1.7, [-130, 0, 30]), (2.0, Z))},
+            "head": {"rotation": k((0, Z), (0.3, [-10, 0, 8]), (1.7, [-10, 0, 8]), (2.0, Z))}}},
+        m + "saludar": {"animation_length": 1.4, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.2, [-170, 0, -20]), (0.45, [-170, 0, 10]), (0.7, [-170, 0, -20]),
+                                      (0.95, [-170, 0, 10]), (1.4, Z))}}},
     }}
 
 
@@ -597,6 +948,9 @@ def render_controllers():
         "controller.render.claudenpc_golden": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES]},
+        "controller.render.claudenpc_maestro": {
+            "geometry": "Geometry.default", "textures": ["Texture.default"],
+            "materials": [{"*": "Material.default"}, {"pin": "Material.glow"}, {"vidrio": "Material.vidrio"}]},
     }}
 
 
@@ -606,8 +960,10 @@ def client_entities():
         "respirar": "animation.claudenpc.respirar", "parpadeo": "animation.claudenpc.parpadeo",
     }
     claude_anims = dict(base_anims)
-    for name in ("golpe", "martillazo", "escudo", "lanzar", "colocar", "crafteo", "minar", "arco", "planeo",
-                 "cubeta", "agachado", "colocar_abajo", "torre", "remar", "celebrar", "danza", "fusion"):
+    for name in ("golpe", "espadazo", "espadazo2", "hachazo", "estocada", "cubrirse", "bloqueo", "martillazo",
+                 "lanzar", "colocar", "crafteo", "minar", "arco", "planeo", "cubeta", "agachado", "colocar_abajo",
+                 "torre", "remar", "celebrar", "sentado", "tomar_notas", "levantar_mano", "aplaudir", "pescar",
+                 "pescar_espera", "recoger", "mirar_alrededor", "danza", "fusion"):
         claude_anims[name] = f"animation.claudenpc.{name}"
     write_json(RP / "entity/claude.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:claude",
@@ -615,10 +971,25 @@ def client_entities():
         "textures": {"default": "textures/entity/claudenpc/claude"},
         "geometry": {"default": "geometry.claudenpc.claude"},
         "animations": claude_anims,
-        "scripts": {"animate": ["mirar", "caminar", "respirar", "parpadeo"]},
+        "scripts": {"animate": ["mirar", "caminar", "respirar", "parpadeo",
+                                {"cubrirse": "query.property('claudenpc:escudo')"},
+                                {"sentado": "query.property('claudenpc:sentado')"}]},
         "render_controllers": ["controller.render.claudenpc"],
         "enable_attachables": True,
         "spawn_egg": {"base_color": "#D97757", "overlay_color": "#F5ECDC"}}}})
+    maestro_anims = dict(base_anims)
+    for name in ("libro", "leer", "explicar", "escribir", "senalar", "lentes", "campana", "aplaudir", "pensar", "saludar"):
+        maestro_anims[name] = f"animation.claudenpc.maestro.{name}"
+    write_json(RP / "entity/maestro.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:maestro",
+        "materials": {"default": "entity_alphatest", "glow": "entity_emissive_alpha", "vidrio": "entity_alphablend"},
+        "textures": {"default": "textures/entity/claudenpc/maestro"},
+        "geometry": {"default": "geometry.claudenpc.maestro"},
+        "animations": maestro_anims,
+        "scripts": {"animate": ["mirar", "caminar", "respirar", "parpadeo", "libro"]},
+        "render_controllers": ["controller.render.claudenpc_maestro"],
+        "enable_attachables": True,
+        "spawn_egg": {"base_color": "#74543A", "overlay_color": "#D97757"}}}})
     golden_anims = dict(base_anims)
     for name in ("flotar", "halo", "aura", "poder", "chasquido", "dirigir", "pensar"):
         golden_anims[name] = f"animation.claudenpc.golden.{name}"
@@ -652,12 +1023,14 @@ def client_entities():
 def main():
     write_json(RP / "models/entity/claude.geo.json", geo("geometry.claudenpc.claude", humanoide()))
     write_json(RP / "models/entity/golden.geo.json", golden_geometry())
+    write_json(RP / "models/entity/maestro.geo.json", maestro_geometry())
     write_json(RP / "models/entity/aura.geo.json", sphere_geometry(
         "geometry.claudenpc.aura", 80, 40, [-67.5, -52.5, -37.5, -22.5, -7.5, 7.5, 22.5, 37.5, 52.5, 67.5, 82.5], 20))
     tex = RP / "textures/entity/claudenpc"
     tex.mkdir(parents=True, exist_ok=True)
     claude_skin().save(tex / "claude.png")
     golden_skin().save(tex / "golden.png")
+    maestro_skin().save(tex / "maestro.png")
     eco_skin().save(tex / "eco.png")
     sphere_texture().save(tex / "aura.png")
     (RP / "textures/particle").mkdir(parents=True, exist_ok=True)
@@ -665,6 +1038,7 @@ def main():
     write_particles()
     write_json(RP / "animations/claude.animation.json", claude_animations())
     write_json(RP / "animations/golden.animation.json", golden_animations())
+    write_json(RP / "animations/maestro.animation.json", maestro_animations())
     write_json(RP / "animations/aura.animation.json", aura_animations())
     write_json(RP / "render_controllers/claudenpc.render_controllers.json", render_controllers())
     client_entities()

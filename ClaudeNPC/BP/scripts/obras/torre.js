@@ -53,6 +53,6 @@ export function tickTorre(npc, state) {
       sound(npc, "use.stone", 1);
     }
   }, 5 + rand(0, 1));
-  state.ocupadoHasta = now() + 10 + rand(0, 3) - Math.round(nivel(state) * 3);
+  state.ocupadoHasta = now() + 9 + rand(0, 2) - Math.round(nivel(state) * 3);
   return false;
 }

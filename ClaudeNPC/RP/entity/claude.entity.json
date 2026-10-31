@@ -19,8 +19,13 @@
         "respirar": "animation.claudenpc.respirar",
         "parpadeo": "animation.claudenpc.parpadeo",
         "golpe": "animation.claudenpc.golpe",
+        "espadazo": "animation.claudenpc.espadazo",
+        "espadazo2": "animation.claudenpc.espadazo2",
+        "hachazo": "animation.claudenpc.hachazo",
+        "estocada": "animation.claudenpc.estocada",
+        "cubrirse": "animation.claudenpc.cubrirse",
+        "bloqueo": "animation.claudenpc.bloqueo",
         "martillazo": "animation.claudenpc.martillazo",
-        "escudo": "animation.claudenpc.escudo",
         "lanzar": "animation.claudenpc.lanzar",
         "colocar": "animation.claudenpc.colocar",
         "crafteo": "animation.claudenpc.crafteo",
@@ -33,6 +38,14 @@
         "torre": "animation.claudenpc.torre",
         "remar": "animation.claudenpc.remar",
         "celebrar": "animation.claudenpc.celebrar",
+        "sentado": "animation.claudenpc.sentado",
+        "tomar_notas": "animation.claudenpc.tomar_notas",
+        "levantar_mano": "animation.claudenpc.levantar_mano",
+        "aplaudir": "animation.claudenpc.aplaudir",
+        "pescar": "animation.claudenpc.pescar",
+        "pescar_espera": "animation.claudenpc.pescar_espera",
+        "recoger": "animation.claudenpc.recoger",
+        "mirar_alrededor": "animation.claudenpc.mirar_alrededor",
         "danza": "animation.claudenpc.danza",
         "fusion": "animation.claudenpc.fusion"
       },
@@ -41,7 +54,13 @@
           "mirar",
           "caminar",
           "respirar",
-          "parpadeo"
+          "parpadeo",
+          {
+            "cubrirse": "query.property('claudenpc:escudo')"
+          },
+          {
+            "sentado": "query.property('claudenpc:sentado')"
+          }
         ]
       },
       "render_controllers": [
