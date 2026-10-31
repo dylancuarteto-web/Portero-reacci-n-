@@ -1,6 +1,10 @@
-// Ajustes del NPC Claude. Tiempos en ticks (20 ticks = 1 segundo).
+// Ajustes del NPC Claude y de Claude Golden. Tiempos en ticks (20 ticks = 1 segundo).
 
 export const NPC = "claudenpc:claude";
+export const GOLDEN = "claudenpc:claude_golden";
+export const ECO = "claudenpc:eco";
+export const AURA = "claudenpc:aura";
+export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
 export const PARTICLES = {
   cambio: "claudenpc:cambio",
@@ -10,6 +14,16 @@ export const PARTICLES = {
   construir: "claudenpc:construir",
   cohete: "claudenpc:cohete",
   idea: "claudenpc:idea",
+  remo: "claudenpc:remo",
+  auraDorada: "claudenpc:aura_dorada",
+  fusionAnillo: "claudenpc:fusion_anillo",
+  fusionDestello: "claudenpc:fusion_destello",
+  fusionEspiral: "claudenpc:fusion_espiral",
+  reloj: "claudenpc:reloj",
+  gravedad: "claudenpc:gravedad",
+  confeti: "claudenpc:confeti",
+  midas: "claudenpc:midas",
+  notas: "claudenpc:notas",
 };
 
 export const ANIM = {
@@ -18,11 +32,22 @@ export const ANIM = {
   escudo: "animation.claudenpc.escudo",
   lanzar: "animation.claudenpc.lanzar",
   colocar: "animation.claudenpc.colocar",
+  colocarAbajo: "animation.claudenpc.colocar_abajo",
   crafteo: "animation.claudenpc.crafteo",
   minar: "animation.claudenpc.minar",
   arco: "animation.claudenpc.arco",
   planeo: "animation.claudenpc.planeo",
   cubeta: "animation.claudenpc.cubeta",
+  agachado: "animation.claudenpc.agachado",
+  torre: "animation.claudenpc.torre",
+  remar: "animation.claudenpc.remar",
+  celebrar: "animation.claudenpc.celebrar",
+  danza: "animation.claudenpc.danza",
+  fusion: "animation.claudenpc.fusion",
+  goldenPoder: "animation.claudenpc.golden.poder",
+  goldenChasquido: "animation.claudenpc.golden.chasquido",
+  goldenDirigir: "animation.claudenpc.golden.dirigir",
+  goldenPensar: "animation.claudenpc.golden.pensar",
 };
 
 // Armas cuerpo a cuerpo que alterna constantemente; arco, maza y escudo
@@ -47,6 +72,26 @@ export const VELOCIDAD = { caminar: 0.25, correr: 0.33 };
 // IQ: empieza en 70 y sube con la experiencia hasta 300.
 export const IQ = { inicial: 70, maximo: 300, propiedad: "claudenpc:iq", global: "claudenpc:iq_global" };
 
+export const CONSTRUCCION = {
+  bloque: "minecraft:cobblestone",
+  torreMax: 16,
+  puenteMax: 24,
+};
+
+export const BOTE = {
+  velocidad: 0.34,
+  paseoCada: [1800, 3200],
+};
+
+export const CASA = {
+  primeraVez: 1200,     // empieza su casa tras ~1 minuto trabajando
+  reintento: 1800,
+  alcance: 4.6,
+  alcanceTecho: 6.4,
+};
+
+export const FUSION = { cantidad: 5, iq: 300, radio: 20, busqueda: 64 };
+
 export const PICOS = [
   "minecraft:wooden_pickaxe",
   "minecraft:stone_pickaxe",
@@ -69,8 +114,8 @@ export const NIVEL_BLOQUE = {
 };
 
 export const MINERIA = {
-  profundidad: 20,     // bloques que baja en escalera antes de cambiar a túnel recto
-  tunel: 10,           // bloques de túnel recto antes de empezar otra escalera
+  profundidad: 20,     // bloques que baja en escalera
+  tunel: 10,           // bloques de túnel recto
   pasoCada: 24,        // ticks por bloque minado (ritmo humano)
   antorchaCada: 7,
 };

@@ -1,0 +1,26 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.claudenpc.aura.idle": {
+      "loop": true,
+      "bones": {
+        "esfera": {
+          "rotation": [
+            0,
+            "query.life_time * 40",
+            0
+          ],
+          "scale": "math.min(query.life_time * 0.8, 1) * (1 + math.sin(query.life_time * 400) * 0.03)"
+        },
+        "anillo": {
+          "rotation": [
+            "math.sin(query.life_time * 90) * 25",
+            "-query.life_time * 120",
+            0
+          ],
+          "scale": "math.min(query.life_time * 0.8, 1)"
+        }
+      }
+    }
+  }
+}

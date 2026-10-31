@@ -1,3 +1,6 @@
-pack.description=Claude as an NPC: fights, swaps weapons, builds, mines, crafts and sets traps. Bedrock 26.60.
+pack.description=Claude as an NPC: fights, builds like a player, rows boats, builds a house, gains IQ and fuses into Claude Golden. Bedrock 26.60.
 entity.claudenpc:claude.name=Claude
+entity.claudenpc:claude_golden.name=Claude Golden
+entity.claudenpc:eco.name=Claude Echo
+entity.claudenpc:aura.name=Fusion Aura
 item.spawn_egg.entity.claudenpc:claude.name=Spawn Claude

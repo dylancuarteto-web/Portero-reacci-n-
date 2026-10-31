@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:eco",
+      "materials": {
+        "default": "entity_alphablend",
+        "glow": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/eco"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.claude"
+      },
+      "animations": {
+        "mirar": "animation.claudenpc.mirar",
+        "caminar": "animation.claudenpc.caminar",
+        "respirar": "animation.claudenpc.respirar",
+        "parpadeo": "animation.claudenpc.parpadeo",
+        "celebrar": "animation.claudenpc.celebrar"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "caminar",
+          "respirar"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc"
+      ]
+    }
+  }
+}

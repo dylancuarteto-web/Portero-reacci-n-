@@ -4,7 +4,8 @@
     "description": {
       "identifier": "claudenpc:claude",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_alphatest",
+        "glow": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/entity/claudenpc/claude"
@@ -16,26 +17,35 @@
         "mirar": "animation.claudenpc.mirar",
         "caminar": "animation.claudenpc.caminar",
         "respirar": "animation.claudenpc.respirar",
+        "parpadeo": "animation.claudenpc.parpadeo",
         "golpe": "animation.claudenpc.golpe",
         "martillazo": "animation.claudenpc.martillazo",
         "escudo": "animation.claudenpc.escudo",
         "lanzar": "animation.claudenpc.lanzar",
         "colocar": "animation.claudenpc.colocar",
+        "crafteo": "animation.claudenpc.crafteo",
+        "minar": "animation.claudenpc.minar",
         "arco": "animation.claudenpc.arco",
         "planeo": "animation.claudenpc.planeo",
         "cubeta": "animation.claudenpc.cubeta",
-        "crafteo": "animation.claudenpc.crafteo",
-        "minar": "animation.claudenpc.minar"
+        "agachado": "animation.claudenpc.agachado",
+        "colocar_abajo": "animation.claudenpc.colocar_abajo",
+        "torre": "animation.claudenpc.torre",
+        "remar": "animation.claudenpc.remar",
+        "celebrar": "animation.claudenpc.celebrar",
+        "danza": "animation.claudenpc.danza",
+        "fusion": "animation.claudenpc.fusion"
       },
       "scripts": {
         "animate": [
           "mirar",
           "caminar",
-          "respirar"
+          "respirar",
+          "parpadeo"
         ]
       },
       "render_controllers": [
-        "controller.render.default"
+        "controller.render.claudenpc"
       ],
       "enable_attachables": true,
       "spawn_egg": {

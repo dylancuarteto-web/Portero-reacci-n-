@@ -5,7 +5,7 @@
       "identifier": "claudenpc:crafteo",
       "basic_render_parameters": {
         "material": "particles_add",
-        "texture": "textures/particle/particles"
+        "texture": "textures/particle/claudenpc"
       }
     },
     "components": {
@@ -14,31 +14,21 @@
       },
       "minecraft:particle_appearance_billboard": {
         "size": [
-          0.1,
-          0.1
+          "(0.14 + (0.02 - 0.14) * variable.particle_age / variable.particle_lifetime)",
+          "(0.14 + (0.02 - 0.14) * variable.particle_age / variable.particle_lifetime)"
         ],
         "facing_camera_mode": "lookat_xyz",
         "uv": {
-          "texture_width": 128,
-          "texture_height": 128,
-          "flipbook": {
-            "base_UV": [
-              56,
-              0
-            ],
-            "size_UV": [
-              8,
-              8
-            ],
-            "step_UV": [
-              -8,
-              0
-            ],
-            "frames_per_second": 8,
-            "max_frame": 8,
-            "stretch_to_lifetime": true,
-            "loop": false
-          }
+          "texture_width": 64,
+          "texture_height": 32,
+          "uv": [
+            32,
+            0
+          ],
+          "uv_size": [
+            16,
+            16
+          ]
         }
       },
       "minecraft:particle_appearance_tinting": {
@@ -51,13 +41,13 @@
         }
       },
       "minecraft:emitter_rate_instant": {
-        "num_particles": 8
+        "num_particles": 6
       },
       "minecraft:emitter_shape_box": {
         "half_dimensions": [
-          0.4,
-          0.1,
-          0.4
+          0.35,
+          0.05,
+          0.35
         ]
       },
       "minecraft:particle_lifetime_expression": {

@@ -3,20 +3,6 @@ import { ANIM, NIVEL_BLOQUE, PARTICLES } from "./config.js";
 import { pico, sostener } from "./equipo.js";
 import { animate, blockAt, flat, now, particleAt, sound } from "./util.js";
 
-const BLOQUE = "minecraft:cobblestone";
-
-function colocar(dimension, location, type) {
-  try {
-    const block = blockAt(dimension, location);
-    if (!block || !block.isAir) return false;
-    block.setType(type);
-    particleAt(dimension, PARTICLES.construir, { x: block.location.x + 0.5, y: block.location.y + 0.5, z: block.location.z + 0.5 });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function solido(block) {
   return !!block && !block.isAir && !block.isLiquid;
 }
@@ -40,41 +26,12 @@ export function romper(npc, state, block) {
   }
 }
 
-// Sube como un jugador: salta y coloca un bloque bajo sus pies en el punto alto.
-export function pilar(npc, state) {
-  if (!npc.isOnGround) return;
-  sostener(npc, BLOQUE);
-  const pie = { ...npc.location };
-  state.ocupadoHasta = now() + 10;
-  try {
-    npc.applyImpulse({ x: 0, y: 0.42, z: 0 });
-  } catch {
-    return;
-  }
-  system.runTimeout(() => {
-    if (!npc.isValid) return;
-    animate(npc, ANIM.colocar);
-    colocar(npc.dimension, pie, BLOQUE);
-  }, 5);
-}
-
 // Cava hacia abajo para alcanzar a un jugador que está más abajo.
 export function cavar(npc, state) {
   sostener(npc, pico(state));
   animate(npc, ANIM.minar);
   state.ocupadoHasta = now() + 16;
   romper(npc, state, blockAt(npc.dimension, { x: npc.location.x, y: npc.location.y - 1, z: npc.location.z }));
-}
-
-// Tiende un puente si delante hay un hueco.
-export function puente(npc, objetivo) {
-  const dir = flat(npc.location, objetivo.location);
-  const delante = { x: npc.location.x + dir.x, y: npc.location.y - 1, z: npc.location.z + dir.z };
-  const block = blockAt(npc.dimension, delante);
-  if (!block?.isAir) return false;
-  sostener(npc, BLOQUE);
-  animate(npc, ANIM.colocar);
-  return colocar(npc.dimension, delante, BLOQUE);
 }
 
 // Trampa: TNT bajo una placa de presión en el camino previsto del jugador.

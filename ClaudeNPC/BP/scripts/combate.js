@@ -1,8 +1,11 @@
 import { ARMAS, COMBATE, MODIFICA_MUNDO } from "./config.js";
-import { cavar, pilar, puente, torreta, trampa } from "./construccion.js";
+import { aguaDelante, subirABote } from "./bote.js";
+import { cavar, torreta, trampa } from "./construccion.js";
 import { sostener } from "./equipo.js";
 import { aprender, nivel } from "./iq.js";
 import { ritmo } from "./movimiento.js";
+import { iniciarPuente } from "./obras/puente.js";
+import { iniciarTorre } from "./obras/torre.js";
 import {
   arco, elytraMartillo, golpeEscudo, hayBorde, martillazo, perla, saltarAlVacio,
 } from "./tacticas.js";
@@ -13,7 +16,10 @@ import { now, rand } from "./util.js";
 // que suele hacer el jugador) cambia la probabilidad de cada una.
 const NODOS = [
   // El jugador sube para escapar: construir, disparar, volar o teletransportarse.
-  { id: "pilar", iq: 70, cd: 10, si: (c) => c.alto > 2 && c.dist < 5 && MODIFICA_MUNDO, peso: () => 3 },
+  { id: "torre", iq: 70, cd: 40, si: (c) => c.alto > 2 && c.dist < 6 && MODIFICA_MUNDO, peso: () => 3 },
+  // Hay un hueco o agua entre los dos: puente o bote.
+  { id: "puente", iq: 70, cd: 40, si: (c) => c.borde && c.dist > 2.5 && Math.abs(c.alto) < 4 && MODIFICA_MUNDO, peso: () => 3.5 },
+  { id: "bote", iq: 70, cd: 200, si: (c) => c.agua && c.dist > 4 && MODIFICA_MUNDO, peso: () => 5 },
   { id: "arco", iq: 70, cd: 50, si: (c) => c.dist > 9 || c.alto > 3, peso: (c) => 2.5 + (c.dist > 15 ? 2 : 0) + c.mem.torres * 0.3 },
   { id: "elytra", iq: 125, cd: 500, si: (c) => (c.alto > 4 || c.dist > 16) && c.cielo, peso: (c) => 1.5 + c.mem.torres * 0.5 },
   { id: "perla", iq: 85, cd: 220, si: (c) => c.dist > 14 || c.alto > 5, peso: (c) => 1.2 + c.mem.arco * 0.4 },
@@ -28,7 +34,9 @@ const NODOS = [
 ];
 
 const ACCIONES = {
-  pilar: (npc, s) => pilar(npc, s),
+  torre: (npc, s, j) => iniciarTorre(npc, s, j.location.y),
+  puente: (npc, s, j) => iniciarPuente(npc, s, j.location),
+  bote: (npc, s, j) => subirABote(npc, s, j.location),
   arco, perla, martillazo,
   elytra: elytraMartillo,
   vacio: saltarAlVacio,
@@ -61,6 +69,7 @@ function contexto(npc, state, jugador) {
     alto: jugador.location.y - npc.location.y,
     mem: state.memoria,
     borde: hayBorde(npc, jugador),
+    agua: aguaDelante(npc, jugador.location),
     cielo: cieloLibre(npc),
   };
 }
@@ -95,10 +104,7 @@ export function tickCombate(npc, state, jugador) {
   // Cerca, a menudo lo mejor es seguir peleando cuerpo a cuerpo.
   if (c.dist < 4) candidatos.push({ nodo: null, p: 4 - n * 2 });
   const nodo = elegir(candidatos, state);
-  if (!nodo) {
-    if (MODIFICA_MUNDO && c.dist > 2) puente(npc, jugador);
-    return;
-  }
+  if (!nodo) return;
   state.cd[nodo.id] = now() + Math.round(nodo.cd * (1 - n * 0.4));
   state.ultima = nodo.id;
   ACCIONES[nodo.id](npc, state, jugador);

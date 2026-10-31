@@ -30,6 +30,16 @@ export function aprender(npc, state, puntos) {
     // Entidad descargada.
   }
   if (Math.floor(state.iq / 5) > antes) burst(npc, PARTICLES.idea, { x: 0, y: 2.4, z: 0 });
+  if (!state.genio && state.iq >= IQ.maximo) {
+    state.genio = true;
+    try {
+      for (const p of npc.dimension.getPlayers({ location: npc.location, maxDistance: 48 })) {
+        p.onScreenDisplay.setActionBar("§d¡Un Claude alcanzó IQ 300! Con cinco juntos pasa algo especial...");
+      }
+    } catch {
+      // Sin jugadores.
+    }
+  }
   mostrarIQ(npc, state);
 }
 

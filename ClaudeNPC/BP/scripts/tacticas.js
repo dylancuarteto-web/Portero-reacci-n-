@@ -1,8 +1,8 @@
 import { EntityDamageCause, system } from "@minecraft/server";
-import { ANIM, ARMAS, PARTICLES } from "./config.js";
+import { ANIM, ARMAS, CONSTRUCCION, MODIFICA_MUNDO, PARTICLES } from "./config.js";
 import { ponerElytra, quitarElytra, sostener } from "./equipo.js";
 import { nivel } from "./iq.js";
-import { alturaSuelo, animate, blockAt, burst, flat, impulse, mirarA, now, sound } from "./util.js";
+import { alturaSuelo, animate, blockAt, burst, colocar, flat, impulse, mirarA, now, sound } from "./util.js";
 
 export function armaActual(state) {
   return ARMAS[Math.max(0, state.arma)];
@@ -206,10 +206,33 @@ export function hayBorde(npc, jugador) {
 
 // Water drop (MLG): mientras cae desde altura, saca el cubo, coloca agua justo
 // antes de tocar el suelo y luego la recoge.
+// Clutch: mientras cae, coloca un bloque bajo sus pies apoyado en un bloque vecino,
+// como un jugador experto. Es también su forma de hacer puentes desde el aire.
+function clutch(npc, state) {
+  const bajo = { x: Math.floor(npc.location.x), y: Math.floor(npc.location.y) - 1, z: Math.floor(npc.location.z) };
+  const b = blockAt(npc.dimension, bajo);
+  if (!b?.isAir) return false;
+  const vecinos = [[1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1], [0, -1, 0]];
+  const apoyo = vecinos.some(([dx, dy, dz]) => {
+    const n = blockAt(npc.dimension, { x: bajo.x + dx, y: bajo.y + dy, z: bajo.z + dz });
+    return n && !n.isAir && !n.isLiquid;
+  });
+  if (!apoyo) return false;
+  sostener(npc, CONSTRUCCION.bloque);
+  animate(npc, ANIM.colocarAbajo);
+  if (!colocar(npc.dimension, bajo, CONSTRUCCION.bloque)) return false;
+  state.sinCaidaHasta = now() + 20;
+  sound(npc, "use.stone", 1.2);
+  return true;
+}
+
 export function vigilarCaida(npc, state) {
-  if (state.aguaActiva || npc.isOnGround) return;
+  if (state.aguaActiva || npc.isOnGround || state.bote) return;
   const v = npc.getVelocity();
-  if (v.y > -0.45 || alturaSuelo(npc) < 5) return;
+  if (v.y > -0.3) return;
+  const h = alturaSuelo(npc);
+  if (MODIFICA_MUNDO && h >= 2.5 && h < 12 && state.iq >= 110 && clutch(npc, state)) return;
+  if (v.y > -0.45 || h < 5) return;
   state.aguaActiva = true;
   sostener(npc, "minecraft:water_bucket");
   animate(npc, ANIM.cubeta);

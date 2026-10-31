@@ -1,6 +1,7 @@
+import { system } from "@minecraft/server";
 import { VELOCIDAD } from "./config.js";
 import { nivel } from "./iq.js";
-import { flat, impulse, now, rand } from "./util.js";
+import { blockAt, flat, impulse, now, rand, reemplazable, yawHacia } from "./util.js";
 
 // Movimiento parecido al de un jugador: camina cerca, corre si el jugador corre o
 // se aleja, salta mientras corre (sprint-jump) y, con más IQ, se mueve de lado
@@ -22,13 +23,11 @@ export function ritmo(npc, state, jugador, dist) {
   if (!npc.isOnGround) return;
   const d = flat(npc.location, jugador.location);
 
-  // Correr saltando, como hace un jugador para ir más rápido.
   if (corre && dist > 7 && now() >= (state.cd.salto ?? 0) && Math.random() < 0.7) {
     state.cd.salto = now() + rand(11, 15);
     impulse(npc, { x: d.x * 0.1, y: 0.42, z: d.z * 0.1 });
     return;
   }
-  // Cuerpo a cuerpo: paso lateral suave; cambia de lado de vez en cuando.
   const n = nivel(state);
   if (dist < 4 && now() >= (state.cd.lateral ?? 0) && Math.random() < 0.25 + n * 0.5) {
     state.cd.lateral = now() + rand(12, 22);
@@ -44,3 +43,51 @@ export function wTap(npc, jugador, state) {
   const d = flat(npc.location, jugador.location);
   impulse(npc, { x: -d.x * 0.16, y: 0, z: -d.z * 0.16 });
 }
+
+// --- Motor de pasos: camina hasta un punto con control de velocidad por tick ---
+
+const motores = new Map();
+
+export function caminarA(npc, destino, rapidez = 0.2) {
+  motores.set(npc.id, { npc, destino: { ...destino }, rapidez, desde: now() });
+}
+
+export function detener(npc) {
+  motores.delete(npc.id);
+}
+
+export function caminando(npc) {
+  return motores.has(npc.id);
+}
+
+system.runInterval(() => {
+  for (const [id, m] of motores) {
+    const npc = m.npc;
+    if (!npc.isValid || now() - m.desde > 400) {
+      motores.delete(id);
+      continue;
+    }
+    try {
+      const d = flat(npc.location, m.destino);
+      const v = npc.getVelocity();
+      if (d.d < 0.3) {
+        motores.delete(id);
+        impulse(npc, { x: -v.x * 0.7, y: 0, z: -v.z * 0.7 });
+        continue;
+      }
+      const quiero = Math.min(m.rapidez, d.d * 0.45);
+      // En el suelo la fricción frena mucho: se compensa como lo haría la entrada de un jugador.
+      const k = npc.isOnGround ? 1.8 : 0.35;
+      impulse(npc, { x: d.x * quiero * k - v.x * (npc.isOnGround ? 1 : 0.3), y: 0,
+        z: d.z * quiero * k - v.z * (npc.isOnGround ? 1 : 0.3) });
+      npc.setRotation({ x: 0, y: yawHacia(npc.location, m.destino) });
+      if (npc.isOnGround) {
+        const pie = blockAt(npc.dimension, { x: npc.location.x + d.x * 0.7, y: npc.location.y + 0.3, z: npc.location.z + d.z * 0.7 });
+        const cabeza = blockAt(npc.dimension, { x: npc.location.x + d.x * 0.7, y: npc.location.y + 1.3, z: npc.location.z + d.z * 0.7 });
+        if (pie && !reemplazable(pie) && !pie.isLiquid && reemplazable(cabeza)) impulse(npc, { x: 0, y: 0.42, z: 0 });
+      }
+    } catch {
+      motores.delete(id);
+    }
+  }
+}, 1);

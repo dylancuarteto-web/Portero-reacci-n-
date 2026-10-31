@@ -1,0 +1,48 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.claudenpc": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "emblema": "Material.glow"
+        }
+      ]
+    },
+    "controller.render.claudenpc_golden": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "aura_head": "Material.aura"
+        },
+        {
+          "aura_body": "Material.aura"
+        },
+        {
+          "aura_rarm": "Material.aura"
+        },
+        {
+          "aura_larm": "Material.aura"
+        },
+        {
+          "aura_rleg": "Material.aura"
+        },
+        {
+          "aura_lleg": "Material.aura"
+        }
+      ]
+    }
+  }
+}

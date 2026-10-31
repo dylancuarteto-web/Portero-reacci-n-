@@ -1,0 +1,45 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:claude_golden",
+      "materials": {
+        "default": "entity_emissive_alpha",
+        "aura": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/golden"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.golden"
+      },
+      "animations": {
+        "mirar": "animation.claudenpc.mirar",
+        "caminar": "animation.claudenpc.caminar",
+        "respirar": "animation.claudenpc.respirar",
+        "parpadeo": "animation.claudenpc.parpadeo",
+        "flotar": "animation.claudenpc.golden.flotar",
+        "halo": "animation.claudenpc.golden.halo",
+        "aura": "animation.claudenpc.golden.aura",
+        "poder": "animation.claudenpc.golden.poder",
+        "chasquido": "animation.claudenpc.golden.chasquido",
+        "dirigir": "animation.claudenpc.golden.dirigir",
+        "pensar": "animation.claudenpc.golden.pensar"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "respirar",
+          "parpadeo",
+          "flotar",
+          "halo",
+          "aura"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_golden"
+      ],
+      "enable_attachables": true
+    }
+  }
+}
