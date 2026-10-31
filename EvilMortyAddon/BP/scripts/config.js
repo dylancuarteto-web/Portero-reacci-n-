@@ -29,10 +29,14 @@ export const PARTICLES = {
   escudoImpacto: "evilmorty:escudo_impacto",
   proyectilDestruido: "evilmorty:proyectil_destruido",
   proyectilReflejado: "evilmorty:proyectil_reflejado",
+  escudoHumo: "evilmorty:escudo_humo",
   laserDestello: "evilmorty:laser_destello",
   laserImpacto: "evilmorty:laser_impacto",
+  laserChispas: "evilmorty:laser_chispas",
+  laserEstela: "evilmorty:laser_estela",
   mejora: "evilmorty:mejora",
   parcheDestello: "evilmorty:parche_destello",
+  parcheActivar: "evilmorty:parche_activar",
 };
 
 export const ANIMATIONS = {
@@ -41,16 +45,21 @@ export const ANIMATIONS = {
   mejora: "animation.evilmorty.player.mejora",
 };
 
-// Sonidos opcionales: deja "" hasta que añadas tus archivos y los declares
-// en RP/sounds/sound_definitions.json con estos nombres.
+// Sonidos de relleno tomados de Minecraft (no se incluye ningún archivo de audio).
+// Para usar los tuyos, decláralos en RP/sounds/sound_definitions.json y cambia el id;
+// con id "" ese sonido queda en silencio.
 export const SOUNDS = {
-  escudoOn: "",
-  escudoOff: "",
-  escudoImpacto: "",
-  laser: "",
-  mejora: "",
-  ojoOn: "",
-  menu: "",
+  escudoOn: { id: "beacon.activate", pitch: 1.4 },
+  escudoOff: { id: "beacon.deactivate", pitch: 1.4 },
+  escudoImpacto: { id: "item.shield.block", pitch: 1.2 },
+  proyectilDestruido: { id: "random.fizz", pitch: 1.6, volume: 0.7 },
+  proyectilReflejado: { id: "item.shield.block", pitch: 1.7 },
+  laser: { id: "mob.blaze.shoot", pitch: 1.8, volume: 0.8 },
+  mejora: { id: "random.levelup", pitch: 1.2 },
+  ojoOn: { id: "beacon.power", pitch: 1.8, volume: 0.6 },
+  menu: { id: "random.click", pitch: 1.3, volume: 0.6 },
+  guardar: { id: "random.orb", pitch: 1.4, volume: 0.6 },
+  alerta: { id: "note.pling", pitch: 1.8, volume: 0.5 },
 };
 
 // Tiempos en ticks (20 ticks = 1 segundo).
@@ -74,6 +83,9 @@ export const PREDICCION = {
   puntos: 4,
   velocidadMinima: 0.03,
   alcanceFicha: 32,
+  // Alerta de amenaza: criatura hostil o jugador que viene hacia ti.
+  alertaDistancia: 12,
+  alertaSegundos: 3,
 };
 
 export const ESCUDO = {

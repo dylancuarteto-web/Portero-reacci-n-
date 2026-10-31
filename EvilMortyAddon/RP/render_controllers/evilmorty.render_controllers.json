@@ -6,6 +6,30 @@
       "materials": [
         {
           "*": "Material.default"
+        },
+        {
+          "lente": "Material.glow"
+        },
+        {
+          "led": "Material.glow"
+        },
+        {
+          "luz_1": "Material.glow"
+        },
+        {
+          "luz_2": "Material.glow"
+        },
+        {
+          "luz_3": "Material.glow"
+        },
+        {
+          "franja_modulo": "Material.glow"
+        },
+        {
+          "antena_punta": "Material.glow"
+        },
+        {
+          "sostenido_lente": "Material.glow"
         }
       ],
       "textures": [
@@ -16,40 +40,83 @@
           "*": true
         },
         {
-          "parche": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "parche": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "anillo": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "carcasa": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "lente": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "lente": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "led": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "iris": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "correa": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "led": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "hebilla": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "correa": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "modulo": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "luz_1": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "antena": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "luz_2": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "antena_punta": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "luz_3": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
-          "cable": "c.item_slot != 'main_hand' && c.item_slot != 'off_hand'"
+          "hebilla": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
+        },
+        {
+          "modulo": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
+        },
+        {
+          "franja_modulo": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
+        },
+        {
+          "antena": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
+        },
+        {
+          "antena_punta": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
+        },
+        {
+          "cable": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"
         },
         {
           "sostenido": "c.item_slot == 'main_hand' || c.item_slot == 'off_hand'"
         },
         {
           "sostenido_lente": "c.item_slot == 'main_hand' || c.item_slot == 'off_hand'"
+        }
+      ]
+    },
+    "controller.render.evilmorty_mano": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "lente": "Material.glow"
+        },
+        {
+          "nucleo": "Material.glow"
+        },
+        {
+          "luces": "Material.glow"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "guante_fp": "c.is_first_person"
         }
       ]
     },
@@ -60,7 +127,13 @@
           "*": "Material.default"
         },
         {
-          "brillo": "Material.glow"
+          "brillo_interno": "Material.glow"
+        },
+        {
+          "brillo_externo": "Material.glow"
+        },
+        {
+          "espiral": "Material.glow"
         }
       ],
       "textures": [

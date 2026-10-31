@@ -15,6 +15,13 @@
             "(1 + query.property('evilmorty:nivel') * 0.3) * (1 + math.sin(query.life_time * 2400) * 0.12)",
             "query.property('evilmorty:longitud')"
           ]
+        },
+        "espiral": {
+          "rotation": [
+            0,
+            0,
+            "query.life_time * 1440"
+          ]
         }
       }
     }

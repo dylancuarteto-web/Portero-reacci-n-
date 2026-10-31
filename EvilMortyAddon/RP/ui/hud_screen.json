@@ -14,14 +14,12 @@
     ]
   },
   "evilmorty_ojo": {
-    "type": "image",
-    "texture": "textures/ui/evilmorty/ojo_hud",
+    "type": "panel",
     "size": [
       "100%",
       "100%"
     ],
     "layer": 1,
-    "alpha": 0.95,
     "bindings": [
       {
         "binding_name": "#hud_title_text_string"
@@ -30,6 +28,157 @@
         "binding_type": "view",
         "source_property_name": "(not ((#hud_title_text_string - 'evilmorty:ojo_on') = #hud_title_text_string))",
         "target_property_name": "#visible"
+      }
+    ],
+    "controls": [
+      {
+        "vineta": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_vineta",
+          "size": [
+            "100%",
+            "100%"
+          ],
+          "keep_ratio": false,
+          "alpha": 0.8
+        }
+      },
+      {
+        "lineas": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_lineas",
+          "size": [
+            "100%",
+            "100%"
+          ],
+          "tiled": true,
+          "keep_ratio": false
+        }
+      },
+      {
+        "esquina_si": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_esquina_si",
+          "size": [
+            30,
+            30
+          ],
+          "anchor_from": "top_left",
+          "anchor_to": "top_left",
+          "offset": [
+            3,
+            3
+          ]
+        }
+      },
+      {
+        "esquina_sd": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_esquina_sd",
+          "size": [
+            30,
+            30
+          ],
+          "anchor_from": "top_right",
+          "anchor_to": "top_right",
+          "offset": [
+            -3,
+            3
+          ]
+        }
+      },
+      {
+        "esquina_ii": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_esquina_ii",
+          "size": [
+            30,
+            30
+          ],
+          "anchor_from": "bottom_left",
+          "anchor_to": "bottom_left",
+          "offset": [
+            3,
+            -3
+          ]
+        }
+      },
+      {
+        "esquina_id": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_esquina_id",
+          "size": [
+            30,
+            30
+          ],
+          "anchor_from": "bottom_right",
+          "anchor_to": "bottom_right",
+          "offset": [
+            -3,
+            -3
+          ]
+        }
+      },
+      {
+        "reticula": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_reticula",
+          "size": [
+            30,
+            30
+          ],
+          "anchor_from": "center",
+          "anchor_to": "center",
+          "alpha": 0.8
+        }
+      },
+      {
+        "senal": {
+          "type": "image",
+          "layer": 1,
+          "texture": "textures/ui/evilmorty/hud_senal",
+          "size": [
+            20,
+            8
+          ],
+          "anchor_from": "top_right",
+          "anchor_to": "top_right",
+          "offset": [
+            -13,
+            13
+          ]
+        }
+      },
+      {
+        "etiqueta": {
+          "type": "label",
+          "layer": 2,
+          "text": "EVIL MORTY // PARCHE",
+          "color": [
+            1.0,
+            0.72,
+            0.25
+          ],
+          "font_scale_factor": 0.75,
+          "shadow": false,
+          "size": [
+            "default",
+            "default"
+          ],
+          "anchor_from": "top_left",
+          "anchor_to": "top_left",
+          "offset": [
+            13,
+            13
+          ]
+        }
       }
     ]
   }

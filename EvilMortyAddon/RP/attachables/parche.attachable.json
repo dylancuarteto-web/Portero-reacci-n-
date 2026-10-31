@@ -4,7 +4,8 @@
     "description": {
       "identifier": "evilmorty:parche",
       "materials": {
-        "default": "entity_alphatest"
+        "default": "entity_alphatest",
+        "glow": "entity_emissive_alpha"
       },
       "textures": {
         "default": "textures/models/evilmorty/parche"

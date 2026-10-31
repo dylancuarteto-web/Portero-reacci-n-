@@ -1,8 +1,8 @@
 import { system, world } from "@minecraft/server";
 import { ANIMATIONS, ENTITIES, ESCUDO, PARTICLES, PROPS } from "../config.js";
-import { animate, message, sound, t } from "../core/feedback.js";
+import { animate, message, sound, soundAt, t } from "../core/feedback.js";
 import { wearsPatch } from "../core/patch.js";
-import { allStates, getState, peekState, savePrefs } from "../core/state.js";
+import { allStates, getState, peekState } from "../core/state.js";
 import { burst, length, normalize, sub } from "../vfx.js";
 
 // Escudo Protector: cúpula 3D que bloquea todos los ataques de criaturas,
@@ -54,6 +54,7 @@ export function desactivarEscudo(player, silent = false) {
   const state = getState(player);
   if (!state.escudo) return;
   state.escudo = false;
+  if (state.jugador?.isValid) burst(state.jugador.dimension, PARTICLES.escudoHumo, center(state.jugador));
   removeDome(state);
   if (!silent) {
     sound(player, "escudoOff");
@@ -64,13 +65,6 @@ export function desactivarEscudo(player, silent = false) {
 export function alternarEscudo(player) {
   if (getState(player).escudo) desactivarEscudo(player);
   else activarEscudo(player);
-}
-
-export function cambiarModo(player) {
-  const state = getState(player);
-  state.modoEscudo = state.modoEscudo === "reflejar" ? "destruir" : "reflejar";
-  savePrefs(player, state);
-  message(player, [t("evilmorty.msg.modo"), { text: " " }, t(`evilmorty.modo.${state.modoEscudo}`)]);
 }
 
 // Cada tick: la cúpula sigue al jugador (se recrea si cambió de dimensión).
@@ -84,7 +78,10 @@ export function seguirEscudos() {
         removeDome(state);
         spawnDome(player, state);
       } else {
-        state.domo.teleport(player.location);
+        // Se adelanta un tick según la velocidad para que no se quede atrás al correr.
+        const v = player.getVelocity();
+        const at = player.location;
+        state.domo.teleport({ x: at.x + v.x, y: at.y, z: at.z + v.z });
       }
     } catch {
       // Chunk de destino no cargado; se reintenta el siguiente tick.
@@ -102,6 +99,7 @@ function deflect(player, state, projectile) {
   const location = projectile.location;
   if (state.modoEscudo === "destruir") {
     burst(projectile.dimension, PARTICLES.proyectilDestruido, location);
+    soundAt(projectile.dimension, location, "proyectilDestruido");
     projectile.remove();
     return;
   }
@@ -113,6 +111,7 @@ function deflect(player, state, projectile) {
   component.owner = player;
   component.shoot({ x: direction.x * power, y: direction.y * power, z: direction.z * power });
   burst(projectile.dimension, PARTICLES.proyectilReflejado, location);
+  soundAt(projectile.dimension, location, "proyectilReflejado");
 }
 
 // Cada 2 ticks: proyectiles que tocan la cúpula.

@@ -19,12 +19,12 @@ En creativo: pestaña *Equipo*, o `/give @s evilmorty:parche` y `/give @s evilmo
 
 ## Habilidades
 
-- **Menú integrado**: el parche lleva el menú dentro; no hace falta ningún control aparte.
-- **Interfaz del ojo**: al ponerte el parche, destello ámbar y una capa holográfica en pantalla.
-- **Visión nocturna**: activable desde el menú.
-- **Visión predictiva**: ves hacia dónde se moverán criaturas y jugadores cercanos (solo tú), y al mirarlos, su vida, sus armas y su intención.
-- **Escudo Protector**: cúpula 3D que bloquea todos los ataques, sin pociones. Modo Reflejar o Destruir proyectiles.
-- **Mano de Rayo Láser**: rayo 3D que daña al objetivo. 3 mejoras con bloques de diamante (daño 6→18, alcance 24→48).
+- **Menú integrado**: el parche lleva el menú dentro (Escudo, Archivos y Ajustes); no hace falta ningún control aparte.
+- **Interfaz del ojo**: al ponerte el parche, destello ámbar y una interfaz holográfica anclada a los bordes de la pantalla.
+- **Visión nocturna**: activable en Ajustes.
+- **Visión predictiva**: ves hacia dónde se moverán criaturas y jugadores cercanos (solo tú); al mirarlos, su vida, sus armas y su intención; y una alerta cuando una amenaza viene hacia ti.
+- **Escudo Protector**: burbuja 3D de energía que bloquea todos los ataques, sin pociones. Modo Reflejar o Destruir proyectiles.
+- **Mano de Rayo Láser**: rayo 3D con estela de chispas que daña al objetivo. 3 mejoras con bloques de diamante (daño 6→18, alcance 24→48).
 
 Detalle: `docs/FEATURE_SPEC.md` · Interfaz: `docs/UI_SPEC.md` · IDs: `docs/ASSET_REGISTRY.md`.
 
@@ -39,7 +39,7 @@ Ambos módulos son las versiones estables publicadas en npm el 2026-10-27, junto
 
 ## Sonidos
 
-No se incluyen. Pon tus `.ogg` en `RP/sounds/`, decláralos en `RP/sounds/sound_definitions.json` y escribe sus nombres en `BP/scripts/config.js` → `SOUNDS`.
+No se incluye ningún archivo de audio. Como relleno se usan sonidos de Minecraft (faro, escudo, blaze, nivel, clic, orbe, nota). Para usar los tuyos: pon tus `.ogg` en `RP/sounds/`, decláralos en `RP/sounds/sound_definitions.json` y cambia el `id` en `BP/scripts/config.js` → `SOUNDS`. Con `id: ""` ese sonido queda en silencio.
 
 ## Validación
 
@@ -55,17 +55,19 @@ Resultado: 0 errores y 0 advertencias. Los scripts pasan `tsc --checkJs` contra 
 | Prueba | Estado | Riesgo |
 |---|---|---|
 | Importar y activar | no probado | bajo |
-| Parche visible en la cabeza en 3.ª persona | no probado (corregido: los huesos raíz ahora se llaman `head` / `rightItem`) | bajo |
-| Guante visible en el brazo | no probado (corregido: hueso raíz `rightArm`) | bajo-medio en 1.ª persona |
+| Parche visible en la cabeza en 3.ª persona y en el inventario | no probado (los huesos raíz se llaman `head` / `rightItem`) | bajo |
+| Guante visible en el brazo (3.ª persona) | no probado (hueso raíz `rightArm`) | bajo |
+| Guante visible en 1.ª persona | no probado (copia interior unida a `rightItem`) | medio |
+| Partes luminosas del parche y del guante de noche | no probado | bajo-medio: material emisivo |
+| Interfaz del ojo sin franjas en pantalla ancha | no probado | medio: técnica JSON UI |
 | Gesto para abrir el menú y `/evilmorty:parche` | no probado | bajo |
-| Capa del ojo aparece/desaparece al poner/quitar el parche | no probado | **medio-alto**: técnica JSON UI (ver limitaciones en FEATURE_SPEC) |
-| Rayo 3D orientado hacia donde apuntas y con brillo | no probado | medio: orientación por propiedades y material emisivo |
-| Cúpula 3D sigue al jugador | no probado | bajo |
+| Menú, Ajustes y Archivos | no probado | bajo |
+| Rayo 3D orientado, estela y chispas | no probado | medio: orientación por propiedades |
+| Burbuja del escudo sigue al jugador sin quedarse atrás | no probado | bajo |
 | Escudo bloquea daño; Reflejar/Destruir proyectiles | no probado | bajo-medio |
-| Visión predictiva y ficha de armas | no probado | bajo |
-| Menú y Archivos | no probado | bajo |
+| Alertas de amenaza y ficha de armas | no probado | bajo |
 | Rendimiento en Android y multijugador | no probado | — |
 
 ## Regenerar arte
 
-`python source/build_assets.py` (requiere Pillow).
+`python source/build_assets.py` (requiere Pillow) regenera modelos, texturas, partículas, interfaz, iconos y los JSON de render. `python source/preview_render.py salida.png` dibuja una vista previa de los modelos sobre un maniquí (requiere numpy).

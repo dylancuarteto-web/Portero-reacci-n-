@@ -3,13 +3,24 @@
   "animations": {
     "animation.evilmorty.mano_laser.idle": {
       "loop": true,
-      "animation_length": 1.0,
+      "animation_length": 2.0,
       "bones": {
-        "lente": {
-          "scale": "1.0 + math.sin(query.anim_time * 360) * 0.15"
-        },
         "nucleo": {
-          "scale": "1.0 + math.sin(query.anim_time * 360 + 90) * 0.08"
+          "scale": "1.0 + math.sin(query.anim_time * 360) * 0.08"
+        },
+        "lente": {
+          "scale": [
+            "1.0 + math.sin(query.anim_time * 540) * 0.1",
+            1.0,
+            "1.0 + math.sin(query.anim_time * 540) * 0.1"
+          ]
+        },
+        "luces": {
+          "scale": [
+            1.0,
+            "math.mod(query.anim_time, 1.0) < 0.85 ? 1.0 : 0.6",
+            1.0
+          ]
         }
       }
     }

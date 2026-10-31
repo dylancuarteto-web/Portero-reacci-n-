@@ -1,5 +1,5 @@
 import { system, world } from "@minecraft/server";
-import { ITEMS, TICKS } from "./config.js";
+import { ITEMS, PARTICLES, TICKS } from "./config.js";
 import { registrarComandos } from "./core/comandos.js";
 import { message, t } from "./core/feedback.js";
 import { registrarGestos } from "./core/gestos.js";
@@ -16,7 +16,7 @@ import { dispararLaser, mejorarLaser, prepararLore } from "./abilities/laser.js"
 import { tickPrediccion } from "./abilities/prediccion.js";
 import { quitarVisionNocturna, tickVisionNocturna } from "./abilities/vision_nocturna.js";
 import { actualizarOjo } from "./hud/ojo.js";
-import { patchGlint } from "./vfx.js";
+import { burst, patchGlint } from "./vfx.js";
 
 // Controles:
 //   Parche puesto: agacharse mirando arriba = menú; dos veces = escudo on/off.
@@ -49,7 +49,10 @@ system.runInterval(() => {
   for (const player of world.getAllPlayers()) {
     const state = getState(player);
     const lleva = wearsPatch(player);
-    if (lleva && !state.llevaParche) message(player, [t("evilmorty.msg.parche_en_linea")]);
+    if (lleva && !state.llevaParche) {
+      message(player, [t("evilmorty.msg.parche_en_linea")]);
+      burst(player.dimension, PARTICLES.parcheActivar, player.getHeadLocation());
+    }
     state.llevaParche = lleva;
     actualizarOjo(player, lleva);
     if (!lleva) {

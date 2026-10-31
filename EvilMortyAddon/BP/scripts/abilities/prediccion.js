@@ -1,6 +1,6 @@
 import { EquipmentSlot, Player } from "@minecraft/server";
 import { ENTITIES, PARTICLES, PREDICCION } from "../config.js";
-import { message, t } from "../core/feedback.js";
+import { message, t, uiSound } from "../core/feedback.js";
 import { getState, now } from "../core/state.js";
 import { add, forPlayer } from "../vfx.js";
 
@@ -76,24 +76,52 @@ export function weaponsOf(entity) {
   }
 }
 
-// Intención de movimiento respecto al jugador que observa.
-export function intentOf(entity, observer) {
+// Movimiento de una entidad respecto al jugador que observa.
+function approach(entity, observer) {
   const v = entity.getVelocity();
   const speed = Math.hypot(v.x, v.z);
-  if (entity instanceof Player && entity.isSneaking) return t("evilmorty.intencion.agachado");
-  if (speed < PREDICCION.velocidadMinima) {
-    return v.y > 0.3 ? t("evilmorty.intencion.saltando") : t("evilmorty.intencion.quieto");
-  }
   const dx = observer.location.x - entity.location.x;
   const dz = observer.location.z - entity.location.z;
   const distance = Math.hypot(dx, dz) || 1;
-  const cos = (v.x * dx + v.z * dz) / (speed * distance);
-  if (cos > 0.6) {
-    const seconds = (distance / (speed * 20)).toFixed(1);
-    return t("evilmorty.intencion.acerca", seconds);
+  const cos = speed > 0 ? (v.x * dx + v.z * dz) / (speed * distance) : 0;
+  return { v, speed, distance, cos, eta: speed > 0 ? distance / (speed * 20) : Infinity };
+}
+
+export function intentOf(entity, observer) {
+  if (entity instanceof Player && entity.isSneaking) return t("evilmorty.intencion.agachado");
+  const a = approach(entity, observer);
+  if (a.speed < PREDICCION.velocidadMinima) {
+    return a.v.y > 0.3 ? t("evilmorty.intencion.saltando") : t("evilmorty.intencion.quieto");
   }
-  if (cos < -0.6) return t("evilmorty.intencion.aleja");
+  if (a.cos > 0.6) return t("evilmorty.intencion.acerca", a.eta.toFixed(1));
+  if (a.cos < -0.6) return t("evilmorty.intencion.aleja");
   return t("evilmorty.intencion.rodea");
+}
+
+function isThreat(entity) {
+  if (entity instanceof Player) return true;
+  try {
+    return entity.matches({ families: ["monster"] });
+  } catch {
+    return false;
+  }
+}
+
+// La amenaza que llegará antes: criatura hostil o jugador que viene hacia ti.
+function mostUrgent(targets, player) {
+  let best;
+  for (const entity of targets) {
+    try {
+      if (!isThreat(entity)) continue;
+      const a = approach(entity, player);
+      if (a.speed < PREDICCION.velocidadMinima || a.cos < 0.6) continue;
+      if (a.distance > PREDICCION.alertaDistancia || a.eta > PREDICCION.alertaSegundos) continue;
+      if (!best || a.eta < best.eta) best = { entity, eta: a.eta };
+    } catch {
+      // Entidad descargada.
+    }
+  }
+  return best;
 }
 
 function drawPrediction(player, entity) {
@@ -109,15 +137,14 @@ function drawPrediction(player, entity) {
 
 function card(entity, player) {
   const weapons = weaponsOf(entity);
-  const parts = [
-    { text: "§6[" }, nameOf(entity), { text: "]§r §cPV " + healthOf(entity) + "§r §e" },
-    t("evilmorty.ficha.arma"), { text: " " }, weapons.principal,
-  ];
-  if (weapons.secundaria) parts.push({ text: " + " }, weapons.secundaria);
-  parts.push({ text: "§r §b" }, intentOf(entity, player));
+  const parts = [{ text: "§6" }, nameOf(entity), { text: ` §8| §c${healthOf(entity)} §8| §e` }, weapons.principal];
+  if (weapons.secundaria) parts.push({ text: " §7+ §e" }, weapons.secundaria);
+  parts.push({ text: " §8| §b" }, intentOf(entity, player));
   return parts;
 }
 
+// Barra de acción: ficha del objetivo al que miras o, si no miras a nada,
+// alerta de la amenaza más urgente. Sin objetivos no se muestra nada.
 export function tickPrediccion(player) {
   const state = getState(player);
   if (!state.vision) return;
@@ -130,10 +157,23 @@ export function tickPrediccion(player) {
     }
   }
   if (now() < state.mensajeHasta) return;
-  const target = lookedAt(player);
   try {
-    if (target) message(player, card(target, player), false);
-    else if (targets.length) message(player, [t("evilmorty.ficha.amenazas", targets.length)], false);
+    const target = lookedAt(player);
+    if (target) {
+      message(player, card(target, player), false);
+      return;
+    }
+    const urgent = mostUrgent(targets, player);
+    if (!urgent) {
+      state.alertaId = undefined;
+      return;
+    }
+    message(player, [{ text: "§c[!] §f" }, nameOf(urgent.entity), { text: " " },
+      t("evilmorty.alerta.llega", urgent.eta.toFixed(1))], false);
+    if (state.alertaId !== urgent.entity.id) {
+      state.alertaId = urgent.entity.id;
+      uiSound(player, "alerta");
+    }
   } catch {
     // El objetivo desapareció.
   }

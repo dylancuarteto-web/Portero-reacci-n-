@@ -20,13 +20,33 @@ export function animate(player, animation) {
   }
 }
 
-export function sound(player, key) {
-  const id = SOUNDS[key];
-  if (!id) return;
+function options(entry) {
+  return { pitch: entry.pitch ?? 1, volume: entry.volume ?? 1 };
+}
+
+// Sonido en el mundo: lo oyen los jugadores cercanos.
+export function soundAt(dimension, location, key) {
+  const entry = SOUNDS[key];
+  if (!entry?.id) return;
   try {
-    player.dimension.playSound(id, player.location);
+    dimension.playSound(entry.id, location, options(entry));
   } catch {
-    // Sonido aún no definido.
+    // Sonido no definido o chunk no cargado.
+  }
+}
+
+export function sound(player, key) {
+  soundAt(player.dimension, player.location, key);
+}
+
+// Sonido de interfaz: solo lo oye este jugador.
+export function uiSound(player, key) {
+  const entry = SOUNDS[key];
+  if (!entry?.id) return;
+  try {
+    player.playSound(entry.id, options(entry));
+  } catch {
+    // Sonido no definido.
   }
 }
 

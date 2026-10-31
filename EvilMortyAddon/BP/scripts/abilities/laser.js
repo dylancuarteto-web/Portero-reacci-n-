@@ -2,7 +2,7 @@ import { EntityDamageCause, system } from "@minecraft/server";
 import { ANIMATIONS, ENTITIES, LASER_NIVELES, PARTICLES, PROPS, TICKS } from "../config.js";
 import { animate, message, sound, t } from "../core/feedback.js";
 import { getState, now } from "../core/state.js";
-import { add, burst, length, sub } from "../vfx.js";
+import { add, burst, length, sub, trail } from "../vfx.js";
 
 // Mano de Rayo Láser: dispara un rayo 3D (entidad evilmorty:rayo_laser)
 // que daña al primer objetivo en la línea de visión. Cada bloque de
@@ -97,7 +97,9 @@ export function dispararLaser(player, item) {
   sound(player, "laser");
   burst(player.dimension, PARTICLES.laserDestello, start);
   spawnBeam(player, start, end, nivel);
+  trail(player.dimension, PARTICLES.laserEstela, start, end);
   burst(player.dimension, PARTICLES.laserImpacto, end);
+  burst(player.dimension, PARTICLES.laserChispas, end);
 
   if (target) {
     try {

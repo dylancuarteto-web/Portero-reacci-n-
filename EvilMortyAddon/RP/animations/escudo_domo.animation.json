@@ -7,10 +7,30 @@
         "domo": {
           "rotation": [
             0,
-            "query.life_time * 25",
+            "query.life_time * 12",
             0
           ],
-          "scale": "math.min(query.life_time * 4, 1) * (1 + math.sin(query.life_time * 140) * 0.015)"
+          "scale": "math.min(query.life_time * 4, 1) * (1 + math.sin(query.life_time * 140) * 0.012)"
+        },
+        "escaneo": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 80) * 16",
+            0
+          ],
+          "scale": [
+            "math.min(query.life_time * 4, 1) * math.sqrt(math.max(0.0, 1 - math.pow(math.sin(query.life_time * 80) * 16 / 22.0, 2)))",
+            "math.min(query.life_time * 4, 1)",
+            "math.min(query.life_time * 4, 1) * math.sqrt(math.max(0.0, 1 - math.pow(math.sin(query.life_time * 80) * 16 / 22.0, 2)))"
+          ]
+        },
+        "suelo": {
+          "rotation": [
+            0,
+            "-query.life_time * 30",
+            0
+          ],
+          "scale": "math.min(query.life_time * 4, 1)"
         }
       }
     }

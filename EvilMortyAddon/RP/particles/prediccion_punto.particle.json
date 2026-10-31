@@ -5,7 +5,7 @@
       "identifier": "evilmorty:prediccion_punto",
       "basic_render_parameters": {
         "material": "particles_add",
-        "texture": "textures/particle/particles"
+        "texture": "textures/particle/evilmorty"
       }
     },
     "components": {
@@ -23,37 +23,27 @@
       "minecraft:particle_motion_dynamic": {},
       "minecraft:particle_appearance_billboard": {
         "size": [
-          0.09,
-          0.09
+          "0.16 * (1 - variable.particle_age / variable.particle_lifetime)",
+          "0.16 * (1 - variable.particle_age / variable.particle_lifetime)"
         ],
         "facing_camera_mode": "lookat_xyz",
         "uv": {
-          "texture_width": 128,
-          "texture_height": 128,
-          "flipbook": {
-            "base_UV": [
-              56,
-              0
-            ],
-            "size_UV": [
-              8,
-              8
-            ],
-            "step_UV": [
-              -8,
-              0
-            ],
-            "frames_per_second": 8,
-            "max_frame": 8,
-            "stretch_to_lifetime": true,
-            "loop": false
-          }
+          "texture_width": 64,
+          "texture_height": 64,
+          "uv": [
+            0,
+            0
+          ],
+          "uv_size": [
+            16,
+            16
+          ]
         }
       },
       "minecraft:particle_appearance_tinting": {
         "color": {
           "gradient": {
-            "0.0": "#FFFFC24A",
+            "0.0": "#FFFFD27A",
             "1.0": "#00FF8C1E"
           },
           "interpolant": "variable.particle_age / variable.particle_lifetime"

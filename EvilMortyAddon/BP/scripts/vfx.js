@@ -1,3 +1,4 @@
+import { MolangVariableMap } from "@minecraft/server";
 import { PARTICLES } from "./config.js";
 
 // Partículas visibles para todos.
@@ -15,6 +16,24 @@ export function forPlayer(player, id, location) {
     player.spawnParticle(id, location);
   } catch {
     // Fuera de rango o jugador inválido.
+  }
+}
+
+// Estela de chispas a lo largo de un segmento (rayo láser). Una sola llamada:
+// la partícula reparte sus chispas entre start y end con variables Molang.
+export function trail(dimension, id, start, end) {
+  const d = sub(end, start);
+  const len = length(d);
+  if (len < 0.3) return;
+  const vars = new MolangVariableMap();
+  vars.setFloat("variable.dir_x", d.x / len);
+  vars.setFloat("variable.dir_y", d.y / len);
+  vars.setFloat("variable.dir_z", d.z / len);
+  vars.setFloat("variable.longitud", len);
+  try {
+    dimension.spawnParticle(id, start, vars);
+  } catch {
+    // Chunk no cargado.
   }
 }
 
