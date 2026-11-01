@@ -2,12 +2,13 @@ import { BlockPermutation, ItemStack, system } from "@minecraft/server";
 import { ANIM, CASA, PARTICLES } from "../config.js";
 import { simularCrafteo } from "../crafteo.js";
 import { hacha, sostener } from "../equipo.js";
-import { ocupado, registrar } from "../estructuras.js";
+import { dentroDeOtra, mismaObra, ocupado, registrar } from "../estructuras.js";
 import { aprender, ponerHaciendo } from "../iq.js";
 import { caminarA, detener, velocidad } from "../movimiento.js";
 import { planCasa } from "../planes/casa_plano.js";
 import { animate, blockAt, colocar, mirarA, now, particleAt, piso, reemplazable, sound, superficie } from "../util.js";
 import { ejecutarPlano } from "./plano.js";
+import { planTerreno } from "./terreno.js";
 
 // Casa construida como la haría un jugador (ahora a buen ritmo):
 //  1. tala un árbol cercano (y planta un brote), 2. craftea, 3. busca un terreno plano,
@@ -147,12 +148,20 @@ function elegirSitio(npc, state, casa) {
   for (let k = 0; k < 3 && casa.candidatos.length; k++) {
     const cand = casa.candidatos.shift();
     if (ocupado(cand.x, cand.z, 10)) continue;
-    const sitio = sitioPlano(npc.dimension, cand.x, cand.z);
+    const sitio = sitioPlano(npc.dimension, cand.x, cand.z, 4, 4, 3); // con desnivel: lo aplana antes
     if (!sitio) continue;
     const frente = frenteHacia(sitio, npc);
-    casa.obra = { c: sitio, frente, plan: planCasa(sitio, frente, state.pers?.paleta, perm), i: 0, pararse: pararseEnCasa(sitio) };
-    casa.fase = "construir";
+    const plan = planCasa(sitio, frente, state.pers?.paleta, perm);
+    const salvo = (p) => dentroDeOtra(p, mismaObra("casa", sitio));
+    casa.fase = "midiendo";
     registrar("casa", { x: sitio.x, y: sitio.y, z: sitio.z });
+    // Primero aplana: pica lo que sobra y rellena los huecos (la casa y 2 bloques alrededor).
+    planTerreno(npc.dimension, { x0: sitio.x - 5, x1: sitio.x + 5, z0: sitio.z - 5, z1: sitio.z + 5 }, sitio.y, (terreno) => {
+      if (state.casa !== casa) return;
+      casa.obra = { c: sitio, frente, plan: [...terreno, ...plan], i: 0, terreno: terreno.length, pararse: pararseEnCasa(sitio), salvo };
+      casa.fase = "construir";
+    }, { interior: { x0: sitio.x - 3, x1: sitio.x + 3, z0: sitio.z - 3, z1: sitio.z + 3 }, plan, salvo, alto: 10, hondo: 4,
+      relleno: "minecraft:dirt" });
     caminarA(npc, { x: sitio.x + 0.5, y: sitio.y + 1, z: sitio.z + 0.5 }, state.pers?.paso ?? 0.2);
     return;
   }
@@ -204,8 +213,11 @@ export function tickCasa(npc, state) {
       ponerHaciendo(npc, state, "buscando terreno");
       elegirSitio(npc, state, casa);
       return;
+    case "midiendo":
+      ponerHaciendo(npc, state, "midiendo el terreno");
+      return;
     case "construir":
-      ponerHaciendo(npc, state, "construyendo su casa");
+      ponerHaciendo(npc, state, casa.obra.i < (casa.obra.terreno ?? 0) ? "aplanando el terreno" : "construyendo su casa");
       if (ejecutarPlano(npc, state, casa.obra)) terminar(npc, state, casa);
       return;
     default:

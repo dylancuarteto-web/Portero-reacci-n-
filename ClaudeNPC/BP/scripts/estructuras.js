@@ -119,3 +119,29 @@ export function puertaDe(dimension, e) {
   puertas.set(k, { puerta, hasta: now() + (puerta ? 600 : 100) });
   return puerta;
 }
+
+// ¿El bloque "p" está dentro de otra obra registrada (hasta sus paredes)?
+// "esPropia(e)" marca las obras que no cuentan (la que se está construyendo).
+export function dentroDeOtra(p, esPropia) {
+  for (const e of todas()) {
+    if (esPropia?.(e)) continue;
+    if (p.y < e.y - 1 || p.y > e.y + 12) continue;
+    const dx = Math.abs(p.x - e.x);
+    const dz = Math.abs(p.z - e.z);
+    let ax = 4;
+    let az = 4;
+    if (e.tipo === "aula") {
+      // Hasta las paredes (el alero no cuenta: así el aula vecina puede unir los techos).
+      const largoEnZ = e.frente === "north" || e.frente === "south";
+      ax = largoEnZ ? 5 : 6;
+      az = largoEnZ ? 6 : 5;
+    } else if (e.tipo === "proyecto") {
+      ax = e.r ?? 5;
+      az = e.r ?? 5;
+    }
+    if (dx <= ax && dz <= az) return true;
+  }
+  return false;
+}
+
+export const mismaObra = (tipo, c) => (e) => e.tipo === tipo && e.x === c.x && e.y === c.y && e.z === c.z;

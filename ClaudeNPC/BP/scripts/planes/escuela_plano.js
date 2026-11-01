@@ -143,5 +143,6 @@ export function planEscuela(c, frente, perm, total, profes = [], plaza = true) {
   }
 
   add({ tipo: "celebrar", pos: P(fondo, 1, 2), mira: P(4, 4, 0) });
-  return { pasos, nombre: nombreEscuela(total, hayGenio) };
+  // area: lo que hay que aplanar antes (pórtico, plaza y un bloque alrededor), en ejes a/b.
+  return { pasos, nombre: nombreEscuela(total, hayGenio), area: { a0: 7, a1: fondo + 1, b0: bMin - 1, b1: bMax + 1 } };
 }

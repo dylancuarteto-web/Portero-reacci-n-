@@ -3,7 +3,8 @@
 //
 // Ejes: "a" va de la pizarra (a = -6) a la puerta (a = +6); "b" de izquierda a
 // derecha mirando hacia la puerta. "frente" es hacia donde da la puerta.
-// Interior: a -5..5, b -4..4. Techo plano a 5 bloques con luces.
+// Interior: a -5..5, b -4..4. Techo plano a 5 bloques con luces. El terreno se
+// aplana antes con obras/terreno.js (por eso el plano ya no trae la limpieza).
 //
 //   pizarra negra con marco y tres carteles (lección, tema y apuntes)
 //   mesa del maestro con campana, atril para leer y estantes de libros
@@ -34,10 +35,10 @@ export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280, l
   const pilar = (a, b) => Math.abs(b) === AULA.b && (Math.abs(a) === AULA.a || a === -3 || a === 0 || a === 3);
   const esquina = (a, b) => Math.abs(a) === AULA.a && Math.abs(b) === AULA.b;
 
-  // 1. Limpiar el terreno (con un margen, salvo del lado de un aula vecina).
+  // 1. El terreno ya lo aplanaron antes (obras/terreno.js: pican lo que sobra y rellenan
+  //    los huecos). Del lado de un aula vecina no se pone alero.
   const bMin = lados.izq ? -AULA.b : -AULA.b - 1;
   const bMax = lados.der ? AULA.b : AULA.b + 1;
-  for (let h = 6; h >= 1; h--) for (let a = -7; a <= 7; a++) for (let b = bMin; b <= bMax; b++) add({ tipo: "quitar", pos: P(a, h, b) });
 
   // 2. Cimiento y piso en zigzag: borde de ladrillo de piedra, piso de abedul.
   for (let a = -AULA.a; a <= AULA.a; a++) {

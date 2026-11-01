@@ -1,11 +1,12 @@
 import { BlockPermutation } from "@minecraft/server";
 import { MODIFICA_MUNDO } from "../config.js";
-import { ocupado, registrar } from "../estructuras.js";
+import { dentroDeOtra, mismaObra, ocupado, registrar } from "../estructuras.js";
 import { nivelHab, obraHecha, obrasHechas, practicar } from "../habilidades.js";
 import { aprender, ponerHaciendo } from "../iq.js";
 import { velocidad } from "../movimiento.js";
 import { candidatosAlrededor, frenteHacia, sitioPlano } from "../obras/casa.js";
 import { ejecutarPlano } from "../obras/plano.js";
+import { planTerreno } from "../obras/terreno.js";
 import { PLANES, PROYECTOS } from "../planes/proyectos_plano.js";
 import { avisar, now } from "../util.js";
 
@@ -41,7 +42,7 @@ function buscarSitio(npc, s, tipo) {
   const centro = s.hogar ? { location: s.hogar } : npc;
   for (const cand of candidatosAlrededor(centro, 8, 18)) {
     if (ocupado(cand.x, cand.z, r + 1)) continue;
-    const sitio = sitioPlano(npc.dimension, cand.x, cand.z, r, r, 1);
+    const sitio = sitioPlano(npc.dimension, cand.x, cand.z, r, r, 2);
     if (sitio) return sitio;
   }
   return undefined;
@@ -67,8 +68,19 @@ export const proyecto = {
       const frente = frenteHacia(sitio, s.hogar ? { location: s.hogar } : npc);
       const placa = `Claude${s.pers ? ` ${s.pers.titulo}` : ""}`;
       a.tipo = tipo;
-      a.obra = { c: sitio, plan: PLANES[tipo](sitio, frente, perm, placa), i: 0, pararse: pararseFuera(sitio, PROYECTOS[tipo].radio), lejos: 16 };
-      registrar("proyecto", { x: sitio.x, y: sitio.y, z: sitio.z, r: PROYECTOS[tipo].radio + 1 });
+      const r = PROYECTOS[tipo].radio;
+      const plan = PLANES[tipo](sitio, frente, perm, placa);
+      const salvo = (p) => dentroDeOtra(p, mismaObra("proyecto", sitio));
+      a.obra = { c: sitio, plan, i: 0, pararse: pararseFuera(sitio, r), lejos: 16, salvo, midiendo: true };
+      registrar("proyecto", { x: sitio.x, y: sitio.y, z: sitio.z, r: r + 1 });
+      // Primero aplana el sitio (pica y rellena), después construye.
+      const obra = a.obra;
+      planTerreno(npc.dimension, { x0: sitio.x - r - 1, x1: sitio.x + r + 1, z0: sitio.z - r - 1, z1: sitio.z + r + 1 }, sitio.y, (terreno) => {
+        obra.plan = [...terreno, ...plan];
+        obra.terreno = terreno.length;
+        obra.midiendo = false;
+      }, { interior: { x0: sitio.x - r, x1: sitio.x + r, z0: sitio.z - r, z1: sitio.z + r }, plan, salvo, alto: 12, hondo: 4,
+        relleno: "minecraft:dirt" });
       avisar(npc.dimension, npc.location, `§b${placa} va a construir ${PROYECTOS[tipo].nombre} §7(Construcción ${PROYECTOS[tipo].nivel})`, 32);
     }
     s.proyectoEnCurso = undefined;
@@ -77,6 +89,7 @@ export const proyecto = {
   },
   tick(npc, s, a) {
     velocidad(npc, 0);
+    if (a.obra.midiendo) return false;
     if (!ejecutarPlano(npc, s, a.obra)) return false;
     obraHecha(npc, s, a.tipo);
     practicar(npc, s, "construccion", 0.2);

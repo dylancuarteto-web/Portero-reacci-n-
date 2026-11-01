@@ -6,12 +6,13 @@ import {
 } from "./clase.js";
 import { estados } from "./estado.js";
 import { aprender } from "./iq.js";
-import { listar, ocupado, ocupadoSalvo, registrar } from "./estructuras.js";
+import { dentroDeOtra, listar, mismaObra, ocupado, ocupadoSalvo, registrar } from "./estructuras.js";
 import { LECCIONES, LECCIONES_GENIOS } from "./lecciones.js";
 import { caminarA, caminando, detener, velocidad } from "./movimiento.js";
 import { candidatosAlrededor, frenteHacia, sitioPlano } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
 import { ejecutarPlano, escribirLetrero } from "./obras/plano.js";
+import { planTerreno, rectangulo } from "./obras/terreno.js";
 import { AULA, planAula } from "./planes/aula_plano.js";
 import { centroAula, ladosAula, nombreEscuela, planEscuela } from "./planes/escuela_plano.js";
 import {
@@ -110,7 +111,7 @@ function guardar(e, m) {
     const a = m.aula;
     e.setDynamicProperty(PROP_AULA, JSON.stringify({
       c: a?.c, frente: a?.frente, listo: a?.listo, aire: a?.aire, leccion: m.leccion, dadas: m.dadas, titulo: m.titulo, iq: m.iq,
-      lados: a?.lados, escuela: a?.escuela, k: a?.k, fachada: a?.fachada,
+      lados: a?.lados, escuela: a?.escuela, k: a?.k, fachada: a?.fachada, revisada: a?.revisada,
     }));
   } catch {
     // No se pudo guardar.
@@ -251,8 +252,11 @@ function inicio(e, m) {
   if (m.aula) {
     const a = m.aula;
     if (!a.aire) registrar("aula", { x: a.c.x, y: a.c.y, z: a.c.z, frente: a.frente, escuela: a.escuela, k: a.k, iq: m.iq, profe: m.variante.id });
-    m.fase = a.listo ? "recreo" : "construir";
-    if (!a.listo) prepararObra(m);
+    // Un aula sin terminar (o de una versión anterior, sin revisar) se termina primero:
+    // aplana el terreno, se salta lo que ya está hecho y repone lo que falte.
+    const revisar = !a.aire && MODIFICA_MUNDO && (!a.listo || !a.revisada);
+    m.fase = revisar ? "construir" : "recreo";
+    if (revisar) prepararObra(m);
     else if (a.escuela && !a.fachada && MODIFICA_MUNDO) empezarFachada(e, m);
     return;
   }
@@ -260,9 +264,18 @@ function inicio(e, m) {
   const enUso = new Set([...maestros.values()].filter((x) => x !== m && x.aula).map((x) => `${x.aula.c.x},${x.aula.c.z}`));
   const cercana = listar("aula").find((a) => Math.hypot(a.x - e.location.x, a.z - e.location.z) < 48 && !enUso.has(`${a.x},${a.z}`));
   if (cercana?.frente) {
-    m.aula = prepararAula(e.dimension, { c: { x: cercana.x, y: cercana.y, z: cercana.z }, frente: cercana.frente, listo: true,
-      titulo: m.titulo, iq: m.iq, escuela: cercana.escuela, k: cercana.k, fachada: true });
+    // Puede estar a medias (su maestro se fue): primero la termina y la revisa.
+    m.aula = prepararAula(e.dimension, { c: { x: cercana.x, y: cercana.y, z: cercana.z }, frente: cercana.frente, listo: false,
+      titulo: m.titulo, iq: m.iq, escuela: cercana.escuela, k: cercana.k, fachada: false,
+      lados: cercana.k ? ladosAula(cercana.k, 3) : undefined });
     registrar("aula", { ...cercana, iq: m.iq, profe: m.variante.id });
+    if (MODIFICA_MUNDO) {
+      guardar(e, m);
+      prepararObra(m);
+      m.fase = "construir";
+      avisar(e.dimension, e.location, `§6${m.titulo}:§r Esta aula será mía. Primero la termino y reviso que no le falte nada.`, 40);
+      return;
+    }
     guardar(e, m);
     m.fase = "recreo";
     return;
@@ -291,6 +304,14 @@ function profeDe(registro) {
   return { nombre: v.nombre.replace(/^Claude\s+/, ""), materia: ASIGNATURA[v.materia] ?? "IQ", genio: v.iq >= 500 };
 }
 
+function aguaHonda(dim, x, y, z) {
+  for (let k = 0; k <= 5; k++) {
+    const b = blockAt(dim, { x, y: y - k, z });
+    if (b && !b.isLiquid && !b.isAir) return false;
+  }
+  return true;
+}
+
 // Si otro maestro tiene su aula cerca, este construye la suya pegada a ella (mismo
 // piso, misma orientación): juntos forman una escuela. El tercero, una universidad.
 function unirseAEscuela(e, m) {
@@ -305,10 +326,15 @@ function unirseAEscuela(e, m) {
     for (const k of [1, 2]) {
       if (tomados.has(k)) continue;
       const c = centroAula(principal, frente, k);
-      const deLaEscuela = (o) => o.tipo === "proyecto" || (o.tipo === "aula" && lista.some((a) => claveDe(a) === claveDe(o)));
+      const f = FRENTES[frente];
+      const plaza = { x: principal.x + f.x * 11, z: principal.z + f.z * 11 };
+      const deLaEscuela = (o) => (o.tipo === "proyecto" && o.x === plaza.x && o.z === plaza.z)
+        || (o.tipo === "aula" && lista.some((a) => claveDe(a) === claveDe(o)));
       if (ocupadoSalvo(c.x, c.z, 7, deLaEscuela)) continue;
+      // Se adapta al terreno (pica hasta 14 arriba y rellena hasta 6 abajo), pero no
+      // construye sobre agua honda ni dentro de una montaña.
       const top = superficie(e.dimension, c.x, c.z);
-      if (!top || (top.isLiquid && top.location.y >= c.y - 1) || top.location.y > c.y + 8) continue;
+      if (!top || top.location.y > c.y + 12 || (top.isLiquid && aguaHonda(e.dimension, c.x, top.location.y, c.z))) continue;
       m.aula = prepararAula(e.dimension, { c, frente, listo: false, titulo: m.titulo, iq: m.iq, lados: ladosAula(k, 3),
         escuela: { ...principal }, k });
       registrar("aula", { x: c.x, y: c.y, z: c.z, frente, escuela: { ...principal }, k, iq: m.iq, profe: m.variante.id });
@@ -334,26 +360,41 @@ function empezarFachada(e, m) {
   const f = FRENTES[frente];
   const P = (a, h, b) => ({ x: principal.x + f.x * a - f.z * b, y: principal.y + h, z: principal.z + f.z * a + f.x * b });
   // Si delante hay otra obra (la casa de un Claude), no hace plaza: solo pórtico y letrero.
-  const deLaEscuela = (o) => o.tipo === "proyecto" || (o.tipo === "aula" && lista.some((a) => claveDe(a) === claveDe(o)));
+  const centroPlaza = P(11, 0, 0);
+  const deLaEscuela = (o) => (o.tipo === "proyecto" && o.x === centroPlaza.x && o.z === centroPlaza.z)
+    || (o.tipo === "aula" && lista.some((a) => claveDe(a) === claveDe(o)));
   const frenteLibre = !ocupadoSalvo(P(12, 0, 0).x, P(12, 0, 0).z, 4, deLaEscuela);
   const plano = planEscuela(principal, frente, perm, total, profes, frenteLibre);
   const plaza = P(11, 0, total >= 3 ? 0 : 5);
-  m.obraAula = { c: plaza, plan: plano.pasos, i: 0, lejos: 30, animCelebrar: ANIM.maestroAplaudir,
-    pararse: (pos) => {
-      const dx = pos.x - principal.x;
-      const dz = pos.z - principal.z;
-      const b = Math.round(-dx * f.z + dz * f.x);
-      return centro(P(11, 1, b));
-    } };
+  const salvo = (p) => dentroDeOtra(p, deLaEscuela);
   m.fachadaNombre = plano.nombre;
-  registrar("proyecto", { x: P(11, 0, 0).x, y: principal.y, z: P(11, 0, 0).z, r: 13 });
+  m.obraAula = undefined;
+  registrar("proyecto", { x: centroPlaza.x, y: principal.y, z: centroPlaza.z, r: 13 });
   m.fase = "fachada";
+  // Aplana el frente (pórtico y plaza) y después construye.
+  const area = rectangulo(principal, frente, plano.area.a0, plano.area.a1, plano.area.b0, plano.area.b1);
+  const turno = (m.turnoObra = (m.turnoObra ?? 0) + 1);
+  planTerreno(e.dimension, area, principal.y, (terreno) => {
+    if (m.turnoObra !== turno) return;
+    m.obraAula = { c: plaza, plan: [...terreno, ...plano.pasos], i: 0, terreno: terreno.length, lejos: 30, salvo,
+      animCelebrar: ANIM.maestroAplaudir,
+      pararse: (pos) => {
+        const dx = pos.x - principal.x;
+        const dz = pos.z - principal.z;
+        const b = Math.round(-dx * f.z + dz * f.x);
+        return centro(P(11, 1, b));
+      } };
+  }, { plan: plano.pasos, salvo, alto: 12, hondo: 5 });
 }
 
 function fachada(e, m) {
   const o = m.obraAula;
-  nombre(e, `construyendo la ${m.fachadaNombre.toLowerCase()} ${Math.min(99, Math.floor((o.i / o.plan.length) * 100))}%`);
   velocidad(e, 0);
+  if (!o) {
+    nombre(e, "midiendo el terreno de la escuela");
+    return;
+  }
+  nombre(e, textoObra(o, `la ${m.fachadaNombre.toLowerCase()}`));
   if (!ejecutarPlano(e, m, o)) return;
   m.aula.fachada = true;
   guardar(e, m);
@@ -396,7 +437,7 @@ function buscar(e, m) {
     return;
   }
   if (ocupado(cand.x, cand.z, 12)) return;
-  const sitio = sitioPlano(e.dimension, cand.x, cand.z, 7, 7, 2);
+  const sitio = sitioPlano(e.dimension, cand.x, cand.z, 7, 7, 4); // con desnivel: lo aplana antes
   if (!sitio) return;
   const frente = frenteHacia(sitio, e);
   m.aula = prepararAula(e.dimension, { c: sitio, frente, listo: false, titulo: m.titulo, iq: m.iq });
@@ -418,17 +459,43 @@ function pararseAula(aula) {
   };
 }
 
+// Primero mide el terreno (en varios ticks) y arma el plano completo: aplanar el área
+// del aula y 2 bloques alrededor (0 del lado de un aula vecina) y después construir.
 function prepararObra(m) {
   m.obra = undefined;
-  m.obraAula = { c: m.aula.c, plan: m.aula.pasos, i: 0, pararse: pararseAula(m.aula), lejos: 16, animCelebrar: ANIM.maestroAplaudir };
+  m.obraAula = undefined;
+  const aula = m.aula;
+  const lados = aula.lados ?? {};
+  const area = rectangulo(aula.c, aula.frente, -AULA.a - 2, AULA.a + 2, -AULA.b - (lados.izq ? 0 : 2), AULA.b + (lados.der ? 0 : 2));
+  const interior = rectangulo(aula.c, aula.frente, -AULA.a, AULA.a, -AULA.b, AULA.b);
+  const salvo = (p) => dentroDeOtra(p, mismaObra("aula", aula.c));
+  const turno = (m.turnoObra = (m.turnoObra ?? 0) + 1);
+  planTerreno(m.e.dimension, area, aula.c.y, (terreno) => {
+    if (m.turnoObra !== turno || m.aula !== aula) return; // ya cambió de obra
+    m.obraAula = { c: aula.c, plan: [...terreno, ...aula.pasos], i: 0, terreno: terreno.length, pararse: pararseAula(aula),
+      lejos: 18, animCelebrar: ANIM.maestroAplaudir, salvo };
+  }, { interior, plan: aula.pasos, salvo, alto: 14, hondo: 6 });
+}
+
+// Texto de la obra: aplanando el terreno, construyendo o revisando.
+function textoObra(o, que) {
+  if (o.revisando) return `revisando ${que}`;
+  const t = o.terreno ?? 0;
+  if (o.i < t) return `aplanando el terreno ${Math.min(99, Math.floor((o.i / Math.max(1, t)) * 100))}%`;
+  return `construyendo ${que} ${Math.min(99, Math.floor(((o.i - t) / Math.max(1, o.plan.length - t)) * 100))}%`;
 }
 
 function construir(e, m) {
   const o = m.obraAula;
-  nombre(e, `construyendo el aula ${Math.min(99, Math.floor((o.i / o.plan.length) * 100))}%`);
   velocidad(e, 0);
+  if (!o) {
+    nombre(e, "midiendo el terreno");
+    return;
+  }
+  nombre(e, textoObra(o, "el aula"));
   if (!ejecutarPlano(e, m, o)) return;
   m.aula.listo = true;
+  m.aula.revisada = true;
   guardar(e, m);
   m.fase = "recreo";
   m.cd.clase = now() + MAESTRO_CFG.primeraClase;

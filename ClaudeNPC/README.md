@@ -10,6 +10,18 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes; `/claudenpc:robot` (con trucos) hace que los Claudes más cercanos (hasta 5, con cualquier IQ) construyan el robot ya.
 5. **Toca a un Claude** (botón "Habilidades" en el celular) para ver qué sabe: cada tema con sus estrellas, la última variante que aprendió y si lo perfecciona o solo lo estudia.
 
+## Novedades de la v7.1: escuelas que sí se terminan
+
+| Antes | Ahora |
+|---|---|
+| Al volver a entrar al mundo, el maestro empezaba su obra desde cero y lo primero que hacía era limpiar el terreno: **demolía lo que ya había construido** y nunca terminaba | Al retomar una obra **se salta lo que ya está hecho** y sigue donde iba. Nunca deshace sus propios bloques. |
+| Si un bloque no se podía poner (agua que volvía a entrar, hojas, tierra), lo saltaba y daba el aula por lista aunque estuviera a medias | Al terminar **revisa el plano entero** (hasta dos veces) y repone todo lo que falte. |
+| Un maestro nuevo adoptaba un aula a medias como si estuviera lista | Primero **la termina y la revisa**; después da clase. Las aulas de versiones anteriores se revisan una vez al cargar el mundo (así se arreglan las que quedaron incompletas). |
+| Construían sobre el terreno tal como estaba | **Primero preparan el terreno**: "aplanando el terreno" pican todo lo natural que sobresale (tierra, arena, piedra y árboles enteros) en el área de la obra y 2 bloques alrededor, y rellenan los huecos y el agua poco profunda de abajo hasta dejar una explanada firme. Después construyen. Así pueden construir en cerros y desniveles. |
+| — | Las casas de los Claudes, sus obras especiales (jardín, torre vigía, estatua, fuente) y la fachada de la escuela también aplanan antes. Solo pican terreno natural: nunca bloques construidos ni otras obras. |
+
+Vistas de la simulación: `source/vista_terreno.png` (antes y después) y `source/vista_escuela_terreno.png` (universidad sobre un cerro).
+
 ## Novedades de la v7
 
 | Antes | Ahora |
@@ -101,7 +113,7 @@ Además: cada uno tiene su radio para fijarse en ti (de 12 a 32 bloques), su vel
 
 No ataca. Lleva lentes, cabello formal peinado de lado, saco de tweed con coderas, camisa, corbata, una insignia luminosa y un libro.
 
-1. **Construye un aula** como un jugador: piso de abedul, paredes blancas con ventanales, techo con luces, pizarra negra con marco y tres carteles, mesa con campana, atril, estanterías, 12 pupitres con su silla, pasillo con alfombra, puerta, cartel "AULA", camino y faroles. Si no puede construir, da la clase al aire libre.
+1. **Prepara el terreno** (pica lo que sobra y rellena los huecos) y **construye un aula** como un jugador: piso de abedul, paredes blancas con ventanales, techo con luces, pizarra negra con marco y tres carteles, mesa con campana, atril, estanterías, 12 pupitres con su silla, pasillo con alfombra, puerta, cartel "AULA", camino y faroles. Si no puede construir, da la clase al aire libre.
 2. **Toca la campana** (la primera clase a los ~30 s, luego cada 2-3 minutos). Los Claudes a menos de 64 bloques **dejan de perseguirte** y de hacer lo que hacían, van a clase por la puerta y el pasillo y se sientan mirando la pizarra (si alguno se atasca, llega con una perla de ender).
 3. **La clase dura ~75 s**: escribe el tema en la pizarra letra por letra, explica tres ideas (las ves en la barra de acción), señala alumnos, escribe los apuntes, hace una pregunta (un alumno levanta la mano y, si acierta, aplausos) y deja tarea. Los alumnos toman apuntes y suben de IQ todo el rato (hasta 300).
 4. Al terminar, se levantan y salen en orden por la puerta con **bono x2: aprenden el doble durante 5 minutos** (sale "x2" junto a su IQ), usan más la táctica de la lección y **suben la habilidad del tema** (torres, puentes, arco, escudo, water drop, redstone, trampas, perlas, elytra, construcción, minería, reflejos o matemáticas).

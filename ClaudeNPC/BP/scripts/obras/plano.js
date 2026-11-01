@@ -3,9 +3,11 @@ import { ANIM, CASA, PARTICLES } from "../config.js";
 import { sostener } from "../equipo.js";
 import { nivel } from "../iq.js";
 import { caminarA, caminando } from "../movimiento.js";
+import { perlaHasta } from "../tacticas.js";
 import {
   animate, blockAt, burst, colocar, distancia, mirarA, now, particleAt, rand, reemplazable, sound,
 } from "../util.js";
+import { esNatural } from "./terreno.js";
 import { iniciarTorre } from "./torre.js";
 
 // Ejecuta un plano paso a paso como un jugador: camina hasta tener el bloque a su
@@ -13,7 +15,13 @@ import { iniciarTorre } from "./torre.js";
 // encadena dos o tres bloques seguidos, como quien construye rápido. Lo usan la
 // casa de cada Claude y el aula de Claude Maestro.
 //
-// obra = { plan, i, c, pararse(pos) → punto donde pararse, lejos, colocados, pausa }
+// obra = { plan, i, c, pararse(pos) → punto donde pararse, lejos, colocados, pausa,
+//         salvo(pos) → true si es de otra obra (no se toca), terreno: nº de pasos de
+//         preparar el terreno al principio del plano }
+//
+// Nunca deshace lo que ya construyó (al retomar una obra tras recargar el mundo se
+// salta lo hecho) y al terminar revisa el plano entero: si falta algún bloque (agua
+// que volvió a entrar, hojas, tierra), lo vuelve a poner. Así la obra queda completa.
 
 const IRROMPIBLES = new Set(["minecraft:bedrock", "minecraft:obsidian", "minecraft:barrier", "minecraft:chest",
   "minecraft:crafting_table", "minecraft:furnace", "minecraft:spawner", "minecraft:lectern", "minecraft:bell"]);
@@ -47,7 +55,7 @@ const centroDe = (p) => ({ x: p.x + 0.5, y: p.y, z: p.z + 0.5 });
 
 function acercarse(npc, state, obra, paso) {
   paso.intentos = (paso.intentos ?? 0) + 1;
-  if (paso.intentos > 3) return false;
+  if (paso.intentos > (paso.terreno ? 1 : 3)) return false;
   const destino = paso.tipo === "ir" || paso.tipo === "celebrar" ? centroDe(paso.pos)
     : paso.desde ? centroDe(paso.desde) : obra.pararse(paso.pos);
   caminarA(npc, destino, state.pers?.paso ?? 0.22);
@@ -62,10 +70,28 @@ function ritmo(state, obra) {
   if (obra.colocados % 55 === 0) obra.pausa = true; // de vez en cuando se detiene y mira
 }
 
+const claveDe = (p) => `${p.x},${p.y},${p.z}`;
+
+// Qué bloque debe quedar en cada posición según el plano (para no deshacerlo).
+function esperado(obra) {
+  if (!obra.esperado) {
+    obra.esperado = new Map();
+    for (const p of obra.base ?? obra.plan) {
+      if (p.pos && (p.tipo === "colocar" || p.tipo === "letrero")) obra.esperado.set(claveDe(p.pos), idDe(p.bloque));
+    }
+  }
+  return obra.esperado;
+}
+
 // ¿Este paso ya no hace falta (bloque libre o ya colocado)?
-function sobra(npc, paso) {
+function sobra(npc, paso, obra) {
   const b = paso.pos ? blockAt(npc.dimension, paso.pos) : undefined;
-  if (paso.tipo === "quitar") return !b || b.isAir || IRROMPIBLES.has(b.typeId);
+  if (paso.terreno && obra?.salvo?.(paso.pos)) return true; // es de otra obra
+  if (paso.tipo === "quitar") {
+    if (!b || b.isAir || IRROMPIBLES.has(b.typeId)) return true;
+    if (obra && esperado(obra).get(claveDe(paso.pos)) === b.typeId) return true; // ya está construido
+    return !!paso.terreno && !reemplazable(b) && !esNatural(b);
+  }
   if (paso.tipo === "rellenar") return !!b && !b.isAir && !b.isLiquid && !reemplazable(b);
   if (paso.tipo === "colocar" || paso.tipo === "letrero") {
     if (!b) return true;
@@ -99,15 +125,82 @@ function colocarPaso(npc, paso, retraso) {
   }, 3 + retraso);
 }
 
+// Quita un bloque como un jugador (con la herramienta adecuada). El terreno que pica
+// para aplanar no suelta objetos: así no se llena el suelo de cosas (y no da lag).
+function quitarBloque(npc, paso, b, retraso) {
+  if (!b) return;
+  const rapido = reemplazable(b);
+  const tipo = b.typeId;
+  const centroPaso = { x: paso.pos.x + 0.5, y: paso.pos.y + 0.5, z: paso.pos.z + 0.5 };
+  if (retraso === 0) {
+    mirarA(npc, centroPaso);
+    sostener(npc, rapido ? "minecraft:air" : herramienta(tipo));
+    animate(npc, rapido ? ANIM.golpe : ANIM.minar);
+  }
+  system.runTimeout(() => {
+    try {
+      const x = blockAt(npc.dimension, paso.pos);
+      if (x?.typeId !== tipo) return;
+      x.setType("minecraft:air");
+      if (!rapido && !paso.terreno && !tipo.endsWith("_leaves")) npc.dimension.spawnItem(new ItemStack(tipo, 1), centroPaso);
+      particleAt(npc.dimension, PARTICLES.construir, centroPaso);
+      if (paso.terreno && Math.random() < 0.35) sound(npc, /sand|dirt|grass|gravel|clay|mud|snow/.test(tipo) ? "dig.gravel" : /log|wood|leaves/.test(tipo) ? "dig.wood" : "dig.stone", 1, 0.6);
+    } catch {
+      // Ya no está.
+    }
+  }, (rapido ? 2 : paso.terreno ? 3 : 8) + retraso);
+}
+
+const EQUIVALENTES = { "minecraft:grass_block": "minecraft:dirt", "minecraft:water": "minecraft:flowing_water", "minecraft:grass_path": "minecraft:dirt" };
+
+function falta(b, p) {
+  if (p.tipo === "rellenar") return b.isAir || b.isLiquid || reemplazable(b);
+  const id = idDe(p.bloque);
+  return b.typeId !== id && EQUIVALENTES[id] !== b.typeId;
+}
+
+// Al terminar el plano lo revisa entero (hasta dos veces): lo que falte (agua que volvió
+// a entrar, hojas, tierra, un bloque que no se pudo poner) lo vuelve a poner, aunque
+// tenga que reemplazar lo que haya. Devuelve true cuando la obra está completa.
+function revisar(npc, obra) {
+  obra.base ??= obra.plan;
+  if ((obra.revisiones ?? 0) >= 2) return true;
+  obra.revisiones = (obra.revisiones ?? 0) + 1;
+  const faltan = [];
+  for (const p of obra.base) {
+    if (!p.pos || !(p.tipo === "colocar" || p.tipo === "letrero" || p.tipo === "rellenar")) continue;
+    if (obra.salvo?.(p.pos)) continue; // lo de otra obra (el aula vecina) no se toca
+    const b = blockAt(npc.dimension, p.pos);
+    if (!b || IRROMPIBLES.has(b.typeId) || !falta(b, p)) continue;
+    faltan.push({ ...p, forzar: true, intentos: 0 });
+  }
+  if (!faltan.length) return true;
+  obra.plan = faltan;
+  obra.i = 0;
+  obra.revisando = true;
+  return false;
+}
+
 // Devuelve true cuando el plano está terminado.
 export function ejecutarPlano(npc, state, obra) {
-  if (caminando(npc)) return false;
+  // Mientras aplana puede picar caminando; en el resto de la obra primero llega y luego trabaja.
+  if (caminando(npc) && !obra.plan[obra.i]?.terreno) return false;
   // Si se alejó (por ejemplo, tras una pelea o una clase), primero vuelve a la obra.
   if (Math.hypot(npc.location.x - (obra.c.x + 0.5), npc.location.z - (obra.c.z + 0.5)) > (obra.lejos ?? 10) && !state.obra) {
-    caminarA(npc, { x: obra.c.x + 0.5, y: obra.c.y + 1, z: obra.c.z + 0.5 }, state.pers?.paso ?? 0.22);
+    const destino = { x: obra.c.x + 0.5, y: obra.c.y + 1, z: obra.c.z + 0.5 };
+    if (!caminando(npc)) {
+      obra.volver = (obra.volver ?? 0) + 1;
+      if (obra.volver > 4) {
+        perlaHasta(npc, destino); // no encuentra el camino de vuelta: llega con una perla
+        obra.volver = 0;
+      } else {
+        caminarA(npc, destino, state.pers?.paso ?? 0.22);
+      }
+    }
     state.ocupadoHasta = now() + 10;
     return false;
   }
+  obra.volver = 0;
   if (obra.pausa) {
     obra.pausa = false;
     const a = Math.random() * Math.PI * 2;
@@ -115,16 +208,16 @@ export function ejecutarPlano(npc, state, obra) {
     state.ocupadoHasta = now() + rand(12, 24);
     return false;
   }
-  // Salta rápido los pasos que no hacen falta.
-  for (let saltos = 0; saltos < 40; saltos++) {
+  // Salta rápido los pasos que no hacen falta (y lo que ya está hecho).
+  for (let saltos = 0; saltos < 120; saltos++) {
     const paso = obra.plan[obra.i];
-    if (!paso) return true;
-    if (!sobra(npc, paso)) break;
+    if (!paso) return revisar(npc, obra);
+    if (!sobra(npc, paso, obra)) break;
     obra.i++;
   }
   const paso = obra.plan[obra.i];
-  if (!paso) return true;
-  const alcance = paso.techo ? CASA.alcanceTecho : CASA.alcance;
+  if (!paso) return revisar(npc, obra);
+  const alcance = paso.terreno ? 12 : paso.techo ? CASA.alcanceTecho : CASA.alcance;
 
   switch (paso.tipo) {
     case "ir": {
@@ -190,30 +283,58 @@ export function ejecutarPlano(npc, state, obra) {
       break;
   }
 
-  // quitar / rellenar / colocar / letrero / camino
-  if (!cerca(npc, paso.pos, alcance) && acercarse(npc, state, obra, paso)) return false;
+  // Aplanando: pica o rellena lo que tenga a su alcance (hasta 12 bloques) y, si queda
+  // lejos, va caminando hacia allá sin dejar de trabajar.
+  if (paso.terreno) {
+    const cabeza = { x: npc.location.x, y: npc.location.y + 1.6, z: npc.location.z };
+    const d = distancia(cabeza, { x: paso.pos.x + 0.5, y: paso.pos.y + 0.5, z: paso.pos.z + 0.5 });
+    if (d > 6 && !caminando(npc)) {
+      caminarA(npc, { x: paso.pos.x + 0.5, y: npc.location.y, z: paso.pos.z + 0.5 }, state.pers?.paso ?? 0.22);
+    }
+    if (d > alcance) {
+      paso.intentos = (paso.intentos ?? 0) + 1;
+      if (paso.intentos <= 2) {
+        state.ocupadoHasta = now() + 6;
+        return false;
+      }
+    }
+  } else if (!cerca(npc, paso.pos, alcance) && acercarse(npc, state, obra, paso)) return false;
   const b = blockAt(npc.dimension, paso.pos);
   const centroPaso = { x: paso.pos.x + 0.5, y: paso.pos.y + 0.5, z: paso.pos.z + 0.5 };
   obra.i++;
   if (!b) return false;
   mirarA(npc, centroPaso);
   if (paso.tipo === "quitar") {
-    const rapido = reemplazable(b);
-    sostener(npc, rapido ? "minecraft:air" : herramienta(b.typeId));
-    animate(npc, rapido ? ANIM.golpe : ANIM.minar);
-    const tipo = b.typeId;
-    system.runTimeout(() => {
-      try {
-        const x = blockAt(npc.dimension, paso.pos);
-        if (x?.typeId !== tipo) return;
-        x.setType("minecraft:air");
-        if (!rapido && !tipo.endsWith("_leaves")) npc.dimension.spawnItem(new ItemStack(tipo, 1), centroPaso);
-        particleAt(npc.dimension, PARTICLES.construir, centroPaso);
-      } catch {
-        // Ya no está.
+    quitarBloque(npc, paso, b, 0);
+    // Preparando el terreno pica rápido: varios bloques seguidos que tenga al alcance.
+    let ultimo = paso;
+    if (paso.terreno) {
+      const cadena = 1 + Math.min(3, Math.floor(nivel(state) * 3));
+      for (let k = 1; k < cadena; k++) {
+        const sig = obra.plan[obra.i];
+        if (!sig || sig.tipo !== "quitar" || !sig.terreno || sobra(npc, sig, obra) || !cerca(npc, sig.pos, 12)) break;
+        obra.i++;
+        quitarBloque(npc, sig, blockAt(npc.dimension, sig.pos), k * 2);
+        ultimo = sig;
       }
-    }, rapido ? 2 : 8);
-    state.ocupadoHasta = now() + (rapido ? 3 : 10);
+    }
+    const rapido = reemplazable(blockAt(npc.dimension, ultimo.pos));
+    state.ocupadoHasta = now() + (paso.terreno ? 4 : rapido ? 3 : 10);
+    return false;
+  }
+  if (paso.tipo === "rellenar" && paso.terreno) {
+    // Rellena huecos de abajo arriba, también en cadena.
+    sostener(npc, itemDe(paso.bloque));
+    animate(npc, ANIM.colocarAbajo);
+    colocarPaso(npc, paso, 0);
+    const cadena = 1 + Math.min(3, Math.floor(nivel(state) * 3));
+    for (let k = 1; k < cadena; k++) {
+      const sig = obra.plan[obra.i];
+      if (!sig || sig.tipo !== "rellenar" || !sig.terreno || sobra(npc, sig, obra) || !cerca(npc, sig.pos, 12)) break;
+      obra.i++;
+      colocarPaso(npc, sig, k * 2);
+    }
+    state.ocupadoHasta = now() + 4;
     return false;
   }
   if (paso.tipo === "camino") {
@@ -233,7 +354,7 @@ export function ejecutarPlano(npc, state, obra) {
   const primero = idDe(paso.bloque);
   for (let k = 1; k <= extra; k++) {
     const sig = obra.plan[obra.i];
-    if (!sig || sig.tipo !== "colocar" || idDe(sig.bloque) !== primero || sobra(npc, sig)) break;
+    if (!sig || sig.tipo !== "colocar" || idDe(sig.bloque) !== primero || sobra(npc, sig, obra)) break;
     if (!cerca(npc, sig.pos, sig.techo ? CASA.alcanceTecho : CASA.alcance)) break;
     obra.i++;
     colocarPaso(npc, sig, k * 3);
