@@ -1181,6 +1181,12 @@ def claude_animations():
             "rightLeg": {"position": [0, 0, 3]}, "leftLeg": {"position": [0, 0, 3]}}},
         "animation.claudenpc.colocar_abajo": {"animation_length": 0.4, "bones": {
             "rightArm": {"rotation": k((0, [-25, 0, 0]), (0.15, [-55, -10, 0]), (0.3, [-30, 0, 0]), (0.4, [-25, 0, 0]))}}},
+        # Cinemática del robot: agarra un bloque de hierro, lo levanta para mirarlo y lo baja.
+        "animation.claudenpc.levantar_bloque": {"animation_length": 1.7, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.35, [-112, -18, 0]), (1.2, [-112, -18, 0]), (1.5, [-70, -5, 0]), (1.7, [-60, 0, 0]))},
+            "leftArm": {"rotation": k((0, Z), (0.35, [-96, 26, 0]), (1.2, [-96, 26, 0]), (1.5, [-60, 10, 0]), (1.7, [-50, 0, 0]))},
+            "head": {"rotation": k((0, Z), (0.35, [-12, 8, 0]), (1.2, [-10, -6, 0]), (1.7, [10, 0, 0]))},
+            "body": {"rotation": k((0, Z), (0.35, [-5, 0, 0]), (1.2, [-5, 0, 0]), (1.7, Z))}}},
         # Herramientas (cinemática del robot): martillar, atornillar y apretar con la llave.
         "animation.claudenpc.martillar": {"animation_length": 0.5, "bones": {
             "rightArm": {"rotation": k((0, [-60, 0, 0]), (0.18, [-155, 0, 8]), (0.28, [-45, 0, 0]), (0.5, [-60, 0, 0]))},
@@ -1704,7 +1710,7 @@ def client_entities():
                  "lanzar", "colocar", "crafteo", "minar", "arco", "planeo", "cubeta", "agachado", "colocar_abajo",
                  "torre", "remar", "celebrar", "sentado", "tomar_notas", "levantar_mano", "aplaudir", "pescar",
                  "pescar_espera", "recoger", "pilotar", "mirar_alrededor", "danza", "fusion", "beber",
-                 "martillar", "atornillar", "apretar"):
+                 "martillar", "atornillar", "apretar", "levantar_bloque"):
         claude_anims[name] = f"animation.claudenpc.{name}"
     write_json(RP / "entity/claude.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:claude",

@@ -156,7 +156,7 @@ export function crearRobot(dimension, pos, frente, pilotos, { cinematica = false
   }
   animate(e, ANIM.robotEnsamblaje);
   sound(e, "beacon.activate", 0.6, 1);
-  subirPilotos(r, cinematica ? 6 : 20, cinematica ? 4 : 6);
+  subirPilotos(r, cinematica ? 1 : 20, cinematica ? 1 : 6); // en la cinemática ya aparecen arriba
   if (cinematica) return r; // la cinemática pone su propio título
   for (const p of dimension.getPlayers({ location: pos, maxDistance: 64 })) {
     try {
@@ -234,6 +234,11 @@ function abrirCamino(r, j) {
     if (h < 0.03) return;
     dir = { x: v.x / h, z: v.z / h };
   }
+  romperDelante(r, dir);
+}
+
+function romperDelante(r, dir, golpe = true) {
+  const e = r.e;
   const lado = { x: -dir.z, z: dir.x };
   const dim = e.dimension;
   const y0 = Math.floor(e.location.y + 0.01);
@@ -258,11 +263,78 @@ function abrirCamino(r, j) {
     }
     if (rotos >= 10) break;
   }
-  if (rotos) {
+  if (rotos && golpe) {
     animate(e, ANIM.robotGolpe);
     soundAt(dim, e.location, "random.anvil_land", 0.5, 0.5);
     particleAt(dim, PARTICLES.polvo, { x: e.location.x + dir.x * 2, y: e.location.y + 1, z: e.location.z + dir.z * 2 });
   }
+}
+
+// Embestida: si te alejas, se agacha, prende los cohetes de la espalda y se lanza hacia
+// ti (hasta 16 bloques) rompiendo lo que haya en medio. Si te alcanza, te manda a volar.
+function embestida(r, j) {
+  const e = r.e;
+  const dim = e.dimension;
+  const desde = { ...e.location };
+  const dx = j.location.x - desde.x;
+  const dz = j.location.z - desde.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const dir = { x: dx / d, z: dz / d };
+  const largo = Math.min(16, d - 2.5);
+  if (largo < 4) return 0;
+  animate(e, ANIM.robotAgacharse);
+  sound(e, "mob.irongolem.throw", 0.6, 1);
+  for (const n of r.pilotos) {
+    const s = estados.get(n.id);
+    if (s) s.sinCaidaHasta = now() + 100;
+  }
+  let t = 0;
+  let pegado = false;
+  let avance = 0;
+  const id = system.runInterval(() => {
+    t++;
+    try {
+      if (!e.isValid) return system.clearRun(id);
+      const atras = { x: e.location.x - dir.x * 1.4, y: e.location.y + 2.6, z: e.location.z - dir.z * 1.4 };
+      if (t < 10) {
+        if (t % 2 === 0) particleAt(dim, PARTICLES.cohete, atras);
+        return;
+      }
+      if (t === 10) {
+        animate(e, ANIM.robotGolpe);
+        soundAt(dim, e.location, "firework.launch", 0.5, 1);
+        soundAt(dim, e.location, "random.explode", 1.6, 0.4);
+      }
+      romperDelante(r, dir, false);
+      // Si algo que no puede romper le cierra el paso, frena ahí.
+      const frente = blockAt(dim, { x: e.location.x + dir.x * 1.6, y: e.location.y + 1.2, z: e.location.z + dir.z * 1.6 });
+      const f = Math.min(1, (t - 10) / 12);
+      if (frente && !frente.isAir && !frente.isLiquid && !reemplazable(frente)) avance = Math.min(avance, f);
+      else avance = f;
+      const pos = { x: desde.x + dir.x * largo * avance, y: desde.y + Math.sin(avance * Math.PI) * 0.8, z: desde.z + dir.z * largo * avance };
+      e.teleport(pos, { keepVelocity: false, facingLocation: { x: pos.x + dir.x, y: pos.y, z: pos.z + dir.z } });
+      particleAt(dim, PARTICLES.cohete, atras);
+      if (t % 2 === 0) particleAt(dim, PARTICLES.polvo, { x: pos.x, y: pos.y + 0.2, z: pos.z });
+      if (!pegado && j.isValid && Math.hypot(j.location.x - pos.x, j.location.z - pos.z) < 2.8 && Math.abs(j.location.y - pos.y) < 3) {
+        pegado = true;
+        try {
+          j.applyDamage(9, { cause: EntityDamageCause.entityAttack, damagingEntity: e });
+          j.applyKnockback({ x: dir.x * 1.8, z: dir.z * 1.8 }, 0.6);
+        } catch {
+          // Jugador no disponible.
+        }
+        particleAt(dim, PARTICLES.estallido, { x: j.location.x, y: j.location.y + 1, z: j.location.z });
+        temblor(dim, pos, 8, 0.6, 0.5);
+      }
+      if (t >= 22) {
+        system.clearRun(id);
+        temblor(dim, pos, 14, 0.35, 0.4);
+      }
+    } catch {
+      system.clearRun(id);
+    }
+  }, 1);
+  return 36;
 }
 
 // Elige un ataque según la distancia y la fase: cada fase suma habilidades nuevas (y
@@ -273,6 +345,7 @@ function atacar(r, j) {
   const fase = r.fase ?? 0;
   const opciones = [];
   if (d < 7) opciones.push({ f: () => pisoton(e), p: 3 });
+  if (d > ROBOT_CFG.embestirDesde) opciones.push({ f: () => embestida(r, j), p: d > 20 ? 6 : 3.5 }); // ¡no te escapas!
   if (d > 6) opciones.push({ f: () => lanzarMisiles(e, j, rand(4, 6) + fase), p: 3 });
   if (d > 4 && d < 32) opciones.push({ f: () => laser(e, j), p: 2 });
   if (d > 4 && d < 26) opciones.push({ f: () => metralla(e, j), p: 2.5 });

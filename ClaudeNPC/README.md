@@ -10,6 +10,20 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes; `/claudenpc:robot` (con trucos) hace que los Claudes más cercanos (hasta 5, con cualquier IQ) construyan el robot ya.
 5. **Toca a un Claude** (botón "Habilidades" en el celular) para ver qué sabe: cada tema con sus estrellas, la última variante que aprendió y si lo perfecciona o solo lo estudia.
 
+## Novedades de la v7.3
+
+| Antes | Ahora |
+|---|---|
+| Los maestros se ponían a picar sin más | Primero **estudian el terreno**: recorren las cuatro esquinas del área mirando el suelo, marcan el borde con luces cian, cuentan cuántos bloques hay que picar y cuántos rellenar y lo dicen ("Estudié el terreno: hay que picar 120 bloques y rellenar 35"). Después aplanan y construyen. |
+| Tardaban en abrir la puerta | Abren las puertas **antes de llegar** (miran 1,4 bloques delante, también en diagonal). Mientras construyen, la puerta del aula queda abierta y la cierran al terminar; y en cuanto la ponen, la ruta ya pasa por ella. |
+| Se atascaban en los postes de luz | **Ya no hay postes**: la luz son antorchas en la pared, a los lados de la puerta. En la escuela, las columnas del pórtico quedan fuera del paso y los maestros trabajan la plaza desde el borde. |
+| Los alumnos se atascaban en la puerta | **Puerta doble** en todas las aulas y **dos carriles**: los de la izquierda entran y salen por una hoja y los de la derecha por la otra. Los que se quedan de pie esperan pegados a las paredes. Camino de dos de ancho. |
+| El robot caminaba y el jugador se escapaba | **Corre casi siempre** (solo camina cuando ya te tiene encima) y más rápido en cada fase. Si te alejas más de 12 bloques, hace una **embestida**: se agacha, prende los cohetes de la espalda y se lanza hasta 16 bloques hacia ti rompiendo lo que haya en medio. |
+| Cinemática en planos generales | **Cinemática por planos con transiciones suaves**: un Claude agarra un bloque de hierro → un Claude trabaja con el destornillador → un Claude martilla un bloque de hierro → un Claude aprieta con la llave inglesa → aparece el robot ya construido, con los cinco arriba. |
+| Sonidos del juego | **Sonidos nuevos** (de los videos que mandaste): golpes de martillo en el plano del martillo, el sonido metálico de la palanca en el de la llave inglesa y una serie de martillazos cuando aparece el robot (`RP/sounds/claudenpc`). |
+
+> Los sonidos `martillo`, `martillando` y `palanca` salen de dos videos de TikTok que mandaste (uno parece el golpe de la palanca de Half-Life). Úsalos en tu mundo; si vas a publicar el add-on, cámbialos por sonidos propios o con permiso.
+
 ## Novedades de la v7.2: el robot, a lo grande
 
 | Antes | Ahora |

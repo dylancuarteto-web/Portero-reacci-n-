@@ -187,23 +187,27 @@ function letrero(m, i, texto) {
   if (p) escribirLetrero(m.e.dimension, p, texto);
 }
 
+// Abre o cierra la puerta doble del aula (las dos hojas).
 function abrirPuerta(m, abrir) {
   if (!m.aula || m.aula.aire) return;
-  const p = local(m.aula, AULA.a, 1, 0);
   let cambio = false;
-  for (const h of [0, 1]) {
-    const b = blockAt(m.e.dimension, { x: p.x, y: p.y + h, z: p.z });
-    if (b?.typeId !== "minecraft:wooden_door") continue;
-    try {
-      if (b.permutation.getState("open_bit") !== abrir) {
-        b.setPermutation(b.permutation.withState("open_bit", abrir));
-        cambio = true;
+  const p0 = local(m.aula, AULA.a, 1, 0);
+  for (const hoja of [0, 1]) {
+    const p = local(m.aula, AULA.a, 1, hoja);
+    for (const h of [0, 1]) {
+      const b = blockAt(m.e.dimension, { x: p.x, y: p.y + h, z: p.z });
+      if (b?.typeId !== "minecraft:wooden_door") continue;
+      try {
+        if (b.permutation.getState("open_bit") !== abrir) {
+          b.setPermutation(b.permutation.withState("open_bit", abrir));
+          cambio = true;
+        }
+      } catch {
+        // Puerta sin ese estado.
       }
-    } catch {
-      // Puerta sin ese estado.
     }
   }
-  if (cambio) soundAt(m.e.dimension, p, abrir ? "random.door_open" : "random.door_close");
+  if (cambio) soundAt(m.e.dimension, p0, abrir ? "random.door_open" : "random.door_close");
 }
 
 // Camina hasta un punto y, al llegar, hace algo. Devuelve true cuando lo hizo.
@@ -376,13 +380,14 @@ function empezarFachada(e, m) {
   const turno = (m.turnoObra = (m.turnoObra ?? 0) + 1);
   planTerreno(e.dimension, area, principal.y, (terreno) => {
     if (m.turnoObra !== turno) return;
+    m.estudio = nuevoEstudio(e.dimension, area, principal.y, terreno);
     m.obraAula = { c: plaza, plan: [...terreno, ...plano.pasos], i: 0, terreno: terreno.length, lejos: 30, salvo,
       animCelebrar: ANIM.maestroAplaudir,
       pararse: (pos) => {
         const dx = pos.x - principal.x;
         const dz = pos.z - principal.z;
         const b = Math.round(-dx * f.z + dz * f.x);
-        return centro(P(11, 1, b));
+        return centro(P(plano.area.a1, 1, b)); // al borde de la plaza, lejos de bancas y columnas
       } };
   }, { plan: plano.pasos, salvo, alto: 12, hondo: 5 });
 }
@@ -394,6 +399,7 @@ function fachada(e, m) {
     nombre(e, "midiendo el terreno de la escuela");
     return;
   }
+  if (m.estudio) return estudiar(e, m);
   nombre(e, textoObra(o, `la ${m.fachadaNombre.toLowerCase()}`));
   if (!ejecutarPlano(e, m, o)) return;
   m.aula.fachada = true;
@@ -459,6 +465,68 @@ function pararseAula(aula) {
   };
 }
 
+// --- Estudiar el terreno ------------------------------------------------------------
+// Antes de picar nada recorre las cuatro esquinas del área mirando el suelo (marca el
+// borde con luces), cuenta lo que sobra y lo que falta y lo dice. Después aplana.
+
+function nuevoEstudio(dim, area, y, terreno) {
+  const alto = (x, z) => {
+    const top = superficie(dim, x, z);
+    return top ? Math.max(y + 1, top.location.y + 1) : y + 1;
+  };
+  const esquinas = [[area.x0, area.z0], [area.x1, area.z0], [area.x1, area.z1], [area.x0, area.z1]]
+    .map(([x, z]) => ({ x: x + 0.5, y: alto(x, z), z: z + 0.5 }));
+  return {
+    area, y, esquinas, i: 0, desde: now(), intentos: 0,
+    centro: { x: (area.x0 + area.x1) / 2 + 0.5, y: y + 1, z: (area.z0 + area.z1) / 2 + 0.5 },
+    picar: terreno.filter((p) => p.tipo === "quitar").length,
+    rellenar: terreno.filter((p) => p.tipo === "rellenar").length,
+  };
+}
+
+function marcarBorde(dim, area, y) {
+  for (let x = area.x0; x <= area.x1; x += 2) {
+    particleAt(dim, PARTICLES.holo, { x: x + 0.5, y: y + 1.5, z: area.z0 + 0.5 });
+    particleAt(dim, PARTICLES.holo, { x: x + 0.5, y: y + 1.5, z: area.z1 + 0.5 });
+  }
+  for (let z = area.z0; z <= area.z1; z += 2) {
+    particleAt(dim, PARTICLES.holo, { x: area.x0 + 0.5, y: y + 1.5, z: z + 0.5 });
+    particleAt(dim, PARTICLES.holo, { x: area.x1 + 0.5, y: y + 1.5, z: z + 0.5 });
+  }
+}
+
+function estudiar(e, m) {
+  const es = m.estudio;
+  nombre(e, `estudiando el terreno (${Math.min(4, es.i)}/4)`);
+  velocidad(e, 0);
+  const esquina = es.esquinas[es.i];
+  if (!esquina || now() - es.desde > 420) {
+    m.estudio = undefined;
+    const texto = es.picar + es.rellenar === 0 ? "El terreno está parejo: ¡a construir!"
+      : `Estudié el terreno: hay que picar ${es.picar} bloques y rellenar ${es.rellenar}. ¡Primero lo aplano!`;
+    avisar(e.dimension, e.location, `§6${m.titulo}:§r ${texto}`, 40);
+    mirarA(e, es.centro);
+    animate(e, ANIM.maestroExplicar);
+    marcarBorde(e.dimension, es.area, es.y);
+    m.ocupadoHasta = now() + 40;
+    return;
+  }
+  if (Math.hypot(e.location.x - esquina.x, e.location.z - esquina.z) > 1.8 && es.intentos < 24) {
+    es.intentos++;
+    if (!caminando(e)) caminarA(e, esquina, m.pers.paso);
+    return;
+  }
+  // En la esquina: mira el área, piensa y marca el borde.
+  es.intentos = 0;
+  es.i++;
+  detener(e);
+  mirarA(e, es.centro);
+  animate(e, ANIM.maestroPensar);
+  marcarBorde(e.dimension, es.area, es.y);
+  sound(e, "item.book.page_turn", 1, 0.6);
+  m.ocupadoHasta = now() + 24;
+}
+
 // Primero mide el terreno (en varios ticks) y arma el plano completo: aplanar el área
 // del aula y 2 bloques alrededor (0 del lado de un aula vecina) y después construir.
 function prepararObra(m) {
@@ -472,6 +540,8 @@ function prepararObra(m) {
   const turno = (m.turnoObra = (m.turnoObra ?? 0) + 1);
   planTerreno(m.e.dimension, area, aula.c.y, (terreno) => {
     if (m.turnoObra !== turno || m.aula !== aula) return; // ya cambió de obra
+    // Un aula ya terminada que solo se revisa no necesita volver a estudiar el terreno.
+    m.estudio = aula.listo ? undefined : nuevoEstudio(m.e.dimension, area, aula.c.y, terreno);
     m.obraAula = { c: aula.c, plan: [...terreno, ...aula.pasos], i: 0, terreno: terreno.length, pararse: pararseAula(aula),
       lejos: 18, animCelebrar: ANIM.maestroAplaudir, salvo };
   }, { interior, plan: aula.pasos, salvo, alto: 14, hondo: 6 });
@@ -492,6 +562,7 @@ function construir(e, m) {
     nombre(e, "midiendo el terreno");
     return;
   }
+  if (m.estudio) return estudiar(e, m);
   nombre(e, textoObra(o, "el aula"));
   if (!ejecutarPlano(e, m, o)) return;
   m.aula.listo = true;

@@ -9,7 +9,9 @@
 //   pizarra negra con marco y tres carteles (lección, tema y apuntes)
 //   mesa del maestro con campana, atril para leer y estantes de libros
 //   3 filas x 4 pupitres (losa alta) con su silla (escalón), pasillo con alfombra
-//   puerta al fondo entre estanterías, cartel "AULA", camino y dos faroles
+//   puerta DOBLE al fondo entre estanterías (dos carriles: así no se atascan al entrar
+//   y salir), cartel "AULA", camino de dos de ancho y antorchas en la pared (sin
+//   postes de luz en el camino, que los hacían tropezar)
 
 const FRENTES = { north: { x: 0, z: -1 }, south: { x: 0, z: 1 }, west: { x: -1, z: 0 }, east: { x: 1, z: 0 } };
 const OPUESTO = { north: "south", south: "north", west: "east", east: "west" };
@@ -71,8 +73,8 @@ export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280, l
       if (Math.abs(b) <= 3 && (h === 1 || h === 4 || Math.abs(b) === 3)) return "minecraft:dark_oak_planks";
       return "minecraft:white_concrete";
     }
-    if (a === AULA.a) { // pared de la puerta
-      if (b === 0 && h <= 2) return null;
+    if (a === AULA.a) { // pared de la puerta (puerta doble en b = 0 y b = 1)
+      if ((b === 0 || b === 1) && h <= 2) return null;
       if (Math.abs(b) >= 2 && h <= 2) return "minecraft:bookshelf";
       if (Math.abs(b) === 3 && h === 3) return "minecraft:glass_pane";
       return "minecraft:white_concrete";
@@ -87,10 +89,13 @@ export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280, l
       if (bloque) add({ tipo: "colocar", pos: P(a, h, b), bloque });
     }
   }
-  add({ tipo: "colocar", pos: P(AULA.a, 1, 0), bloque: perm("minecraft:wooden_door", {
-    "minecraft:cardinal_direction": frente, upper_block_bit: false, open_bit: false, door_hinge_bit: false }) });
-  add({ tipo: "colocar", pos: P(AULA.a, 2, 0), bloque: perm("minecraft:wooden_door", {
-    "minecraft:cardinal_direction": frente, upper_block_bit: true, open_bit: false, door_hinge_bit: false }) });
+  // Puerta doble (se deja abierta mientras construye: así entra y sale sin demorarse).
+  for (const [b, bisagra] of [[0, false], [1, true]]) {
+    add({ tipo: "colocar", pos: P(AULA.a, 1, b), bloque: perm("minecraft:wooden_door", {
+      "minecraft:cardinal_direction": frente, upper_block_bit: false, open_bit: true, door_hinge_bit: bisagra }) });
+    add({ tipo: "colocar", pos: P(AULA.a, 2, b), bloque: perm("minecraft:wooden_door", {
+      "minecraft:cardinal_direction": frente, upper_block_bit: true, open_bit: true, door_hinge_bit: bisagra }) });
+  }
 
   // 5. Techo plano de roble oscuro con luces, desde dentro, por anillos.
   const luces = new Set(["-3,-2", "-3,2", "1,-2", "1,2", "4,0", "-1,0"]);
@@ -133,35 +138,47 @@ export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280, l
   }
   for (let a = -2; a <= 5; a++) add({ tipo: "colocar", pos: P(a, 1, 0), desde: desdePasillo(a), bloque: "minecraft:light_blue_carpet" });
 
-  // 9. Sale, cierra la puerta, cartel, camino y faroles.
+  // 9. Sale, cierra la puerta doble, cartel, camino y antorchas.
   add({ tipo: "ir", pos: P(5, 1, 0) });
   add({ tipo: "puerta", pos: P(AULA.a, 1, 0), abrir: true });
+  add({ tipo: "puerta", pos: P(AULA.a, 1, 1), abrir: true });
   add({ tipo: "ir", pos: P(AULA.a + 2, 1, 0) });
   add({ tipo: "puerta", pos: P(AULA.a, 1, 0), abrir: false });
+  add({ tipo: "puerta", pos: P(AULA.a, 1, 1), abrir: false });
   add({ tipo: "letrero", pos: P(AULA.a + 1, 3, 0), desde: P(AULA.a + 3, 1, 0), blanco: false,
     bloque: perm("minecraft:darkoak_wall_sign", { facing_direction: FACING[frente] }), texto: `§lAULA§r\n${titulo}\n\nClases de IQ` });
-  for (let a = AULA.a + 1; a <= AULA.a + 4; a++) add({ tipo: "camino", pos: P(a, 0, 0), desde: P(a, 1, 1) });
-  for (const b of [-2, 2]) {
-    const desde = P(AULA.a + 3, 1, 0);
-    add({ tipo: "colocar", pos: P(AULA.a + 2, 1, b), desde, bloque: "minecraft:oak_fence" });
-    add({ tipo: "colocar", pos: P(AULA.a + 2, 2, b), desde, bloque: "minecraft:oak_fence" });
-    add({ tipo: "colocar", pos: P(AULA.a + 2, 3, b), desde, bloque: perm("minecraft:lantern", { hanging: false }) });
+  for (let a = AULA.a + 1; a <= AULA.a + 4; a++) {
+    for (const b of [0, 1]) add({ tipo: "camino", pos: P(a, 0, b), desde: P(a, 1, b === 0 ? -1 : 2) });
+  }
+  // Antorchas en la pared, a los lados de la puerta (nada en el suelo con qué tropezar).
+  for (const b of [-2, 3]) {
+    add({ tipo: "colocar", pos: P(AULA.a + 1, 3, b), desde: P(AULA.a + 3, 1, b),
+      bloque: perm("minecraft:torch", { torch_facing_direction: frente }) });
   }
   add({ tipo: "celebrar", pos: P(AULA.a + 4, 1, 0), mira: P(0, 3, 0) });
 
   // Puntos que usan el maestro y los alumnos.
   const asientos = [];
+  // Dos carriles: los de la izquierda entran y salen por la hoja b = 0; los de la
+  // derecha, por la hoja b = 1.
+  const carril = (b) => (b > 0 ? 1 : 0);
   for (const fila of FILAS) {
     for (const b of [-1, 1, -3, 3]) {
       const a = fila + 1;
       const pasillo = pasilloDe(b);
+      const k = carril(b);
       asientos.push({
         silla: P(a, 1, b),
-        ruta: [P(AULA.a + 2, 1, 0), P(5, 1, 0), P(5, 1, pasillo), P(a, 1, pasillo)],
+        ruta: [P(AULA.a + 2, 1, k), P(5, 1, k), P(5, 1, pasillo), P(a, 1, pasillo)],
+        dentro: P(5, 1, k), fuera: P(AULA.a + 2, 1, k),
       });
     }
   }
-  for (const b of [-3, -1, 1, 3]) asientos.push({ dePie: P(5, 1, b), ruta: [P(AULA.a + 2, 1, 0), P(5, 1, 0)] });
+  // De pie al fondo, pegados a las paredes (el centro queda libre para pasar).
+  for (const b of [-4, -3, 3, 4]) {
+    const k = carril(b);
+    asientos.push({ dePie: P(5, 1, b), ruta: [P(AULA.a + 2, 1, k), P(5, 1, k)], dentro: P(5, 1, k), fuera: P(AULA.a + 2, 1, k) });
+  }
   return {
     pasos,
     puntos: {

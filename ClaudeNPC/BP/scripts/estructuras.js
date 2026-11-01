@@ -116,8 +116,13 @@ export function puertaDe(dimension, e) {
       };
     }
   }
-  puertas.set(k, { puerta, hasta: now() + (puerta ? 600 : 100) });
+  puertas.set(k, { puerta, hasta: now() + (puerta ? 600 : 40) });
   return puerta;
+}
+
+// Al poner o quitar una puerta en una obra, se vuelve a buscar (así la ruta la usa ya).
+export function olvidarPuertas() {
+  puertas.clear();
 }
 
 // ¿El bloque "p" está dentro de otra obra registrada (hasta sus paredes)?

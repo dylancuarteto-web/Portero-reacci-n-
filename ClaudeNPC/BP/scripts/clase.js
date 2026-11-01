@@ -174,8 +174,8 @@ export function tickAlumno(npc, s) {
 function rutaSalida(c) {
   const aula = c.sesion.aula;
   const P = aula.puntos;
-  const fuera = P.puertaFuera;
-  const dentro = P.puertaDentro;
+  const fuera = c.asiento.fuera ?? P.puertaFuera; // cada uno sale por su hoja de la puerta doble
+  const dentro = c.asiento.dentro ?? P.puertaDentro;
   const fx = Math.sign(fuera.x - dentro.x);
   const fz = Math.sign(fuera.z - dentro.z);
   const lado = rand(-3, 3);

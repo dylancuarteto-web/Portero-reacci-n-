@@ -238,11 +238,17 @@ export function escalar(npc, d) {
   saltoGuiado(npc, { x: x + 0.5, y, z: z + 0.5 }, { ticks: bajo ? 6 : 7, alto: bajo ? 0.04 : 0.22, retraso: 0.3 });
 }
 
+// Mira un abanico delante (hasta 1,4 bloques, un poco a cada lado): así abre la puerta
+// antes de chocar con ella, aunque llegue en diagonal.
 function abrirPuertas(npc, d) {
-  for (const [lejos, alto] of [[0, 0.3], [0.45, 0.3], [0.9, 0.3], [0.45, 1.3]]) {
-    if (abrirPaso(npc.dimension, delante(npc, d, alto, lejos))) {
-      animate(npc, ANIM.colocar);
-      return true;
+  const l = npc.location;
+  for (const lejos of [0.35, 0.85, 1.35]) {
+    for (const lado of [0, -0.35, 0.35]) {
+      const b = blockAt(npc.dimension, { x: l.x + d.x * lejos - d.z * lado, y: l.y + 0.5, z: l.z + d.z * lejos + d.x * lado });
+      if (abrirPaso(npc.dimension, b)) {
+        animate(npc, ANIM.colocar);
+        return true;
+      }
     }
   }
   return false;
@@ -305,7 +311,7 @@ system.runInterval(() => {
         impulse(npc, { x: -v.x * 0.7, y: 0, z: -v.z * 0.7 });
         continue;
       }
-      if (m.tic % 3 === 0 && abrirPuertas(npc, d)) {
+      if (m.tic % 2 === 0 && abrirPuertas(npc, d)) {
         m.control = { ...npc.location };
         m.revision = now();
       }

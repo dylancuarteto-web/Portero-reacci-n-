@@ -53,7 +53,8 @@ export function planEscuela(c, frente, perm, total, profes = [], plaza = true) {
   const losa = perm("minecraft:smooth_stone_slab", { "minecraft:vertical_half": "top" });
   const pilar = perm("minecraft:quartz_pillar", { pillar_axis: "y" });
   const columnas = new Set();
-  for (const b0 of usados) for (const b of [b0 - 5, b0 - 2, b0 + 2, b0 + 5]) columnas.add(b);
+  // Columnas fuera de los dos carriles de la puerta doble (b0 y b0 + 1).
+  for (const b0 of usados) for (const b of [b0 - 5, b0 - 2, b0 + 3, b0 + 5]) columnas.add(b);
 
   // 1. Piso del pórtico (andesita pulida con borde de ladrillo) y plaza delante.
   const fondo = !plaza ? 9 : universidad ? 15 : 12;
@@ -69,9 +70,9 @@ export function planEscuela(c, frente, perm, total, profes = [], plaza = true) {
           : borde ? "minecraft:stone_bricks" : camino ? "minecraft:polished_andesite" : "minecraft:smooth_stone" });
     }
   }
-  // Antes, despeja el pórtico y la plaza (sin tocar los faroles ni el cartel de cada aula).
+  // Antes, despeja el pórtico y la plaza (sin tocar las antorchas ni el cartel de cada aula).
   for (let a = 7; a <= fondo; a++) for (let b = bMin; b <= bMax; b++) for (let h = 1; h <= 4; h++) {
-    const farol = a === 8 && usados.some((b0) => Math.abs(b - b0) === 2);
+    const farol = a === 7 && h === 3 && usados.some((b0) => b === b0 - 2 || b === b0 + 3);
     const cartel = a === 7 && h === 3 && usados.includes(b);
     if (!farol && !cartel) pasos.unshift({ tipo: "quitar", pos: P(a, h, b), desde: desde(Math.min(a + 1, fondo + 1), b) });
   }

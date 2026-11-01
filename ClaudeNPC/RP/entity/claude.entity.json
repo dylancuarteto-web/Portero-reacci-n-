@@ -52,7 +52,8 @@
         "beber": "animation.claudenpc.beber",
         "martillar": "animation.claudenpc.martillar",
         "atornillar": "animation.claudenpc.atornillar",
-        "apretar": "animation.claudenpc.apretar"
+        "apretar": "animation.claudenpc.apretar",
+        "levantar_bloque": "animation.claudenpc.levantar_bloque"
       },
       "scripts": {
         "animate": [

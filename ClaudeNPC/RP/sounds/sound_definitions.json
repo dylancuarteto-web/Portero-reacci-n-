@@ -1,0 +1,35 @@
+{
+  "format_version": "1.20.20",
+  "sound_definitions": {
+    "claudenpc.martillo": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/martillo",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.martillando": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/martillando",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.palanca": {
+      "category": "neutral",
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/palanca",
+          "volume": 0.8,
+          "load_on_low_memory": true
+        }
+      ]
+    }
+  }
+}

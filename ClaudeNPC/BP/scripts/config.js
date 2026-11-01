@@ -82,6 +82,7 @@ export const ANIM = {
   colocar: "animation.claudenpc.colocar",
   beber: "animation.claudenpc.beber",
   martillar: "animation.claudenpc.martillar",
+  levantarBloque: "animation.claudenpc.levantar_bloque",
   atornillar: "animation.claudenpc.atornillar",
   apretar: "animation.claudenpc.apretar",
   colocarAbajo: "animation.claudenpc.colocar_abajo",
@@ -195,13 +196,14 @@ export const ROBOT_CFG = {
   descanso: 24000,
   vista: 48,
   ataqueCada: [36, 64],
-  correrDesde: 10, // si estás más lejos, corre
+  correrDesde: 4, // casi siempre corre (solo camina cuando ya te tiene encima)
+  embestirDesde: 12, // si te alejas más, se lanza hacia ti con los cohetes de la espalda
   // Fases por IQ: el robot empieza con el IQ promedio de sus pilotos (mínimo 500) y gana
   // +200 de IQ al perder un tercio de su vida (y otro tercio): sobrecarga y fase nueva.
   fases: [
-    { iq: 500, nombre: "Prototipo", color: "§b", caminar: 0.2, correr: 0.3, ritmo: 1 },
-    { iq: 700, nombre: "Turbo", color: "§c", caminar: 0.24, correr: 0.36, ritmo: 0.85 },
-    { iq: 900, nombre: "Genio", color: "§6", caminar: 0.26, correr: 0.4, ritmo: 0.7 },
+    { iq: 500, nombre: "Prototipo", color: "§b", caminar: 0.22, correr: 0.34, ritmo: 1 },
+    { iq: 700, nombre: "Turbo", color: "§c", caminar: 0.26, correr: 0.4, ritmo: 0.85 },
+    { iq: 900, nombre: "Genio", color: "§6", caminar: 0.28, correr: 0.45, ritmo: 0.7 },
   ],
 };
 

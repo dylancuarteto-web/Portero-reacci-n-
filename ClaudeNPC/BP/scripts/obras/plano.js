@@ -7,6 +7,7 @@ import { perlaHasta } from "../tacticas.js";
 import {
   animate, blockAt, burst, colocar, distancia, mirarA, now, particleAt, rand, reemplazable, sound,
 } from "../util.js";
+import { olvidarPuertas } from "../estructuras.js";
 import { esNatural } from "./terreno.js";
 import { iniciarTorre } from "./torre.js";
 
@@ -120,6 +121,7 @@ function colocarPaso(npc, paso, retraso) {
     if (!npc.isValid) return;
     if (retraso > 0) animate(npc, paso.pos.y < npc.location.y ? ANIM.colocarAbajo : ANIM.colocar);
     if (!colocar(npc.dimension, paso.pos, paso.bloque, forzar)) return;
+    if (idDe(paso.bloque).endsWith("_door")) olvidarPuertas(); // la ruta ya puede usar esta puerta
     sound(npc, sonidoDe(idDe(paso.bloque)), rand(9, 11) / 10);
     if (paso.tipo === "letrero") system.runTimeout(() => escribirLetrero(npc.dimension, paso.pos, paso.texto ?? "", paso.blanco !== false), 2);
   }, 3 + retraso);
