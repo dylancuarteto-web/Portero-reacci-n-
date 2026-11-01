@@ -215,6 +215,15 @@ export function metralla(robot, jugador) {
   animate(robot, ANIM.robotMetralla);
   sound(robot, "random.anvil_use", 1.7, 0.5);
   const dim = robot.dimension;
+  // El jugador es invulnerable medio segundo después de cada daño: si cada bala hiriera por
+  // separado casi todas se perderían (por eso "no hacía daño"). Las balas que aciertan se
+  // suman y el daño se aplica en ráfagas cada 12 ticks.
+  let acumulado = 0;
+  const aplicar = () => {
+    if (acumulado <= 0 || !jugador.isValid) return;
+    herir(jugador, acumulado, robot, EntityDamageCause.projectile);
+    acumulado = 0;
+  };
   for (let i = 0; i < 22; i++) {
     system.runTimeout(() => {
       if (!robot.isValid || !jugador.isValid) return;
@@ -222,23 +231,24 @@ export function metralla(robot, jugador) {
         robot.setRotation({ x: 0, y: yawHacia(robot.location, jugador.location) });
         const o = bocaMinigun(robot);
         const j = { x: jugador.location.x, y: jugador.location.y + 1, z: jugador.location.z };
-        const dx = j.x - o.x + (Math.random() - 0.5) * 1.8;
-        const dy = j.y - o.y + (Math.random() - 0.5) * 1.1;
-        const dz = j.z - o.z + (Math.random() - 0.5) * 1.8;
+        // Dispersión menor: la mayoría de las balas van al cuerpo.
+        const dx = j.x - o.x + (Math.random() - 0.5) * 0.9;
+        const dy = j.y - o.y + (Math.random() - 0.5) * 0.8;
+        const dz = j.z - o.z + (Math.random() - 0.5) * 0.9;
         const l = Math.hypot(dx, dy, dz) || 1;
         const dir = { x: dx / l, y: dy / l, z: dz / l };
         const choque = dim.getBlockFromRay(o, dir, { maxDistance: 40 });
         let largo = choque ? Math.hypot(choque.block.location.x + 0.5 - o.x, choque.block.location.y + 0.5 - o.y, choque.block.location.z + 0.5 - o.z) : 40;
         const centro = { x: jugador.location.x, y: jugador.location.y + 0.9, z: jugador.location.z };
         const fin = { x: o.x + dir.x * largo, y: o.y + dir.y * largo, z: o.z + dir.z * largo };
-        const acierto = distSegmento(centro, o, fin) < 0.6;
+        const acierto = distSegmento(centro, o, fin) < 0.8;
         if (acierto) largo = Math.min(largo, Math.hypot(centro.x - o.x, centro.y - o.y, centro.z - o.z));
         particleAt(dim, PARTICLES.fogonazo, o);
         trazadora(dim, o, dir, largo);
         if (i % 2 === 0) particleAt(dim, PARTICLES.casquillo, punto(robot, 1.6, 1.9, 3.4));
         soundAt(dim, o, "random.explode", 2.2, 0.16);
         if (acierto) {
-          herir(jugador, 1.5, robot, EntityDamageCause.projectile);
+          acumulado += 0.8;
           particleAt(dim, PARTICLES.bloqueo, centro);
         } else if (choque) {
           particleAt(dim, PARTICLES.polvo, { x: o.x + dir.x * largo, y: o.y + dir.y * largo, z: o.z + dir.z * largo });
@@ -246,6 +256,7 @@ export function metralla(robot, jugador) {
       } catch {
         // Sin bala.
       }
+      if (i % 6 === 5 || i === 21) aplicar(); // ráfaga de daño (acierte o no esta bala)
     }, 8 + i * 2);
   }
   return 8 + 22 * 2 + 8;

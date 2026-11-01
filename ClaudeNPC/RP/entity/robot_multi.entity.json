@@ -1,0 +1,55 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:robot_multi",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/robot"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.robot_multi"
+      },
+      "animations": {
+        "caminar": "animation.claudenpc.multi.caminar",
+        "reposo": "animation.claudenpc.multi.reposo",
+        "volar": "animation.claudenpc.multi.volar",
+        "taladrar": "animation.claudenpc.multi.taladrar",
+        "colocar": "animation.claudenpc.multi.colocar",
+        "escanear": "animation.claudenpc.multi.escanear",
+        "apagado": "animation.claudenpc.multi.apagado",
+        "ctrl_jets": "controller.animation.claudenpc.multi.jets"
+      },
+      "particle_effects": {
+        "llama": "claudenpc:llama_misil",
+        "humo": "claudenpc:humo_misil"
+      },
+      "scripts": {
+        "animate": [
+          {
+            "caminar": "!query.property('claudenpc:volando') && !query.property('claudenpc:apagado')"
+          },
+          {
+            "volar": "query.property('claudenpc:volando')"
+          },
+          {
+            "reposo": "!query.property('claudenpc:apagado')"
+          },
+          {
+            "apagado": "query.property('claudenpc:apagado')"
+          },
+          "ctrl_jets"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_multi"
+      ],
+      "spawn_egg": {
+        "base_color": "#969CA6",
+        "overlay_color": "#D97757"
+      }
+    }
+  }
+}

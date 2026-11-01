@@ -62,9 +62,9 @@ export function tickTorre(npc, state) {
   const celda = { x: p.x, y: base, z: p.z };
   let puesto = false;
   saltoGuiado(npc, { x: cx, y: base + 1, z: cz }, {
-    ticks: 7, alto: 0.2, retraso: 0, mirar: { x: 80, y: yaw },
+    ticks: 5, alto: 0.2, retraso: 0, mirar: { x: 80, y: yaw },
     enTick(j, pos) {
-      if (puesto || j.t < 3 || pos.y < base + 1) return;
+      if (puesto || j.t < 2 || pos.y < base + 1) return;
       puesto = true;
       if (!falla && colocar(dim, celda, o.bloque)) {
         o.puestos++;
@@ -84,6 +84,7 @@ export function tickTorre(npc, state) {
       }
     },
   });
-  state.ocupadoHasta = now() + 7 + rand(1, 3) - Math.round(nivel(state) * 2) - (nt >= 1 ? 2 : 0);
+  // Rápido, como un jugador que hace "pillar up": unos 3 bloques por segundo.
+  state.ocupadoHasta = now() + Math.max(4, 5 + rand(0, 2) - Math.round(nivel(state) * 2) - (nt >= 1 ? 1 : 0));
   return false;
 }

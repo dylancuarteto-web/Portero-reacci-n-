@@ -1431,6 +1431,49 @@ def robot_texture(fase=0):
     return img
 
 
+def multi_geometry():
+    """Robot multi: robot constructor del tamaño de un Claude grande, con visor cian,
+    antena, mochila con propulsores, taladro en la mano derecha y pinza en la izquierda.
+    Mira hacia -z. Usa la textura del robot de los Claudes."""
+    bones = [bone("root", [0, 0, 0])]
+    for lado, sx in (("der", -1), ("izq", 1)):
+        def c(cb):
+            return cb if sx < 0 else espejo_x(cb)
+        bones.append(bone(f"pierna_{lado}", [3 * sx, 12, 0], "root", [
+            c(cubo([-5, 3, -2.5], [4, 9, 5], north="metal", resto="metal_osc")),
+            c(cubo([-5.5, 0, -3.5], [5, 3, 6.5], up="peligro", resto="metal_osc"))]))
+    torso = bone("torso", [0, 12, 0], "root", [
+        cubo([-6, 12, -4], [12, 13, 8], north="naranja", resto="metal"),
+        cubo([-3, 16, -4.6], [6, 6, 0.6], resto="emblema"),
+        cubo([-5, 23, -4.4], [10, 1.2, 0.4], resto="cian"),
+        cubo([-5, 13, 4], [10, 10, 4], resto="metal_osc"),
+        cubo([-4, 15, 7.8], [3, 6, 0.4], resto="tubo"),
+        cubo([1, 15, 7.8], [3, 6, 0.4], resto="tubo")])
+    torso["locators"] = {"jet_der": [-2.5, 13, 8], "jet_izq": [2.5, 13, 8]}
+    bones.append(torso)
+    cabeza = bone("cabeza", [0, 25, 0], "torso", [
+        cubo([-4.5, 25, -4.5], [9, 8, 9], north="metal", resto="metal"),
+        cubo([-3.5, 27.5, -4.9], [7, 2.5, 0.4], resto="cian"),
+        cubo([-0.5, 33, -0.5], [1, 4, 1], resto="metal_osc"),
+        cubo([-1, 37, -1], [2, 2, 2], resto="rojo")])
+    cabeza["locators"] = {"visor": [0, 28.5, -5.2]}
+    bones.append(cabeza)
+    bones.append(bone("brazo_der", [-7, 23, 0], "torso", [cubo([-9.5, 13, -2], [3.5, 10, 4], north="naranja", resto="metal")]))
+    bones.append(bone("taladro", [-7.75, 13, 0], "brazo_der", [
+        cubo([-9.25, 9, -1.5], [3, 4, 3], resto="metal_osc"),
+        cubo([-8.75, 6, -1], [2, 3, 2], down="canon", resto="metal"),
+        cubo([-8.25, 3.5, -0.5], [1, 2.5, 1], resto="metal")]))
+    bones.append(bone("brazo_izq", [7, 23, 0], "torso", [cubo([6, 13, -2], [3.5, 10, 4], north="naranja", resto="metal")]))
+    bones.append(bone("pinza", [7.75, 13, 0], "brazo_izq", [
+        cubo([6.5, 10, -1.75], [2.5, 3, 3.5], resto="metal_osc"),
+        cubo([6.75, 7, -1.75], [0.8, 3, 1], resto="metal"),
+        cubo([6.75, 7, 0.75], [0.8, 3, 1], resto="metal")]))
+    return {"format_version": "1.16.0", "minecraft:geometry": [{
+        "description": {"identifier": "geometry.claudenpc.robot_multi", "texture_width": 128, "texture_height": 128,
+                        "visible_bounds_width": 2.5, "visible_bounds_height": 3.5, "visible_bounds_offset": [0, 1.5, 0]},
+        "bones": bones}]}
+
+
 def puno_geometry():
     """Antebrazo izquierdo del robot que sale volando (mira hacia -z)."""
     return {"format_version": "1.16.0", "minecraft:geometry": [{
@@ -1589,6 +1632,34 @@ def robot_animations():
             "hombro_der": {"scale": k((0, [0.01, 0.01, 0.01]), (0.6, [0.01, 0.01, 0.01]), (1.0, [1.1, 1.1, 1.1]), (1.2, [1, 1, 1]))},
             "hombro_izq": {"scale": k((0, [0.01, 0.01, 0.01]), (0.7, [0.01, 0.01, 0.01]), (1.1, [1.1, 1.1, 1.1]), (1.3, [1, 1, 1]))},
             "cabina": {"scale": k((0, [0.01, 0.01, 0.01]), (0.9, [0.01, 0.01, 0.01]), (1.4, [1.1, 1.1, 1.1]), (1.6, [1, 1, 1]))}}},
+        # Robot multi: camina (o flota con los propulsores), taladra, coloca, escanea y se apaga.
+        "animation.claudenpc.multi.caminar": {"loop": True, "bones": {
+            "pierna_der": {"rotation": [f"math.sin({paso}) * 30 * {fuerza}", 0, 0]},
+            "pierna_izq": {"rotation": [f"-math.sin({paso}) * 30 * {fuerza}", 0, 0]},
+            "brazo_der": {"rotation": [f"-math.sin({paso}) * 20 * {fuerza}", 0, 0]},
+            "brazo_izq": {"rotation": [f"math.sin({paso}) * 20 * {fuerza}", 0, 0]}}},
+        "animation.claudenpc.multi.reposo": {"loop": True, "bones": {
+            "cabeza": {"rotation": [0, "math.sin(query.life_time * 40) * 12", 0]},
+            "torso": {"position": [0, "math.sin(query.life_time * 120) * 0.3", 0]}}},
+        "animation.claudenpc.multi.volar": {"loop": True, "bones": {
+            "pierna_der": {"rotation": [12, 0, 4]}, "pierna_izq": {"rotation": [12, 0, -4]},
+            "brazo_der": {"rotation": [-10, 0, 25]}, "brazo_izq": {"rotation": [-10, 0, -25]},
+            "torso": {"rotation": [8, 0, 0], "position": [0, "math.sin(query.life_time * 300) * 0.6", 0]}}},
+        "animation.claudenpc.multi.taladrar": {"animation_length": 0.6, "bones": {
+            "brazo_der": {"rotation": k((0, Z), (0.15, [-85, 0, 0]), (0.5, [-85, 0, 0]), (0.6, Z))},
+            "taladro": {"rotation": [0, "query.anim_time * 2200", 0]},
+            "torso": {"rotation": k((0, Z), (0.15, [0, -10, 0]), (0.6, Z))}}},
+        "animation.claudenpc.multi.colocar": {"animation_length": 0.5, "bones": {
+            "brazo_izq": {"rotation": k((0, Z), (0.15, [-90, 0, 0]), (0.35, [-75, 0, 0]), (0.5, Z))},
+            "pinza": {"scale": k((0, [1, 1, 1]), (0.2, [1, 1.2, 1]), (0.35, [1, 0.8, 1]), (0.5, [1, 1, 1]))}}},
+        "animation.claudenpc.multi.escanear": {"animation_length": 2.0, "bones": {
+            "cabeza": {"rotation": k((0, Z), (0.5, [20, -45, 0]), (1.0, [20, 45, 0]), (1.5, [20, -45, 0]), (2.0, Z))},
+            "brazo_izq": {"rotation": k((0, Z), (0.3, [-60, 0, 0]), (1.7, [-60, 0, 0]), (2.0, Z))}}},
+        "animation.claudenpc.multi.apagado": {"loop": "hold_on_last_frame", "animation_length": 1.0, "bones": {
+            "cabeza": {"rotation": k((0, Z), (1.0, [35, 0, 0]))},
+            "torso": {"rotation": k((0, Z), (1.0, [18, 0, 0]))},
+            "brazo_der": {"rotation": k((0, Z), (1.0, [10, 0, 8]))},
+            "brazo_izq": {"rotation": k((0, Z), (1.0, [10, 0, -8]))}}},
         "animation.claudenpc.puno.orientar": {"loop": True, "bones": {
             "puno": {"rotation": ["query.target_x_rotation", 0, "query.life_time * 900"]}}},
         "animation.claudenpc.misil.orientar": {"loop": True, "bones": {
@@ -1685,6 +1756,8 @@ def render_controllers():
             "materials": [{"*": "Material.default"}, {"cupula": "Material.cristal"}],
             "part_visibility": [{"*": True}, {"antebrazo_izq": "!query.property('claudenpc:sin_puno')"},
                                 {"laser_izq": "!query.property('claudenpc:sin_puno')"}]},
+        "controller.render.claudenpc_multi": {
+            "geometry": "Geometry.default", "textures": ["Texture.default"], "materials": [{"*": "Material.default"}]},
         "controller.render.claudenpc_aura": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}, {"brillo*": "Material.brillo"}]},
@@ -1794,6 +1867,19 @@ def client_entities():
                                 "reposo", {"puno_espera": "query.property('claudenpc:sin_puno')"},
                                 {"alarma": "query.property('claudenpc:alarma')"}, "ctrl_vapor", "ctrl_fase"]},
         "render_controllers": ["controller.render.claudenpc_robot"]}}})
+    write_json(RP / "entity/robot_multi.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:robot_multi",
+        "materials": {"default": "entity_emissive_alpha"},
+        "textures": {"default": "textures/entity/claudenpc/robot"},
+        "geometry": {"default": "geometry.claudenpc.robot_multi"},
+        "animations": {n: f"animation.claudenpc.multi.{n}" for n in ("caminar", "reposo", "volar", "taladrar", "colocar", "escanear", "apagado")}
+                      | {"ctrl_jets": "controller.animation.claudenpc.multi.jets"},
+        "particle_effects": {"llama": "claudenpc:llama_misil", "humo": "claudenpc:humo_misil"},
+        "scripts": {"animate": [{"caminar": "!query.property('claudenpc:volando') && !query.property('claudenpc:apagado')"},
+                                {"volar": "query.property('claudenpc:volando')"}, {"reposo": "!query.property('claudenpc:apagado')"},
+                                {"apagado": "query.property('claudenpc:apagado')"}, "ctrl_jets"]},
+        "render_controllers": ["controller.render.claudenpc_multi"],
+        "spawn_egg": {"base_color": "#969CA6", "overlay_color": "#D97757"}}}})
     write_json(RP / "entity/puno.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:puno",
         "materials": {"default": "entity_emissive_alpha"},
@@ -1823,6 +1909,11 @@ def client_entities():
             "genio": {"particle_effects": [{"effect": "genio", "locator": "nucleo"}, {"effect": "turbo", "locator": "escape_der"},
                                            {"effect": "turbo", "locator": "escape_izq"}],
                       "transitions": [{"normal": "query.property('claudenpc:fase') == 0"}, {"turbo": "query.property('claudenpc:fase') == 1"}]}}},
+        "controller.animation.claudenpc.multi.jets": {"initial_state": "suelo", "states": {
+            "suelo": {"transitions": [{"vuela": "query.property('claudenpc:volando')"}]},
+            "vuela": {"particle_effects": [{"effect": "llama", "locator": "jet_der"}, {"effect": "llama", "locator": "jet_izq"},
+                                           {"effect": "humo", "locator": "jet_der"}],
+                      "transitions": [{"suelo": "!query.property('claudenpc:volando')"}]}}},
         "controller.animation.claudenpc.puno.fuego": {"initial_state": "vuela", "states": {"vuela": {
             "particle_effects": [{"effect": "llama", "locator": "fuego"}, {"effect": "humo", "locator": "fuego"}]}}},
         "controller.animation.claudenpc.misil.humo": {"initial_state": "vuela", "states": {"vuela": {
@@ -1851,6 +1942,7 @@ def main():
     robot_texture(1).save(tex / "robot_turbo.png")
     robot_texture(2).save(tex / "robot_genio.png")
     write_json(RP / "models/entity/puno.geo.json", puno_geometry())
+    write_json(RP / "models/entity/robot_multi.geo.json", multi_geometry())
     misil_texture().save(tex / "misil.png")
     eco_skin().save(tex / "eco.png")
     reflejo_skin().save(tex / "reflejo.png")

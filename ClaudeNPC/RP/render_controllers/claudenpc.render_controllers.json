@@ -120,6 +120,17 @@
         }
       ]
     },
+    "controller.render.claudenpc_multi": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ]
+    },
     "controller.render.claudenpc_aura": {
       "geometry": "Geometry.default",
       "textures": [

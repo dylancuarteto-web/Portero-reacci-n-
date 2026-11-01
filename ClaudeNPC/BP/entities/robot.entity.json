@@ -161,9 +161,10 @@
               "subject": "other",
               "value": "player"
             },
-            "max_dist": 48
+            "max_dist": 96
           }
-        ]
+        ],
+        "persist_time": 30
       },
       "minecraft:behavior.melee_box_attack": {
         "priority": 2,
@@ -177,6 +178,10 @@
       "minecraft:behavior.look_at_player": {
         "priority": 7,
         "look_distance": 16
+      },
+      "minecraft:follow_range": {
+        "value": 96,
+        "max": 128
       }
     }
   }

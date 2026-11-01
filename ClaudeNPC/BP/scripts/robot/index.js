@@ -24,7 +24,7 @@ import {
 
 export const robots = new Map(); // id del robot → estado
 
-function objetivo(e) {
+function cercano(e) {
   try {
     const lista = e.dimension.getPlayers({ location: e.location, maxDistance: ROBOT_CFG.vista,
       excludeGameModes: [GameMode.Creative, GameMode.Spectator] });
@@ -32,6 +32,31 @@ function objetivo(e) {
   } catch {
     return undefined;
   }
+}
+
+// Memoria de objetivo: sigue al mismo jugador aunque se aleje (hasta ROBOT_CFG.memoria
+// bloques y un minuto sin verlo); solo cambia si otro está mucho más cerca.
+function objetivo(r) {
+  const e = r.e;
+  const o = r.objetivo;
+  let sigue = false;
+  try {
+    sigue = !!o?.isValid && o.dimension.id === e.dimension.id && distancia(o.location, e.location) < ROBOT_CFG.memoria
+      && o.getGameMode() !== GameMode.Creative && o.getGameMode() !== GameMode.Spectator;
+  } catch {
+    sigue = false;
+  }
+  const otro = cercano(e);
+  if (sigue && (!otro || otro.id === o.id || distancia(o.location, e.location) < distancia(otro.location, e.location) + 12)) {
+    if (distancia(o.location, e.location) <= ROBOT_CFG.vista) r.vistoEn = now();
+    if (now() - (r.vistoEn ?? now()) < 1200) return o;
+  }
+  if (otro) {
+    if (otro.id !== o?.id) avisar(e, "§b§lRobot de los Claudes:§r §c¡objetivo fijado!", 32);
+    r.objetivo = otro;
+    r.vistoEn = now();
+  }
+  return otro;
 }
 
 function avisar(e, texto, radio = 48) {
@@ -346,7 +371,7 @@ function atacar(r, j) {
   const opciones = [];
   if (d < 7) opciones.push({ f: () => pisoton(e), p: 3 });
   if (d > ROBOT_CFG.embestirDesde) opciones.push({ f: () => embestida(r, j), p: d > 20 ? 6 : 3.5 }); // ¡no te escapas!
-  if (d > 6) opciones.push({ f: () => lanzarMisiles(e, j, rand(4, 6) + fase), p: 3 });
+  if (d > 6 && d < 60) opciones.push({ f: () => lanzarMisiles(e, j, rand(4, 6) + fase), p: 3 });
   if (d > 4 && d < 32) opciones.push({ f: () => laser(e, j), p: 2 });
   if (d > 4 && d < 26) opciones.push({ f: () => metralla(e, j), p: 2.5 });
   if (fase >= 1) {
@@ -419,7 +444,7 @@ system.runInterval(() => {
         if (resta <= 0) terminar(r, "tiempo");
         continue;
       }
-      const j = objetivo(e);
+      const j = objetivo(r);
       if (r.tic % 100 === 0 && j) {
         const s = Math.ceil(resta / 20);
         try {

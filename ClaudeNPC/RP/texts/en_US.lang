@@ -13,3 +13,4 @@ action.interact.claudenpc.hablar=Talk
 action.interact.claudenpc.habilidades=Skills
 entity.claudenpc:reflejo.name=Claude's Reflection
 entity.claudenpc:puno.name=Rocket Fist
+entity.claudenpc:robot_multi.name=Multi Robot

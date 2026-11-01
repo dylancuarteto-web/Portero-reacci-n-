@@ -11,8 +11,9 @@ import { LECCIONES, LECCIONES_GENIOS } from "./lecciones.js";
 import { caminarA, caminando, detener, velocidad } from "./movimiento.js";
 import { candidatosAlrededor, frenteHacia, sitioPlano } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
+import { encargarTerreno, multis, progresoTerreno } from "./multi/index.js";
 import { ejecutarPlano, escribirLetrero } from "./obras/plano.js";
-import { planTerreno, rectangulo } from "./obras/terreno.js";
+import { bloquesDe, planTerreno, rectangulo } from "./obras/terreno.js";
 import { AULA, planAula } from "./planes/aula_plano.js";
 import { centroAula, ladosAula, nombreEscuela, planEscuela } from "./planes/escuela_plano.js";
 import {
@@ -373,15 +374,16 @@ function empezarFachada(e, m) {
   const salvo = (p) => dentroDeOtra(p, deLaEscuela);
   m.fachadaNombre = plano.nombre;
   m.obraAula = undefined;
-  registrar("proyecto", { x: centroPlaza.x, y: principal.y, z: centroPlaza.z, r: 13 });
-  m.fase = "fachada";
   // Aplana el frente (pórtico y plaza) y después construye.
   const area = rectangulo(principal, frente, plano.area.a0, plano.area.a1, plano.area.b0, plano.area.b1);
+  // Se registra con su rectángulo exacto (antes era un cuadrado que tapaba las aulas).
+  registrar("proyecto", { x: centroPlaza.x, y: principal.y, z: centroPlaza.z, r: 13, rect: area, alto: 13 });
+  m.fase = "fachada";
   const turno = (m.turnoObra = (m.turnoObra ?? 0) + 1);
   planTerreno(e.dimension, area, principal.y, (terreno) => {
     if (m.turnoObra !== turno) return;
-    m.estudio = nuevoEstudio(e.dimension, area, principal.y, terreno);
-    m.obraAula = { c: plaza, plan: [...terreno, ...plano.pasos], i: 0, terreno: terreno.length, lejos: 30, salvo,
+    m.estudio = undefined;
+    m.obraAula = { c: plaza, plan: [...plano.pasos], i: 0, terreno: 0, lejos: 30, salvo,
       animCelebrar: ANIM.maestroAplaudir,
       pararse: (pos) => {
         const dx = pos.x - principal.x;
@@ -389,6 +391,8 @@ function empezarFachada(e, m) {
         const b = Math.round(-dx * f.z + dz * f.x);
         return centro(P(plano.area.a1, 1, b)); // al borde de la plaza, lejos de bancas y columnas
       } };
+    const interiorF = rectangulo(principal, frente, plano.area.a0, plano.area.a1 - 1, plano.area.b0 + 1, plano.area.b1 - 1);
+    encargar(m, terreno, { area, interior: interiorF, y: principal.y, plan: plano.pasos, salvo });
   }, { plan: plano.pasos, salvo, alto: 12, hondo: 5 });
 }
 
@@ -399,6 +403,7 @@ function fachada(e, m) {
     nombre(e, "midiendo el terreno de la escuela");
     return;
   }
+  if (esperarMulti(e, m)) return;
   if (m.estudio) return estudiar(e, m);
   nombre(e, textoObra(o, `la ${m.fachadaNombre.toLowerCase()}`));
   if (!ejecutarPlano(e, m, o)) return;
@@ -536,15 +541,122 @@ function prepararObra(m) {
   const lados = aula.lados ?? {};
   const area = rectangulo(aula.c, aula.frente, -AULA.a - 2, AULA.a + 2, -AULA.b - (lados.izq ? 0 : 2), AULA.b + (lados.der ? 0 : 2));
   const interior = rectangulo(aula.c, aula.frente, -AULA.a, AULA.a, -AULA.b, AULA.b);
-  const salvo = (p) => dentroDeOtra(p, mismaObra("aula", aula.c));
+  const salvo = (p) => dentroDeOtra(p, propiaDelAula(aula));
   const turno = (m.turnoObra = (m.turnoObra ?? 0) + 1);
+  // Un aula nueva: el Robot multi aplana rompiendo TODO lo que estorba dentro de la huella.
+  // Un aula ya terminada que solo se revisa: el maestro arregla el terreno natural él mismo.
+  const nueva = !aula.listo;
   planTerreno(m.e.dimension, area, aula.c.y, (terreno) => {
     if (m.turnoObra !== turno || m.aula !== aula) return; // ya cambió de obra
-    // Un aula ya terminada que solo se revisa no necesita volver a estudiar el terreno.
-    m.estudio = aula.listo ? undefined : nuevoEstudio(m.e.dimension, area, aula.c.y, terreno);
-    m.obraAula = { c: aula.c, plan: [...terreno, ...aula.pasos], i: 0, terreno: terreno.length, pararse: pararseAula(aula),
-      lejos: 18, animCelebrar: ANIM.maestroAplaudir, salvo };
-  }, { interior, plan: aula.pasos, salvo, alto: 14, hondo: 6 });
+    m.estudio = undefined;
+    m.terrenoMulti = undefined;
+    m.obraAula = { c: aula.c, plan: nueva ? [...aula.pasos] : [...terreno, ...aula.pasos], i: 0, terreno: nueva ? 0 : terreno.length,
+      pararse: pararseAula(aula), lejos: 18, animCelebrar: ANIM.maestroAplaudir, salvo };
+    if (!nueva) return;
+    // El terreno lo aplana un Robot multi que arma el maestro (él espera y después construye).
+    const fuera = centro(local(aula, AULA.a + 2, 1, 0));
+    const fuera1 = centro(local(aula, AULA.a + 2, 1, 1));
+    // Justo detrás de la puerta doble (el pasillo entre las sillas y la pared).
+    const dentro1 = centro(local(aula, AULA.a - 1, 1, 0));
+    const dentro2 = centro(local(aula, AULA.a - 1, 1, 1));
+    const medio = (a, b) => ({ x: (a.x + b.x) / 2, y: a.y, z: (a.z + b.z) / 2 });
+    encargar(m, terreno, { area, interior, y: aula.c.y, plan: aula.pasos, salvo, todoAdentro: true,
+      puerta: { fuera: medio(fuera, fuera1), dentro: medio(dentro1, dentro2) } });
+  }, { interior, plan: aula.pasos, salvo, alto: 14, hondo: 6, todoAdentro: nueva });
+}
+
+// Para el aula, no cuentan como "otra obra" ella misma ni la fachada de su propia escuela
+// (que está justo delante: si no, su terreno se quedaba sin aplanar).
+function propiaDelAula(aula) {
+  const f = FRENTES[aula.frente];
+  const plaza = aula.escuela ? { x: aula.escuela.x + f.x * 11, z: aula.escuela.z + f.z * 11 } : undefined;
+  return (e) => (e.tipo === "aula" && e.x === aula.c.x && e.y === aula.c.y && e.z === aula.c.z)
+    || (!!plaza && e.tipo === "proyecto" && e.x === plaza.x && e.z === plaza.z);
+}
+
+// --- Robot multi para el terreno ------------------------------------------------------
+// El maestro arma el robot junto a la obra (martillazos y chispas); el robot localiza el
+// terreno, lo aplana rompiendo todo lo que estorba y después vigila la obra. Si el robot
+// se rompe antes de terminar, el maestro aplana lo que falte él mismo.
+
+function encargar(m, terreno, datos) {
+  m.terrenoMulti = undefined;
+  if (!terreno.length) {
+    m.estudio = undefined;
+    return;
+  }
+  const esperado = bloquesDe(datos.plan); // posición → bloque que va ahí
+  // Lo que había que picar (terreno y despeje del plano): si sigue ahí, el robot lo rompe.
+  const romper = new Set([...terreno, ...datos.plan].filter((p) => p.pos && p.tipo === "quitar").map((p) => `${p.pos.x},${p.pos.y},${p.pos.z}`));
+  m.terrenoMulti = { terreno, datos: { ...datos, esperado, romper }, armado: 0 };
+}
+
+function armarMulti(e, m) {
+  const tm = m.terrenoMulti;
+  // Si ya tiene un robot encendido (el del aula), no arma otro: le da el nuevo trabajo.
+  const viejo = multis.get(m.multiId ?? "");
+  if (viejo?.e?.isValid && !viejo.apagado) tm.armado = 12;
+  tm.armado++;
+  nombre(e, "armando un robot multi");
+  velocidad(e, 0);
+  const dim = e.dimension;
+  const v = e.getViewDirection();
+  tm.sitio ??= { x: Math.floor(e.location.x + v.x * 2), y: Math.floor(e.location.y), z: Math.floor(e.location.z + v.z * 2) };
+  const c = { x: tm.sitio.x + 0.5, y: tm.sitio.y + 1, z: tm.sitio.z + 0.5 };
+  if (tm.armado % 2 === 0) {
+    mirarA(e, c);
+    animate(e, tm.armado % 4 === 0 ? ANIM.maestroSenalar : ANIM.maestroExplicar);
+    soundAt(dim, c, tm.armado % 4 === 0 ? "claudenpc.martillo" : "random.anvil_use", tm.armado % 4 === 0 ? 1 : 1.8, 0.8);
+    particleAt(dim, PARTICLES.chispaCae, c);
+  }
+  if (tm.armado < 12) return;
+  const sigue = () => m.e.isValid && (m.fase === "construir" || m.fase === "fachada");
+  // "obra" es el plano del aula; "plan", el terreno que aplana el robot.
+  const { plan: obra, ...datos } = tm.datos;
+  const r = encargarTerreno(dim, { x: c.x, y: tm.sitio.y, z: c.z },
+    { ...datos, maestroId: e.id, plan: tm.terreno, sigue, obra });
+  if (!r) {
+    // No se pudo: estudia el terreno y lo aplana él mismo.
+    m.obraAula.plan = [...tm.terreno, ...m.obraAula.plan];
+    m.obraAula.terreno = tm.terreno.length;
+    m.estudio = nuevoEstudio(dim, tm.datos.area, tm.datos.y, tm.terreno);
+    m.terrenoMulti = undefined;
+    return;
+  }
+  m.multiId = r.e.id;
+  tm.listoArmar = true;
+  avisar(dim, e.location, `§6${m.titulo}:§r Robot multi, ¡aplana el terreno! Yo espero y después construyo.`, 40);
+}
+
+// Devuelve true mientras el maestro tenga que esperar al robot.
+function esperarMulti(e, m) {
+  const tm = m.terrenoMulti;
+  if (!tm) return false;
+  if (!tm.listoArmar) {
+    armarMulti(e, m);
+    return true;
+  }
+  const r = multis.get(m.multiId);
+  const pr = progresoTerreno(r);
+  if (!pr.vivo) {
+    // El robot ya no está: el maestro aplana lo que falte (lo hecho se salta solo).
+    if (!tm.terminado) {
+      m.obraAula.plan = [...tm.terreno, ...m.obraAula.plan.slice(m.obraAula.i)];
+      m.obraAula.i = 0;
+      m.obraAula.terreno = tm.terreno.length;
+    }
+    m.terrenoMulti = undefined;
+    return false;
+  }
+  if (!pr.listo) {
+    velocidad(e, 0);
+    if (r?.e?.isValid) mirarA(e, { x: r.e.location.x, y: r.e.location.y + 1.5, z: r.e.location.z });
+    nombre(e, pr.localizando ? "esperando: el robot multi localiza el terreno" : `esperando al robot multi (aplanando ${pr.pct}%)`);
+    if (cada(m, "pensarRobot", 120)) animate(e, ANIM.maestroPensar);
+    return true;
+  }
+  tm.terminado = true; // terreno listo: construye mientras el robot vigila
+  return false;
 }
 
 // Texto de la obra: aplanando el terreno, construyendo o revisando.
@@ -562,6 +674,7 @@ function construir(e, m) {
     nombre(e, "midiendo el terreno");
     return;
   }
+  if (esperarMulti(e, m)) return;
   if (m.estudio) return estudiar(e, m);
   nombre(e, textoObra(o, "el aula"));
   if (!ejecutarPlano(e, m, o)) return;

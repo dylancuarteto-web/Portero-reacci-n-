@@ -16,6 +16,8 @@ const NATURAL = new RegExp("^minecraft:(dirt|coarse_dirt|grass_block|podzol|myce
   + "|water|flowing_water|lava|flowing_lava|sculk|sculk_vein|amethyst_block|budding_amethyst|amethyst_cluster"
   + "|[a-z_]*_amethyst_bud|big_dripleaf|small_dripleaf_block|hanging_roots|spore_blossom|sweet_berry_bush)$");
 const ARBOL = /(_log|_leaves|_wood|mushroom_block|mushroom_stem|vine|bamboo|cocoa|bee_nest|azalea)$/;
+// Lo que nunca se rompe, ni siquiera dentro de la obra.
+const NUNCA = /bedrock|barrier|command_block|structure_|jigsaw|end_portal|^minecraft:portal$|end_gateway|reinforced_deepslate|border_block|^minecraft:allow$|^minecraft:deny$|light_block|moving_block|spawner|vault|chest|barrel|shulker|_bed$|^minecraft:bed$/;
 
 export function esNatural(b) {
   return !!b && NATURAL.test(b.typeId);
@@ -30,6 +32,23 @@ export function posicionesDe(plan) {
   return set;
 }
 
+// Igual, con el bloque que va en cada posición (undefined: un sitio para pararse).
+export function bloquesDe(plan) {
+  const mapa = new Map();
+  for (const p of plan) {
+    if (!p.pos || p.tipo === "quitar") continue;
+    const id = typeof p.bloque === "string" ? p.bloque : p.bloque?.type?.id;
+    mapa.set(clave(p.pos.x, p.pos.y, p.pos.z), id);
+  }
+  return mapa;
+}
+
+// ¿Tierra, piedra o un árbol donde la obra pone otra cosa? (estorba: el maestro pondría
+// su bloque solo en un hueco). Lo ya construido (el bloque que va) nunca estorba.
+export function estorbaEnLaObra(b, quiere) {
+  return !!b && !b.isAir && esNatural(b) && !b.isLiquid && b.typeId !== quiere;
+}
+
 /**
  * Calcula, repartido en varios ticks, los pasos para aplanar el área a la altura "y"
  * (el bloque del piso) y llama a listo(pasos): primero picar (de arriba abajo) y
@@ -39,12 +58,14 @@ export function posicionesDe(plan) {
  * @param {{x0:number,x1:number,z0:number,z1:number}} area
  * @param {number} y
  * @param {(pasos:any[])=>void} listo
+ * "todoAdentro": dentro de la huella rompe CUALQUIER bloque que estorbe (no solo terreno
+ * natural): lo usa el Robot multi para el maestro.
  * @param {{interior?:{x0:number,x1:number,z0:number,z1:number}, plan?:any[], salvo?:(p:any)=>boolean,
- *   alto?:number, hondo?:number, relleno?:string}} [opciones]
+ *   alto?:number, hondo?:number, relleno?:string, todoAdentro?:boolean}} [opciones]
  */
 export function planTerreno(dim, area, y, listo, opciones = {}) {
-  const { interior, plan = [], salvo, alto = 12, hondo = 5, relleno = "minecraft:cobblestone" } = opciones;
-  const ocupadas = posicionesDe(plan);
+  const { interior, plan = [], salvo, alto = 12, hondo = 5, relleno = "minecraft:cobblestone", todoAdentro = false } = opciones;
+  const ocupadas = bloquesDe(plan);
   const dentro = (x, z) => !!interior && x >= interior.x0 && x <= interior.x1 && z >= interior.z0 && z <= interior.z1;
   function* trabajo() {
     const picar = [];
@@ -64,9 +85,13 @@ export function planTerreno(dim, area, y, listo, opciones = {}) {
           for (let h = 1; h <= tope; h++) {
             const b = blockAt(dim, { x, y: y + h, z });
             if (!b) break;
-            if (b.isAir || ocupadas.has(clave(x, y + h, z))) continue;
+            if (b.isAir) continue;
+            const k = clave(x, y + h, z);
+            // Dentro de la huella (Robot multi): también la tierra o piedra donde va la obra.
+            if (ocupadas.has(k) && !(todoAdentro && adentro && estorbaEnLaObra(b, ocupadas.get(k)))) continue;
             const planta = reemplazable(b);
-            if (planta ? !adentro : !esNatural(b)) continue;
+            const todo = todoAdentro && adentro && !NUNCA.test(b.typeId);
+            if (!todo && (planta ? !adentro : !esNatural(b))) continue;
             if (h === tope && tope < 32 && ARBOL.test(b.typeId)) tope++; // un árbol: hasta la copa
             picar.push({ tipo: "quitar", pos: { x, y: y + h, z }, terreno: true });
           }

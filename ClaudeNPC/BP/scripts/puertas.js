@@ -1,5 +1,5 @@
 import { Player, system } from "@minecraft/server";
-import { MAESTRO, NPC } from "./config.js";
+import { MAESTRO, MULTI, NPC } from "./config.js";
 import { blockAt, now, soundAt } from "./util.js";
 
 // Puertas y portones: el motor de pasos los abre al llegar a ellos (como un jugador)
@@ -7,7 +7,7 @@ import { blockAt, now, soundAt } from "./util.js";
 // con la mano, así que tampoco las abren los Claudes.
 
 const abiertas = new Map();
-const QUIENES = new Set([NPC, MAESTRO]);
+const QUIENES = new Set([NPC, MAESTRO, MULTI]);
 
 export function esPuerta(b) {
   return !!b && b.typeId.endsWith("_door") && b.typeId !== "minecraft:iron_door";

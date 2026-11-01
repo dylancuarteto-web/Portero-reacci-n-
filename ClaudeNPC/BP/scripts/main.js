@@ -15,6 +15,7 @@ import { aprender, ponerHaciendo } from "./iq.js";
 import "./maestro.js";
 import { revisarRobot } from "./robot/construccion.js";
 import { tickPiloto } from "./robot/index.js";
+import { tickArmador } from "./multi/index.js";
 import { caminarA, caminando, destinoActual, salidaDePozo, seAtasco, velocidad } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
@@ -44,7 +45,8 @@ function quierePelear(npc, s, jugador) {
   if (now() < (s.provocadoHasta ?? 0)) return true;
   if (!s.hostil && s.mina && jugador.location.y - npc.location.y > 6) return false; // está minando y no lo ve
   const radio = s.pers?.radio ?? 20;
-  return d <= radio || (s.hostil && d <= radio + 8);
+  // Una vez que pelea, no te suelta aunque te alejes (te sigue hasta COMBATE.persigue).
+  return d <= radio || (s.hostil && d <= Math.max(radio + 16, COMBATE.persigue));
 }
 
 function cerebro(npc) {
@@ -57,6 +59,12 @@ function cerebro(npc) {
   if (s.robot) return tickPiloto(npc, s);
   vigilarCaida(npc, s);
   if (s.clase) return tickAlumno(npc, s);
+  if (s.multiObra) {
+    // Armando un Robot multi con otro Claude (multi/index.js): deja la pelea un momento.
+    tickArmador(npc, s);
+    pausarRutina(npc, s);
+    return;
+  }
   if (s.robotObra && s.robotObra.fase !== "reunion") {
     // Construyendo el robot: el turno lo maneja robot/construccion.js.
     hostil(npc, s, false);
@@ -65,7 +73,7 @@ function cerebro(npc) {
     return;
   }
   const [jugador] = npc.dimension.getPlayers({
-    location: npc.location, maxDistance: COMBATE.radio, closest: 1,
+    location: npc.location, maxDistance: s.hostil ? COMBATE.persigue : COMBATE.radio, closest: 1,
     excludeGameModes: [GameMode.Creative, GameMode.Spectator],
   });
   const pelea = quierePelear(npc, s, jugador);
@@ -127,6 +135,7 @@ function cerebro(npc) {
   if (pelea) {
     pausarRutina(npc, s);
     s.combateHasta = now() + 40;
+    s.objetivo = jugador;
     ponerHaciendo(npc, s, "§c¡a pelear!");
     tickCombate(npc, s, jugador);
     if (cada(s, "xpPelea", 20)) aprender(npc, s, 0.02); // experiencia por tiempo de pelea

@@ -42,23 +42,37 @@ function todas() {
   return cache;
 }
 
+// Una obra con "rect" (la fachada de la escuela: pórtico y plaza) ocupa exactamente ese
+// rectángulo; las demás, un cuadrado de radio r alrededor de su centro.
+function enCaja(e, x, z) {
+  if (e.rect) return x >= e.rect.x0 && x <= e.rect.x1 && z >= e.rect.z0 && z <= e.rect.z1;
+  return Math.abs(x - e.x) <= e.r && Math.abs(z - e.z) <= e.r;
+}
+
+// Distancia (en planta) de (x, z) a la obra: al borde de su rectángulo o a su centro.
+function distanciaA(e, x, z) {
+  if (!e.rect) return Math.hypot(e.x - x, e.z - z) - e.r;
+  const dx = Math.max(e.rect.x0 - x, 0, x - e.rect.x1);
+  const dz = Math.max(e.rect.z0 - z, 0, z - e.rect.z1);
+  return Math.hypot(dx, dz);
+}
+
 // ¿Este bloque es parte de una casa o un aula de los Claudes?
 export function protegido(p) {
   for (const e of todas()) {
-    if (Math.abs(p.x + 0.5 - (e.x + 0.5)) <= e.r && Math.abs(p.z + 0.5 - (e.z + 0.5)) <= e.r
-      && p.y >= e.y - 1 && p.y <= e.y + 8) return true;
+    if (enCaja(e, p.x, p.z) && p.y >= e.y - 1 && p.y <= e.y + (e.alto ?? 8)) return true;
   }
   return false;
 }
 
 // ¿Hay alguna obra registrada a menos de "distancia" bloques?
 export function ocupado(x, z, distancia) {
-  return todas().some((e) => Math.hypot(e.x - x, e.z - z) < distancia + e.r);
+  return todas().some((e) => distanciaA(e, x, z) < distancia);
 }
 
 // Igual, pero sin contar las obras para las que "salvo(e)" es true (su propia escuela).
 export function ocupadoSalvo(x, z, distancia, salvo) {
-  return todas().some((e) => !salvo(e) && Math.hypot(e.x - x, e.z - z) < distancia + e.r);
+  return todas().some((e) => !salvo(e) && distanciaA(e, x, z) < distancia);
 }
 
 // --- Puertas: para entrar y salir de casas y aulas sin chocar con las paredes --------
@@ -131,6 +145,10 @@ export function dentroDeOtra(p, esPropia) {
   for (const e of todas()) {
     if (esPropia?.(e)) continue;
     if (p.y < e.y - 1 || p.y > e.y + 12) continue;
+    if (e.rect) {
+      if (enCaja(e, p.x, p.z)) return true;
+      continue;
+    }
     const dx = Math.abs(p.x - e.x);
     const dz = Math.abs(p.z - e.z);
     let ax = 4;

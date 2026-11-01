@@ -1658,6 +1658,331 @@
         }
       }
     },
+    "animation.claudenpc.multi.caminar": {
+      "loop": true,
+      "bones": {
+        "pierna_der": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 22) * 30 * math.min(query.modified_move_speed * 1.6, 1)",
+            0,
+            0
+          ]
+        },
+        "pierna_izq": {
+          "rotation": [
+            "-math.sin(query.modified_distance_moved * 22) * 30 * math.min(query.modified_move_speed * 1.6, 1)",
+            0,
+            0
+          ]
+        },
+        "brazo_der": {
+          "rotation": [
+            "-math.sin(query.modified_distance_moved * 22) * 20 * math.min(query.modified_move_speed * 1.6, 1)",
+            0,
+            0
+          ]
+        },
+        "brazo_izq": {
+          "rotation": [
+            "math.sin(query.modified_distance_moved * 22) * 20 * math.min(query.modified_move_speed * 1.6, 1)",
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.multi.reposo": {
+      "loop": true,
+      "bones": {
+        "cabeza": {
+          "rotation": [
+            0,
+            "math.sin(query.life_time * 40) * 12",
+            0
+          ]
+        },
+        "torso": {
+          "position": [
+            0,
+            "math.sin(query.life_time * 120) * 0.3",
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.multi.volar": {
+      "loop": true,
+      "bones": {
+        "pierna_der": {
+          "rotation": [
+            12,
+            0,
+            4
+          ]
+        },
+        "pierna_izq": {
+          "rotation": [
+            12,
+            0,
+            -4
+          ]
+        },
+        "brazo_der": {
+          "rotation": [
+            -10,
+            0,
+            25
+          ]
+        },
+        "brazo_izq": {
+          "rotation": [
+            -10,
+            0,
+            -25
+          ]
+        },
+        "torso": {
+          "rotation": [
+            8,
+            0,
+            0
+          ],
+          "position": [
+            0,
+            "math.sin(query.life_time * 300) * 0.6",
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.multi.taladrar": {
+      "animation_length": 0.6,
+      "bones": {
+        "brazo_der": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              -85,
+              0,
+              0
+            ],
+            "0.50": [
+              -85,
+              0,
+              0
+            ],
+            "0.60": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "taladro": {
+          "rotation": [
+            0,
+            "query.anim_time * 2200",
+            0
+          ]
+        },
+        "torso": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              0,
+              -10,
+              0
+            ],
+            "0.60": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.multi.colocar": {
+      "animation_length": 0.5,
+      "bones": {
+        "brazo_izq": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.15": [
+              -90,
+              0,
+              0
+            ],
+            "0.35": [
+              -75,
+              0,
+              0
+            ],
+            "0.50": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "pinza": {
+          "scale": {
+            "0.00": [
+              1,
+              1,
+              1
+            ],
+            "0.20": [
+              1,
+              1.2,
+              1
+            ],
+            "0.35": [
+              1,
+              0.8,
+              1
+            ],
+            "0.50": [
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.multi.escanear": {
+      "animation_length": 2.0,
+      "bones": {
+        "cabeza": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.50": [
+              20,
+              -45,
+              0
+            ],
+            "1.00": [
+              20,
+              45,
+              0
+            ],
+            "1.50": [
+              20,
+              -45,
+              0
+            ],
+            "2.00": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "brazo_izq": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.30": [
+              -60,
+              0,
+              0
+            ],
+            "1.70": [
+              -60,
+              0,
+              0
+            ],
+            "2.00": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.multi.apagado": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 1.0,
+      "bones": {
+        "cabeza": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "1.00": [
+              35,
+              0,
+              0
+            ]
+          }
+        },
+        "torso": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "1.00": [
+              18,
+              0,
+              0
+            ]
+          }
+        },
+        "brazo_der": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "1.00": [
+              10,
+              0,
+              8
+            ]
+          }
+        },
+        "brazo_izq": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "1.00": [
+              10,
+              0,
+              -8
+            ]
+          }
+        }
+      }
+    },
     "animation.claudenpc.puno.orientar": {
       "loop": true,
       "bones": {

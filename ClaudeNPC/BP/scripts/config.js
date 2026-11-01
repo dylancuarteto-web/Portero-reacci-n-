@@ -9,13 +9,14 @@ export const MISIL = "claudenpc:misil";
 export const ECO = "claudenpc:eco";
 export const REFLEJO = "claudenpc:reflejo";
 export const PUNO = "claudenpc:puno";
+export const MULTI = "claudenpc:robot_multi";
 export const AURA = "claudenpc:aura";
 export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
 // Propiedades de entidad (las ve el paquete de recursos para las posturas).
 export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia", variante: "claudenpc:variante",
   alarma: "claudenpc:alarma", herramienta: "claudenpc:herramienta", fase: "claudenpc:fase", corriendo: "claudenpc:corriendo",
-  sinPuno: "claudenpc:sin_puno" };
+  sinPuno: "claudenpc:sin_puno", volando: "claudenpc:volando", apagado: "claudenpc:apagado" };
 
 // Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
 export const EVENTO = {
@@ -117,6 +118,9 @@ export const ANIM = {
   robotMetralla: "animation.claudenpc.robot.metralla",
   robotPisoton: "animation.claudenpc.robot.pisoton",
   robotGolpe: "animation.claudenpc.robot.golpe",
+  multiTaladrar: "animation.claudenpc.multi.taladrar",
+  multiColocar: "animation.claudenpc.multi.colocar",
+  multiEscanear: "animation.claudenpc.multi.escanear",
   robotGolpe2: "animation.claudenpc.robot.golpe2",
   robotAgacharse: "animation.claudenpc.robot.agacharse",
   robotSalto: "animation.claudenpc.robot.salto",
@@ -151,6 +155,7 @@ export const ARMAS = [
 
 export const COMBATE = {
   radio: 32,              // a qué distancia mira si hay jugadores
+  persigue: 48,           // ya peleando, te sigue hasta esta distancia
   cambioArma: [90, 170],
 };
 
@@ -194,7 +199,8 @@ export const ROBOT_CFG = {
   cantidad: 5,
   duracion: 6000,
   descanso: 24000,
-  vista: 48,
+  vista: 96, // te sigue desde lejos (y te recuerda un rato aunque te alejes más)
+  memoria: 160, // hasta aquí te sigue persiguiendo una vez fijado (un minuto sin verte)
   ataqueCada: [36, 64],
   correrDesde: 4, // casi siempre corre (solo camina cuando ya te tiene encima)
   embestirDesde: 12, // si te alejas más, se lanza hacia ti con los cohetes de la espalda
@@ -205,6 +211,20 @@ export const ROBOT_CFG = {
     { iq: 700, nombre: "Turbo", color: "§c", caminar: 0.26, correr: 0.4, ritmo: 0.85 },
     { iq: 900, nombre: "Genio", color: "§6", caminar: 0.28, correr: 0.45, ritmo: 0.7 },
   ],
+};
+
+// Robot multi: robot constructor de apoyo. Lo arman 2 Claudes cuando no pueden alcanzarte
+// (los demás siguen peleando) o un maestro para que le aplane el terreno.
+export const MULTI_CFG = {
+  costoBloque: 0.35, // % de batería por bloque puesto o quitado en la pelea
+  costoObra: 0.02, // % por bloque aplanando o vigilando la obra de un maestro (es mucho terreno)
+  gastoTick: 0.004, // % por tick encendido en la pelea
+  gastoObra: 0.001, // % por tick encendido trabajando para un maestro
+  alcance: 5.5, // bloques: trabaja a esta distancia sin moverse
+  rapidez: 0.42, // bloques por paso volando (un paso cada 2 ticks)
+  sinAlcance: 100, // ticks sin poder alcanzarte antes de armarlo
+  descanso: 2400, // ticks antes de armar otro en la misma pelea
+  maximo: 3, // robots multi a la vez
 };
 
 // Claude Golden (jefe hostil): a qué distancia te ve, cada cuánto usa un poder
