@@ -10,6 +10,18 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes; `/claudenpc:robot` (con trucos) hace que los Claudes más cercanos (hasta 5, con cualquier IQ) construyan el robot ya.
 5. **Toca a un Claude** (botón "Habilidades" en el celular) para ver qué sabe: cada tema con sus estrellas, la última variante que aprendió y si lo perfecciona o solo lo estudia.
 
+## Novedades de la v7.2: el robot, a lo grande
+
+| Antes | Ahora |
+|---|---|
+| El robot se armaba sin más | **Cinemática de 10 segundos** al llegar a IQ 500: los cinco Claudes sacan **martillo, destornillador y llave inglesa** y arman el robot **pieza por pieza**. Cada pieza aparece primero como un **holograma cian** y luego se materializa con chispas y un destello; los que trabajan arriba vuelan con **botas cohete**. La cámara cambia de plano con **fundidos** (general, piernas, torso y brazos, cabina, encendido), un destello blanco transforma los bloques en el robot y los cinco **se suben de un salto**. Mientras dura, no recibes daño. |
+| Solo caminaba | **Corre** cuando estás lejos (zancada larga, torso inclinado, brazos que van y vienen); cada paso levanta polvo y **hace temblar la cámara**. |
+| Golpe flojo | **Golpe nuevo**: se lanza con todo el cuerpo, alterna el puño izquierdo y un revés con la minigun, y el impacto se siente (onda, chispas, temblor y un buen empujón). |
+| La metralla no salía de la ametralladora | Las balas salen **de la boca de la minigun del brazo derecho** (antes salían del lado izquierdo y más abajo): ráfaga de **balas trazadoras** con fogonazo y **casquillos** que caen; las que fallan levantan polvo donde pegan. |
+| Una sola forma de pelear | **Fases por IQ**: empieza con el IQ promedio de sus pilotos y, al perder un tercio de su vida (y otro tercio), hace una **¡SOBRECARGA DE IQ!** (+200): se detiene, levanta los brazos, todo tiembla, te empuja y **cambia de color**. Cada fase corre más rápido, ataca más seguido y suma habilidades (ver abajo). |
+
+Vista de los modelos: `source/vista_robot.png`.
+
 ## Novedades de la v7.1: escuelas que sí se terminan
 
 | Antes | Ahora |
@@ -162,7 +174,15 @@ Encima del nombre lleva su **IQ** (de 70 a **1000**). Sube cuando te ve construi
 | Pisotón con onda expansiva | Salta cuando pase la onda |
 | Puñetazo si estás cerca | Aléjate |
 
-5. A los 5 minutos suena la **alarma** y se **autodestruye** con una gran explosión (no rompe bloques): aléjate. Los Claudes saltan a tiempo y no construyen otro hasta 20 minutos después. Si lo destruyes antes, deja hierro, redstone, cobre y diamantes.
+5. **Fases por IQ** (el nombre de la barra de jefe muestra el IQ y la fase):
+
+| Fase | IQ | Colores | Habilidades nuevas |
+|---|---|---|---|
+| Prototipo | 500 | naranja con visor cian | misiles, láser, metralla, pisotón y golpe |
+| Turbo | 700 | rojo con visor rojo y fuego por los escapes | **Salto aplastante** (anillos rojos donde vas a estar, salta 9 bloques y cae encima: ¡muévete!), **Puño cohete** (el antebrazo sale volando, te golpea y vuelve) y **Lluvia de tornillos** (marcas rojas en el suelo: sal de ellas) |
+| Genio | 900 | dorado con visor blanco y chispas doradas | **Escudo de energía** (cúpula de hexágonos 6 s: devuelve tus flechas y aguanta la mitad del daño), **Láser giratorio** (un anillo láser a la altura de las rodillas da una vuelta entera: **sáltalo**) e **Imán** (te atrae hacia él y luego pisotea: corre en contra) |
+
+6. A los 5 minutos suena la **alarma** y se **autodestruye** con una gran explosión (no rompe bloques): aléjate. Los Claudes saltan a tiempo y no construyen otro hasta 20 minutos después. Si lo destruyes antes, deja hierro, redstone, cobre y diamantes.
 
 ## Combate
 

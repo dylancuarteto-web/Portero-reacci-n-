@@ -8,12 +8,14 @@ export const ROBOT = "claudenpc:robot";
 export const MISIL = "claudenpc:misil";
 export const ECO = "claudenpc:eco";
 export const REFLEJO = "claudenpc:reflejo";
+export const PUNO = "claudenpc:puno";
 export const AURA = "claudenpc:aura";
 export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
 // Propiedades de entidad (las ve el paquete de recursos para las posturas).
 export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia", variante: "claudenpc:variante",
-  alarma: "claudenpc:alarma" };
+  alarma: "claudenpc:alarma", herramienta: "claudenpc:herramienta", fase: "claudenpc:fase", corriendo: "claudenpc:corriendo",
+  sinPuno: "claudenpc:sin_puno" };
 
 // Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
 export const EVENTO = {
@@ -60,6 +62,12 @@ export const PARTICLES = {
   midas: "claudenpc:midas",
   notas: "claudenpc:notas",
   viento: "claudenpc:viento",
+  holo: "claudenpc:holo",
+  bala: "claudenpc:bala",
+  fogonazo: "claudenpc:fogonazo",
+  casquillo: "claudenpc:casquillo",
+  escudoHex: "claudenpc:escudo_hex",
+  tornillo: "claudenpc:tornillo",
 };
 
 export const ANIM = {
@@ -73,6 +81,9 @@ export const ANIM = {
   lanzar: "animation.claudenpc.lanzar",
   colocar: "animation.claudenpc.colocar",
   beber: "animation.claudenpc.beber",
+  martillar: "animation.claudenpc.martillar",
+  atornillar: "animation.claudenpc.atornillar",
+  apretar: "animation.claudenpc.apretar",
   colocarAbajo: "animation.claudenpc.colocar_abajo",
   crafteo: "animation.claudenpc.crafteo",
   minar: "animation.claudenpc.minar",
@@ -105,6 +116,14 @@ export const ANIM = {
   robotMetralla: "animation.claudenpc.robot.metralla",
   robotPisoton: "animation.claudenpc.robot.pisoton",
   robotGolpe: "animation.claudenpc.robot.golpe",
+  robotGolpe2: "animation.claudenpc.robot.golpe2",
+  robotAgacharse: "animation.claudenpc.robot.agacharse",
+  robotSalto: "animation.claudenpc.robot.salto",
+  robotPuno: "animation.claudenpc.robot.puno",
+  robotGiro: "animation.claudenpc.robot.giro",
+  robotIman: "animation.claudenpc.robot.iman",
+  robotSobrecarga: "animation.claudenpc.robot.sobrecarga",
+  robotEscudo: "animation.claudenpc.robot.escudo",
   robotEnsamblaje: "animation.claudenpc.robot.ensamblaje",
   pilotar: "animation.claudenpc.pilotar",
   maestroLeer: "animation.claudenpc.maestro.leer",
@@ -176,6 +195,14 @@ export const ROBOT_CFG = {
   descanso: 24000,
   vista: 48,
   ataqueCada: [36, 64],
+  correrDesde: 10, // si estás más lejos, corre
+  // Fases por IQ: el robot empieza con el IQ promedio de sus pilotos (mínimo 500) y gana
+  // +200 de IQ al perder un tercio de su vida (y otro tercio): sobrecarga y fase nueva.
+  fases: [
+    { iq: 500, nombre: "Prototipo", color: "§b", caminar: 0.2, correr: 0.3, ritmo: 1 },
+    { iq: 700, nombre: "Turbo", color: "§c", caminar: 0.24, correr: 0.36, ritmo: 0.85 },
+    { iq: 900, nombre: "Genio", color: "§6", caminar: 0.26, correr: 0.4, ritmo: 0.7 },
+  ],
 };
 
 // Claude Golden (jefe hostil): a qué distancia te ve, cada cuánto usa un poder

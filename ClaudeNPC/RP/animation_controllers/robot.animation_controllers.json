@@ -18,6 +18,82 @@
         }
       }
     },
+    "controller.animation.claudenpc.robot.fase": {
+      "initial_state": "normal",
+      "states": {
+        "normal": {
+          "transitions": [
+            {
+              "turbo": "query.property('claudenpc:fase') == 1"
+            },
+            {
+              "genio": "query.property('claudenpc:fase') >= 2"
+            }
+          ]
+        },
+        "turbo": {
+          "particle_effects": [
+            {
+              "effect": "turbo",
+              "locator": "escape_der"
+            },
+            {
+              "effect": "turbo",
+              "locator": "escape_izq"
+            }
+          ],
+          "transitions": [
+            {
+              "normal": "query.property('claudenpc:fase') == 0"
+            },
+            {
+              "genio": "query.property('claudenpc:fase') >= 2"
+            }
+          ]
+        },
+        "genio": {
+          "particle_effects": [
+            {
+              "effect": "genio",
+              "locator": "nucleo"
+            },
+            {
+              "effect": "turbo",
+              "locator": "escape_der"
+            },
+            {
+              "effect": "turbo",
+              "locator": "escape_izq"
+            }
+          ],
+          "transitions": [
+            {
+              "normal": "query.property('claudenpc:fase') == 0"
+            },
+            {
+              "turbo": "query.property('claudenpc:fase') == 1"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.claudenpc.puno.fuego": {
+      "initial_state": "vuela",
+      "states": {
+        "vuela": {
+          "particle_effects": [
+            {
+              "effect": "llama",
+              "locator": "fuego"
+            },
+            {
+              "effect": "humo",
+              "locator": "fuego"
+            }
+          ]
+        }
+      }
+    },
     "controller.animation.claudenpc.misil.humo": {
       "initial_state": "vuela",
       "states": {

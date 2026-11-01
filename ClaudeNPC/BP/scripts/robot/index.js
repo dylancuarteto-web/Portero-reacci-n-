@@ -1,20 +1,26 @@
-import { GameMode, ItemStack, system, world } from "@minecraft/server";
+import { EntityDamageCause, GameMode, ItemStack, Player, system, world } from "@minecraft/server";
 import { ANIM, DIMENSIONES, MODIFICA_MUNDO, PARTICLES, PROP, ROBOT, ROBOT_CFG } from "../config.js";
 import { estados } from "../estado.js";
 import { protegido } from "../estructuras.js";
 import { ponerHaciendo } from "../iq.js";
 import { IRROMPIBLES } from "../obras/excavar.js";
+import { velocidad } from "../movimiento.js";
 import { hostil, sentarse } from "../postura.js";
 import {
   animate, blockAt, cada, distancia, now, particleAt, rand, reemplazable, romperDestruyendo, sound, soundAt,
 } from "../util.js";
 import { explosionFinal, laser, lanzarMisiles, limpiarMisiles, metralla, pisoton } from "./armas.js";
+import {
+  escudoEnergia, iman, laserGiratorio, limpiarPunos, lluviaTornillos, punoCohete, saltoAplastante, temblor,
+} from "./habilidades.js";
 
 // Robot de los Claudes: lo construyen cinco Claudes con IQ 500, se suben (cabina, dos
-// hombros y la espalda) y lo manejan. Te persigue rompiendo todo lo que se le pone
-// delante (árboles, muros, casas) y te ataca con misiles, láser, metralla y pisotones.
-// A los 5 minutos suena la alarma y se autodestruye (o antes, si lo destruyes tú);
-// los Claudes saltan a tiempo.
+// hombros y la espalda) y lo manejan. Te persigue (corre si estás lejos) rompiendo todo
+// lo que se le pone delante y te ataca con misiles, láser, metralla y pisotones.
+// Fases por IQ: empieza con el IQ de sus pilotos y, al perder un tercio de su vida,
+// sobrecarga su IQ (+200) y pasa de Prototipo a Turbo (salto aplastante, puño cohete,
+// lluvia de tornillos) y a Genio (escudo de energía, láser giratorio, imán), cambiando
+// de colores. A los 5 minutos suena la alarma y se autodestruye.
 
 export const robots = new Map(); // id del robot → estado
 
@@ -37,7 +43,7 @@ function avisar(e, texto, radio = 48) {
 }
 
 // Sube a los pilotos uno por uno a sus asientos (ya son pilotos desde el principio).
-function subirPilotos(r) {
+function subirPilotos(r, primero = 20, entre = 6) {
   for (const npc of r.pilotos) {
     const s = estados.get(npc.id);
     if (s) s.robot = r;
@@ -53,19 +59,96 @@ function subirPilotos(r) {
       } catch {
         // No se pudo subir.
       }
-    }, 20 + i * 6);
+    }, primero + i * entre);
   });
 }
 
-export function crearRobot(dimension, pos, frente, pilotos) {
+// --- Fases de IQ ----------------------------------------------------------------------
+
+function faseDe(iq) {
+  let f = 0;
+  ROBOT_CFG.fases.forEach((x, i) => {
+    if (iq >= x.iq) f = i;
+  });
+  return f;
+}
+
+function nombrar(r) {
+  const f = ROBOT_CFG.fases[r.fase];
+  try {
+    r.e.nameTag = `${f.color}§lRobot de los Claudes§r §7· §fIQ ${r.iq} §7· ${f.color}${f.nombre}`;
+  } catch {
+    // Sin nombre.
+  }
+}
+
+function aplicarFase(r) {
+  try {
+    r.e.setProperty(PROP.fase, r.fase);
+  } catch {
+    // Sin propiedad.
+  }
+  nombrar(r);
+}
+
+// Sobrecarga de IQ: se detiene, levanta los brazos, todo tiembla, cambia de color y
+// empuja a quien esté cerca. Los pilotos celebran.
+function sobrecarga(r) {
+  const e = r.e;
+  const antes = r.fase;
+  r.iq = Math.min(1000, r.iq + 200);
+  r.fase = faseDe(r.iq);
+  r.cd.ataque = now() + 54;
+  aplicarFase(r);
+  animate(e, ANIM.robotSobrecarga);
+  const c = { x: e.location.x, y: e.location.y + 2.5, z: e.location.z };
+  soundAt(e.dimension, c, "beacon.power", 1.2, 1);
+  soundAt(e.dimension, c, "random.levelup", 0.6, 1);
+  for (let k = 0; k < 5; k++) system.runTimeout(() => e.isValid && particleAt(e.dimension, PARTICLES.ondaChispa, { x: c.x, y: c.y - 2.3 + k * 0.9, z: c.z }), k * 4);
+  particleAt(e.dimension, PARTICLES.fusionDestello, c);
+  particleAt(e.dimension, PARTICLES.onda, { x: c.x, y: e.location.y + 0.1, z: c.z });
+  temblor(e.dimension, c, 24, 0.5, 1.2);
+  for (const n of r.pilotos) {
+    if (!n.isValid) continue;
+    animate(n, ANIM.celebrar);
+    particleAt(n.dimension, PARTICLES.idea, { x: n.location.x, y: n.location.y + 2.2, z: n.location.z });
+  }
+  const f = ROBOT_CFG.fases[r.fase];
+  for (const p of e.dimension.getPlayers({ location: e.location, maxDistance: 48 })) {
+    try {
+      p.onScreenDisplay.setTitle("§6§l¡SOBRECARGA DE IQ!",
+        { subtitle: r.fase !== antes ? `${f.color}Fase ${r.fase + 1}: ${f.nombre} §7· §fIQ ${r.iq}` : `§fIQ ${r.iq}`,
+          fadeInDuration: 6, stayDuration: 40, fadeOutDuration: 10 });
+      const d = Math.hypot(p.location.x - c.x, p.location.z - c.z) || 1;
+      if (d < 7) p.applyKnockback({ x: ((p.location.x - c.x) / d) * 1.2, z: ((p.location.z - c.z) / d) * 1.2 }, 0.5);
+    } catch {
+      // Jugador no disponible.
+    }
+  }
+}
+
+function vida(e) {
+  try {
+    const h = e.getComponent("minecraft:health");
+    return h ? h.currentValue / h.effectiveMax : 1;
+  } catch {
+    return 1;
+  }
+}
+
+export function crearRobot(dimension, pos, frente, pilotos, { cinematica = false } = {}) {
   let e;
   try {
     e = dimension.spawnEntity(ROBOT, pos);
   } catch {
     return undefined;
   }
-  const r = { e, pilotos, desde: now(), hasta: now() + ROBOT_CFG.duracion, cd: { ataque: now() + 60 }, alarma: false };
+  const iqs = pilotos.map((n) => estados.get(n.id)?.iq ?? 500);
+  const iq = Math.max(500, Math.round(iqs.reduce((a, b) => a + b, 0) / Math.max(1, iqs.length) / 10) * 10);
+  const r = { e, pilotos, desde: now(), hasta: now() + ROBOT_CFG.duracion, cd: { ataque: now() + 60 }, alarma: false,
+    iq, fase: faseDe(iq), sobrecargas: 0 };
   robots.set(e.id, r);
+  aplicarFase(r);
   try {
     if (frente) e.teleport(pos, { facingLocation: frente });
   } catch {
@@ -73,7 +156,8 @@ export function crearRobot(dimension, pos, frente, pilotos) {
   }
   animate(e, ANIM.robotEnsamblaje);
   sound(e, "beacon.activate", 0.6, 1);
-  subirPilotos(r);
+  subirPilotos(r, cinematica ? 6 : 20, cinematica ? 4 : 6);
+  if (cinematica) return r; // la cinemática pone su propio título
   for (const p of dimension.getPlayers({ location: pos, maxDistance: 64 })) {
     try {
       p.onScreenDisplay.setTitle("§b§lROBOT DE LOS CLAUDES", { subtitle: "§fCinco genios lo manejan... ¡durante 5 minutos!",
@@ -114,6 +198,7 @@ function bajarPilotos(r) {
 function terminar(r, motivo) {
   robots.delete(r.e.id);
   limpiarMisiles(r.e.id);
+  limpiarPunos(r.e.id);
   bajarPilotos(r);
   if (!r.e.isValid) return;
   try {
@@ -180,22 +265,60 @@ function abrirCamino(r, j) {
   }
 }
 
+// Elige un ataque según la distancia y la fase: cada fase suma habilidades nuevas (y
+// las recién desbloqueadas salen más a menudo).
 function atacar(r, j) {
   const e = r.e;
   const d = distancia(e.location, j.location);
+  const fase = r.fase ?? 0;
   const opciones = [];
   if (d < 7) opciones.push({ f: () => pisoton(e), p: 3 });
-  if (d > 6) opciones.push({ f: () => lanzarMisiles(e, j, rand(4, 6)), p: 3 });
+  if (d > 6) opciones.push({ f: () => lanzarMisiles(e, j, rand(4, 6) + fase), p: 3 });
   if (d > 4 && d < 32) opciones.push({ f: () => laser(e, j), p: 2 });
-  if (d > 4 && d < 26) opciones.push({ f: () => metralla(e, j), p: 2 });
+  if (d > 4 && d < 26) opciones.push({ f: () => metralla(e, j), p: 2.5 });
+  if (fase >= 1) {
+    if (d > 5 && d < 22) opciones.push({ f: () => saltoAplastante(r, j), p: fase === 1 ? 3.5 : 2 });
+    if (d > 5 && d < 30) opciones.push({ f: () => punoCohete(r, j), p: fase === 1 ? 3.5 : 2 });
+    if (d < 24) opciones.push({ f: () => lluviaTornillos(r, j), p: fase === 1 ? 3 : 1.6 });
+  }
+  if (fase >= 2) {
+    if (now() > (r.escudoHasta ?? 0) + 200) opciones.push({ f: () => escudoEnergia(r), p: 2.5 });
+    if (d < 14) opciones.push({ f: () => laserGiratorio(r, j), p: 3.5 });
+    if (d > 7 && d < 20) opciones.push({ f: () => iman(r, j), p: 3 });
+  }
   if (!opciones.length) return;
   let x = Math.random() * opciones.reduce((t, o) => t + o.p, 0);
   for (const o of opciones) {
     x -= o.p;
     if (x > 0) continue;
     const dur = o.f() || 40;
-    r.cd.ataque = now() + dur + rand(...ROBOT_CFG.ataqueCada);
+    const ritmo = ROBOT_CFG.fases[fase]?.ritmo ?? 1;
+    r.cd.ataque = now() + Math.round((dur + rand(...ROBOT_CFG.ataqueCada)) * ritmo);
     return;
+  }
+}
+
+// Corre si estás lejos (más rápido en cada fase) y cada paso hace temblar el suelo.
+function moverse(r, j) {
+  const e = r.e;
+  const f = ROBOT_CFG.fases[r.fase ?? 0];
+  const corre = !!j && distancia(e.location, j.location) > ROBOT_CFG.correrDesde;
+  if (corre !== r.corriendo) {
+    r.corriendo = corre;
+    try {
+      e.setProperty(PROP.corriendo, corre);
+    } catch {
+      // Sin propiedad.
+    }
+  }
+  velocidad(e, corre ? f.correr : f.caminar);
+  if (corre && r.tic % 4 === 0) {
+    const v = e.getVelocity();
+    if (Math.hypot(v.x, v.z) > 0.05) {
+      particleAt(e.dimension, PARTICLES.polvo, { x: e.location.x, y: e.location.y + 0.2, z: e.location.z });
+      soundAt(e.dimension, e.location, "mob.irongolem.walk", 0.6, 1);
+      temblor(e.dimension, e.location, 12, 0.12, 0.25);
+    }
   }
 }
 
@@ -205,6 +328,7 @@ system.runInterval(() => {
     if (!e.isValid) {
       robots.delete(e.id);
       limpiarMisiles(e.id);
+      limpiarPunos(e.id);
       bajarPilotos(r);
       continue;
     }
@@ -241,6 +365,16 @@ system.runInterval(() => {
         }
       }
       if (MODIFICA_MUNDO && r.tic % 4 === 0) abrirCamino(r, j);
+      moverse(r, j);
+      // Sobrecarga de IQ al perder un tercio de la vida (y otro tercio).
+      const v = vida(e);
+      if ((r.sobrecargas ?? 0) === 0 && v < 0.67) {
+        r.sobrecargas = 1;
+        sobrecarga(r);
+      } else if (r.sobrecargas === 1 && v < 0.34) {
+        r.sobrecargas = 2;
+        sobrecarga(r);
+      }
       if (j && now() >= r.cd.ataque) atacar(r, j);
     } catch {
       // Descargado.
@@ -267,15 +401,74 @@ world.afterEvents.entityDie.subscribe(({ deadEntity }) => {
   if (r) terminar(r, "derrotado");
 });
 
-// Puñetazo del robot (cuando la IA del juego golpea cuerpo a cuerpo).
-world.afterEvents.entityHitEntity.subscribe(({ damagingEntity }) => {
+// Puñetazo del robot (cuando la IA del juego golpea cuerpo a cuerpo): alterna el puño
+// izquierdo y un revés con la minigun; el golpe se siente (onda, chispas, temblor y un
+// buen empujón).
+world.afterEvents.entityHitEntity.subscribe(({ damagingEntity, hitEntity }) => {
   if (damagingEntity?.typeId !== ROBOT) return;
   system.run(() => {
     if (!damagingEntity.isValid) return;
-    animate(damagingEntity, ANIM.robotGolpe);
-    sound(damagingEntity, "random.anvil_land", 0.7, 0.6);
+    const r = robots.get(damagingEntity.id);
+    const izquierdo = !r || (r.golpes = (r.golpes ?? 0) + 1) % 2 === 1;
+    animate(damagingEntity, izquierdo ? ANIM.robotGolpe : ANIM.robotGolpe2);
+    sound(damagingEntity, "random.anvil_land", 0.6, 0.9);
+    sound(damagingEntity, "mob.irongolem.throw", 0.7, 1);
+    if (!hitEntity?.isValid) return;
+    const c = { x: hitEntity.location.x, y: hitEntity.location.y + 1, z: hitEntity.location.z };
+    particleAt(hitEntity.dimension, PARTICLES.estallido, c);
+    particleAt(hitEntity.dimension, PARTICLES.bloqueo, c);
+    particleAt(hitEntity.dimension, PARTICLES.onda, { x: c.x, y: hitEntity.location.y + 0.1, z: c.z });
+    temblor(hitEntity.dimension, c, 4, 0.45, 0.35);
+    if (hitEntity instanceof Player) {
+      const dx = hitEntity.location.x - damagingEntity.location.x;
+      const dz = hitEntity.location.z - damagingEntity.location.z;
+      const d = Math.hypot(dx, dz) || 1;
+      try {
+        hitEntity.applyKnockback({ x: (dx / d) * 1.1, z: (dz / d) * 1.1 }, 0.45);
+      } catch {
+        // Sin empuje.
+      }
+    }
   });
 });
+
+// Escudo de energía: las flechas rebotan (vuelven a quien las tiró) y el resto del daño
+// se reduce a la mitad mientras está activo.
+world.beforeEvents.entityHurt.subscribe((event) => {
+  const r = robots.get(event.hurtEntity.id);
+  if (!r || now() > (r.escudoHasta ?? 0)) return;
+  if (event.damageSource.cause === EntityDamageCause.projectile) {
+    event.cancel = true;
+    const tirador = event.damageSource.damagingEntity;
+    const e = r.e;
+    system.run(() => devolverFlecha(e, tirador));
+    return;
+  }
+  event.damage = event.damage * 0.5;
+}, { entityFilter: { type: ROBOT } });
+
+function devolverFlecha(e, tirador) {
+  if (!e.isValid) return;
+  const o = { x: e.location.x, y: e.location.y + 3, z: e.location.z };
+  particleAt(e.dimension, PARTICLES.escudoHex, o);
+  sound(e, "random.anvil_land", 2, 0.4);
+  if (!tirador?.isValid) return;
+  try {
+    const t = tirador.location;
+    const dx = t.x - o.x;
+    const dy = t.y + 1.2 - o.y;
+    const dz = t.z - o.z;
+    const d = Math.hypot(dx, dy, dz) || 1;
+    const f = e.dimension.spawnEntity("minecraft:arrow", { x: o.x + (dx / d) * 2, y: o.y, z: o.z + (dz / d) * 2 });
+    const proj = f.getComponent("minecraft:projectile");
+    if (proj) {
+      proj.owner = e;
+      proj.shoot({ x: (dx / d) * 2.4, y: (dy / d) * 2.4 + d * 0.005, z: (dz / d) * 2.4 });
+    }
+  } catch {
+    // Sin flecha.
+  }
+}
 
 world.afterEvents.entityHurt.subscribe(({ hurtEntity }) => {
   if (hurtEntity.typeId !== ROBOT) return;
@@ -289,7 +482,7 @@ system.runInterval(() => {
     try {
       for (const e of world.getDimension(id).getEntities({ type: ROBOT })) {
         if (robots.has(e.id)) continue;
-        const r = { e, pilotos: [], desde: now(), hasta: now() + 200, cd: { ataque: now() + 60 }, alarma: false };
+        const r = { e, pilotos: [], desde: now(), hasta: now() + 200, cd: { ataque: now() + 60 }, alarma: false, iq: 500, fase: 0 };
         robots.set(e.id, r);
       }
     } catch {

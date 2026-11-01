@@ -13,14 +13,15 @@ import {
   animate, avisar, blockAt, distancia, mirarA, now, particleAt, reemplazable, romperDestruyendo, sound, soundAt,
   superficie,
 } from "../util.js";
+import { DURACION, empezarCinematica, soltarJugadores, tickCinematica } from "./cinematica.js";
 import { crearRobot } from "./index.js";
 import { planRobot, volumenRobot } from "./plano.js";
 
 // Construcción del robot: cinco Claudes con IQ 500 dejan lo que estaban haciendo
 // (clase, obra, mina), se reúnen cerca del jugador, despejan el sitio (talan árboles
-// y quitan lo que estorbe), levantan el robot con bloques (piernas, torso, brazos,
-// lanzamisiles y cabina), lo encienden y los bloques se transforman en el robot de
-// verdad, al que se suben.
+// y quitan lo que estorbe) y entonces empieza la cinemática de 10 s (cinematica.js):
+// con martillo, destornillador y llave levantan el robot pieza por pieza, lo
+// encienden, los bloques se transforman en el robot de verdad y se suben.
 
 let obra;
 let buscando = false;
@@ -244,6 +245,7 @@ function liberar(o) {
 }
 
 function cancelar(o) {
+  if (o.cine) soltarJugadores(o);
   // Deshace lo que alcanzaron a poner.
   for (const p of o.puestos) {
     try {
@@ -274,13 +276,33 @@ function herramienta(n, s, b) {
 }
 
 function empezarConstruccion(o) {
-  o.fase = "construir";
+  o.fase = "cinematica";
   o.desde = now();
-  soundAt(o.dim, o.c, "random.anvil_use", 1, 1);
   for (const n of o.grupo) {
     const s = estados.get(n.id);
     if (s) ponerHaciendo(n, s, "§bconstruyendo el robot");
   }
+  let jugadores = [];
+  try {
+    jugadores = o.dim.getPlayers({ location: o.c, maxDistance: 48 });
+  } catch {
+    jugadores = [];
+  }
+  empezarCinematica(o, jugadores);
+}
+
+// Los bloques se transforman en el robot de verdad y los cinco se suben.
+function transformar(o, vivos) {
+  for (const p of o.puestos) {
+    try {
+      const b = blockAt(o.dim, p);
+      if (b && !b.isAir) b.setType("minecraft:air");
+    } catch {
+      // Chunk descargado.
+    }
+  }
+  const mira = o.jugador?.isValid ? o.jugador.location : undefined;
+  crearRobot(o.dim, { x: o.c.x + 0.5, y: o.c.y, z: o.c.z + 0.5 }, mira, vivos, { cinematica: true });
 }
 
 system.runInterval(() => {
@@ -331,55 +353,13 @@ system.runInterval(() => {
       romperDestruyendo(o.dim, p);
       return;
     }
-    if (o.fase === "construir") {
-      // Un bloque cada 8 ticks, por turnos: cada Claude pone el suyo con su animación.
-      if (t % 8 !== 0) return;
-      const paso = o.plano[o.i];
-      if (!paso) {
-        o.fase = "encender";
-        o.desde = now();
-        soundAt(o.dim, o.c, "beacon.activate", 0.8, 1);
-        return;
+    if (o.fase === "cinematica") {
+      // 10 s: piezas con herramientas, efectos, cámaras y transformación (cinematica.js).
+      if (tickCinematica(o, vivos, () => transformar(o, vivos)) || now() - o.desde > DURACION + 40) {
+        if (o.cine?.t < DURACION) soltarJugadores(o);
+        liberar(o);
+        obra = undefined;
       }
-      const n = vivos[o.i % vivos.length];
-      const centro = { x: paso.pos.x + 0.5, y: paso.pos.y + 0.5, z: paso.pos.z + 0.5 };
-      sostener(n, idDe(paso.bloque));
-      mirarA(n, centro);
-      animate(n, ANIM.colocar);
-      const b = blockAt(o.dim, paso.pos);
-      if (b && !reemplazable(b) && !b.isLiquid && !IRROMPIBLES.test(b.typeId) && !protegido(paso.pos)) romperDestruyendo(o.dim, paso.pos);
-      const libre = blockAt(o.dim, paso.pos);
-      if (libre && reemplazable(libre)) {
-        if (typeof paso.bloque === "string") libre.setType(paso.bloque);
-        else libre.setPermutation(paso.bloque);
-        o.puestos.push(paso.pos);
-        particleAt(o.dim, PARTICLES.construir, centro);
-        sound(n, /glass/.test(idDe(paso.bloque)) ? "random.glass" : "random.anvil_land", 1.6, 0.35);
-      }
-      o.i++;
-      return;
-    }
-    if (o.fase === "encender") {
-      // Se enciende: chispas, el núcleo brilla y los bloques se transforman en el robot.
-      if (t % 4 === 0) {
-        for (const p of o.puestos) if (Math.random() < 0.3) particleAt(o.dim, PARTICLES.chispaElectrica, { x: p.x + 0.5, y: p.y + 0.5, z: p.z + 0.5 });
-      }
-      if (t === 20) for (const n of vivos) animate(n, ANIM.celebrar);
-      if (t < 40) return;
-      for (const p of o.puestos) {
-        try {
-          const b = blockAt(o.dim, p);
-          if (b && !b.isAir) b.setType("minecraft:air");
-        } catch {
-          // Chunk descargado.
-        }
-      }
-      particleAt(o.dim, PARTICLES.fusionDestello, { x: o.c.x + 0.5, y: o.c.y + 3, z: o.c.z + 0.5 });
-      soundAt(o.dim, o.c, "random.explode", 1.4, 0.6);
-      const mira = o.jugador?.isValid ? o.jugador.location : undefined;
-      crearRobot(o.dim, { x: o.c.x + 0.5, y: o.c.y, z: o.c.z + 0.5 }, mira, vivos);
-      liberar(o);
-      obra = undefined;
     }
   } catch {
     cancelar(o);

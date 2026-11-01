@@ -13,6 +13,48 @@
         {
           "emblema": "Material.glow"
         }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "herr_martillo": false
+        },
+        {
+          "herr_destornillador": false
+        },
+        {
+          "herr_llave": false
+        }
+      ]
+    },
+    "controller.render.claudenpc_npc": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "emblema": "Material.glow"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "herr_martillo": "query.property('claudenpc:herramienta') == 1"
+        },
+        {
+          "herr_destornillador": "query.property('claudenpc:herramienta') == 2"
+        },
+        {
+          "herr_llave": "query.property('claudenpc:herramienta') == 3"
+        }
       ]
     },
     "controller.render.claudenpc_golden": {
@@ -45,9 +87,18 @@
       ]
     },
     "controller.render.claudenpc_robot": {
+      "arrays": {
+        "textures": {
+          "Array.fases": [
+            "Texture.default",
+            "Texture.turbo",
+            "Texture.genio"
+          ]
+        }
+      },
       "geometry": "Geometry.default",
       "textures": [
-        "Texture.default"
+        "Array.fases[query.property('claudenpc:fase')]"
       ],
       "materials": [
         {
@@ -55,6 +106,17 @@
         },
         {
           "cupula": "Material.cristal"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "antebrazo_izq": "!query.property('claudenpc:sin_puno')"
+        },
+        {
+          "laser_izq": "!query.property('claudenpc:sin_puno')"
         }
       ]
     },

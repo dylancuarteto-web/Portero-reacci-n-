@@ -10,6 +10,25 @@
           "type": "bool",
           "default": false,
           "client_sync": true
+        },
+        "claudenpc:fase": {
+          "type": "int",
+          "range": [
+            0,
+            2
+          ],
+          "default": 0,
+          "client_sync": true
+        },
+        "claudenpc:corriendo": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        },
+        "claudenpc:sin_puno": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
         }
       }
     },

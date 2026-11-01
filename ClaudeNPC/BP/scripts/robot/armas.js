@@ -1,6 +1,6 @@
-import { EntityDamageCause, GameMode, system } from "@minecraft/server";
+import { EntityDamageCause, GameMode, MolangVariableMap, system } from "@minecraft/server";
 import { ANIM, MISIL, PARTICLES } from "../config.js";
-import { animate, blockAt, particleAt, reemplazable, sound, soundAt } from "../util.js";
+import { animate, blockAt, particleAt, reemplazable, sound, soundAt, yawHacia } from "../util.js";
 
 // Armas del robot: misiles teledirigidos desde los hombros, láser del visor que barre
 // el suelo, metralla de flechas desde el brazo y pisotón con onda expansiva. Todas se
@@ -190,33 +190,65 @@ export function laser(robot, jugador) {
   return 64;
 }
 
-// Metralla: ráfaga de flechas desde el brazo, con algo de dispersión.
+// Boca de la minigun: está en el brazo DERECHO y, con el brazo levantado hacia delante
+// (animación "metralla"), los cañones quedan a 2,6 bloques delante, 1,3 a la derecha y
+// 3,5 de alto. (Antes las balas salían del lado izquierdo y más abajo.)
+export function bocaMinigun(robot) {
+  return punto(robot, 2.6, 1.31, 3.5);
+}
+
+function trazadora(dim, desde, dir, largo) {
+  try {
+    const mv = new MolangVariableMap();
+    mv.setVector3("variable.dir", dir);
+    mv.setFloat("variable.vida", Math.max(0.05, largo / 60));
+    dim.spawnParticle(PARTICLES.bala, desde, mv);
+  } catch {
+    particleAt(dim, PARTICLES.chispaCae, desde);
+  }
+}
+
+// Metralla: el brazo derecho apunta, los tres cañones giran y sale una ráfaga de balas
+// trazadoras desde la boca de la minigun (con fogonazo y casquillos), con algo de
+// dispersión. Las balas que no te dan levantan polvo donde pegan.
 export function metralla(robot, jugador) {
   animate(robot, ANIM.robotMetralla);
-  for (let i = 0; i < 14; i++) {
+  sound(robot, "random.anvil_use", 1.7, 0.5);
+  const dim = robot.dimension;
+  for (let i = 0; i < 22; i++) {
     system.runTimeout(() => {
       if (!robot.isValid || !jugador.isValid) return;
       try {
-        const o = punto(robot, 1.2, -1.4, 2.7);
-        const j = jugador.getHeadLocation();
-        const dx = j.x - o.x + (Math.random() - 0.5) * 1.2;
-        const dy = j.y - 0.4 - o.y + (Math.random() - 0.5) * 0.8;
-        const dz = j.z - o.z + (Math.random() - 0.5) * 1.2;
+        robot.setRotation({ x: 0, y: yawHacia(robot.location, jugador.location) });
+        const o = bocaMinigun(robot);
+        const j = { x: jugador.location.x, y: jugador.location.y + 1, z: jugador.location.z };
+        const dx = j.x - o.x + (Math.random() - 0.5) * 1.8;
+        const dy = j.y - o.y + (Math.random() - 0.5) * 1.1;
+        const dz = j.z - o.z + (Math.random() - 0.5) * 1.8;
         const l = Math.hypot(dx, dy, dz) || 1;
-        const flecha = robot.dimension.spawnEntity("minecraft:arrow", { x: o.x + (dx / l) * 0.6, y: o.y, z: o.z + (dz / l) * 0.6 });
-        const proj = flecha.getComponent("minecraft:projectile");
-        if (proj) {
-          proj.owner = robot;
-          proj.shoot({ x: (dx / l) * 2.6, y: (dy / l) * 2.6 + 0.05, z: (dz / l) * 2.6 });
+        const dir = { x: dx / l, y: dy / l, z: dz / l };
+        const choque = dim.getBlockFromRay(o, dir, { maxDistance: 40 });
+        let largo = choque ? Math.hypot(choque.block.location.x + 0.5 - o.x, choque.block.location.y + 0.5 - o.y, choque.block.location.z + 0.5 - o.z) : 40;
+        const centro = { x: jugador.location.x, y: jugador.location.y + 0.9, z: jugador.location.z };
+        const fin = { x: o.x + dir.x * largo, y: o.y + dir.y * largo, z: o.z + dir.z * largo };
+        const acierto = distSegmento(centro, o, fin) < 0.6;
+        if (acierto) largo = Math.min(largo, Math.hypot(centro.x - o.x, centro.y - o.y, centro.z - o.z));
+        particleAt(dim, PARTICLES.fogonazo, o);
+        trazadora(dim, o, dir, largo);
+        if (i % 2 === 0) particleAt(dim, PARTICLES.casquillo, punto(robot, 1.6, 1.9, 3.4));
+        soundAt(dim, o, "random.explode", 2.2, 0.16);
+        if (acierto) {
+          herir(jugador, 1.5, robot, EntityDamageCause.projectile);
+          particleAt(dim, PARTICLES.bloqueo, centro);
+        } else if (choque) {
+          particleAt(dim, PARTICLES.polvo, { x: o.x + dir.x * largo, y: o.y + dir.y * largo, z: o.z + dir.z * largo });
         }
-        sound(robot, "random.bow", 1.8, 0.6);
-        particleAt(robot.dimension, PARTICLES.bloqueo, o);
       } catch {
-        // Sin flecha.
+        // Sin bala.
       }
-    }, 12 + i * 3);
+    }, 8 + i * 2);
   }
-  return 12 + 14 * 3 + 6;
+  return 8 + 22 * 2 + 8;
 }
 
 // Pisotón: levanta la pierna y golpea el suelo; sale una onda que hay que saltar.

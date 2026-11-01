@@ -85,6 +85,9 @@ REG = {
     "corbata_larga": (10, 48, 2, 6), "cuello": (12, 48, 2, 2), "libro_tapa": (0, 52, 6, 7),
     "libro_hojas": (6, 52, 2, 7), "libro_lomo": (8, 52, 2, 7), "libro_canto": (10, 52, 6, 2),
     "bigote": (56, 32, 4, 2), "falda": (56, 36, 8, 8),
+    # Herramientas de la cinemática del robot (solo en la piel de Claude, zona libre 48-64 x 48-64).
+    "h_madera": (48, 48, 4, 4), "h_acero": (52, 48, 4, 4), "h_acero_osc": (56, 48, 4, 4), "h_rojo": (60, 48, 4, 4),
+    "h_amarillo": (48, 52, 4, 4), "h_goma": (52, 52, 4, 4),
 }
 FACES = ("north", "south", "east", "west", "up", "down")
 
@@ -140,6 +143,24 @@ def humanoide():
         ]),
         bone("rightArm", [-5, 22, 0], "body", [box([-8, 12, -2], [4, 12, 4], [40, 16])]),
         bone("rightItem", [-6, 15, 1], "rightArm"),
+        # Herramientas de la cinemática del robot (se ven solo cuando la propiedad lo pide).
+        bone("herr_martillo", [-6, 12, 0], "rightArm", [
+            {"origin": [-6.5, 11.5, -9], "size": [1, 1, 10], "uv": caras(resto="h_madera")},
+            {"origin": [-6.75, 11.25, -1.5], "size": [1.5, 1.5, 3], "uv": caras(resto="h_goma")},
+            {"origin": [-7.1, 9.8, -11.6], "size": [2.2, 4.4, 2.6], "uv": caras(north="h_acero", south="h_acero", resto="h_acero_osc")},
+        ]),
+        bone("herr_destornillador", [-6, 12, 0], "rightArm", [
+            {"origin": [-6.75, 11.25, -2.5], "size": [1.5, 1.5, 4], "uv": caras(resto="h_rojo")},
+            {"origin": [-6.85, 11.15, -3.5], "size": [1.7, 1.7, 1], "uv": caras(resto="h_amarillo")},
+            {"origin": [-6.25, 11.75, -9], "size": [0.5, 0.5, 5.5], "uv": caras(resto="h_acero")},
+            {"origin": [-6.35, 11.85, -10], "size": [0.7, 0.3, 1], "uv": caras(resto="h_acero_osc")},
+        ]),
+        bone("herr_llave", [-6, 12, 0], "rightArm", [
+            {"origin": [-6.3, 11.3, -8], "size": [0.6, 1.4, 9], "uv": caras(resto="h_acero")},
+            {"origin": [-6.3, 9.6, -10.6], "size": [0.6, 4.8, 1.6], "uv": caras(resto="h_acero_osc")},
+            {"origin": [-6.3, 9.6, -12], "size": [0.6, 1.2, 1.6], "uv": caras(resto="h_acero")},
+            {"origin": [-6.3, 13.2, -12], "size": [0.6, 1.2, 1.6], "uv": caras(resto="h_acero")},
+        ]),
         bone("leftArm", [5, 22, 0], "body", [box([4, 12, -2], [4, 12, 4], [32, 48])]),
         bone("leftItem", [6, 15, 1], "leftArm"),
         bone("rightLeg", [-1.9, 12, 0], "root", [box([-3.9, 0, -2], [4, 12, 4], [0, 16])]),
@@ -159,7 +180,7 @@ AURA_BONES = ["aura_head", "aura_body", "aura_rarm", "aura_larm", "aura_rleg", "
 
 
 def golden_geometry():
-    bones = humanoide()
+    bones = [b for b in humanoide() if not b["name"].startswith("herr_")]  # sin las herramientas de Claude
     aura = per_face("aura", "aura")
     shells = [("aura_head", "head", [0, 24, 0], [-4, 24, -4], [8, 8, 8]),
               ("aura_body", "body", [0, 24, 0], [-4, 12, -2], [8, 12, 4]),
@@ -205,7 +226,7 @@ def golden_geometry():
 def maestro_geometry():
     """Claude con saco (capa 3D sobre cuerpo y brazos), cabello formal, lentes,
     corbata, insignia luminosa y un libro en la mano izquierda."""
-    bones = [b for b in humanoide() if b["name"] != "emblema"]
+    bones = [b for b in humanoide() if b["name"] != "emblema" and not b["name"].startswith("herr_")]
     por_nombre = {b["name"]: b for b in bones}
     por_nombre["body"]["cubes"].append(box([-4, 12, -2], [8, 12, 4], [16, 32], inflate=0.25))
     por_nombre["rightArm"]["cubes"].append(box([-8, 12, -2], [4, 12, 4], [40, 32], inflate=0.25))
@@ -415,7 +436,23 @@ def claude_skin():
             px[u + x, v + y] = NARANJA + (255,)
     estrella(px, u + 4, v + 4, CREMA, 0, u, v, u + w, v + h)
     px[REG["emblema_lado"][0], REG["emblema_lado"][1]] = NARANJA_OSCURO + (255,)
+    pintar_herramientas(px)
     return img
+
+
+def pintar_herramientas(px):
+    """Martillo, destornillador y llave: madera con vetas, acero con brillo, mango rojo."""
+    def zona(nombre, fn):
+        u, v, w, h = REG[nombre]
+        for y in range(h):
+            for x in range(w):
+                px[u + x, v + y] = fn(x, y) + (255,)
+    zona("h_madera", lambda x, y: (150, 102, 58) if (x + y * 3) % 4 else (118, 78, 42))
+    zona("h_acero", lambda x, y: (222, 228, 236) if x == 0 or y == 0 else (176, 184, 196))
+    zona("h_acero_osc", lambda x, y: (120, 126, 138) if (x + y) % 3 else (92, 98, 110))
+    zona("h_rojo", lambda x, y: (214, 58, 44) if y != 1 else (240, 120, 96))
+    zona("h_amarillo", lambda x, y: (244, 200, 44) if (x + y) % 2 else (220, 170, 30))
+    zona("h_goma", lambda x, y: (46, 46, 52) if (x + y) % 2 else (30, 30, 34))
 
 
 def golden_skin(alpha_cuerpo=205):
@@ -850,6 +887,29 @@ def write_particles():
     p("idea", "estrella", {**inst(5), "minecraft:emitter_shape_sphere": {"radius": 0.25, "direction": "outwards"},
                            **life(0.8), **spd(0.5), **mot(linear_acceleration=[0, 0.8, 0])},
       {"0.0": "#FFB4F0FF", "1.0": "#00FFD25A"}, sz(0.2, 0.03))
+    # Robot: holograma de cada pieza en la cinemática (puntos cian en el borde del bloque).
+    p("holo", "brillo", {**inst(22), "minecraft:emitter_shape_box": {"half_dimensions": [0.5, 0.5, 0.5], "surface_only": True},
+                         **life(0.45), **spd(0), **mot()},
+      {"0.0": "#FF7FF4FF", "0.7": "#AA3FD2FF", "1.0": "#003FD2FF"}, sz(0.12, 0.05))
+    # Bala trazadora de la minigun: sale del cañón en la dirección que le pasa el script.
+    p("bala", "brillo", {"minecraft:emitter_rate_instant": {"num_particles": 1},
+                         "minecraft:emitter_shape_point": {"direction": ["variable.dir.x", "variable.dir.y", "variable.dir.z"]},
+                         "minecraft:particle_lifetime_expression": {"max_lifetime": "variable.vida"},
+                         "minecraft:particle_initial_speed": 60, "minecraft:particle_motion_dynamic": {}},
+      {"0.0": "#FFFFF7C8", "1.0": "#FFFFB040"}, sz(0.2, 0.14))
+    p("fogonazo", "estrella", {**inst(3), "minecraft:emitter_shape_sphere": {"radius": 0.15, "direction": "outwards"},
+                               **life(0.1), **spd(1.5), **mot()},
+      {"0.0": "#FFFFFFE0", "0.5": "#FFFFC040", "1.0": "#00FF8020"}, sz(0.7, 0.2))
+    p("casquillo", "cuadro", {**inst(1), "minecraft:emitter_shape_point": {"direction": ["math.random(-0.6, 0.6)", 1, "math.random(-0.6, 0.6)"]},
+                              **life(0.7), **spd(4), **mot(linear_acceleration=[0, -22, 0])},
+      {"0.0": "#FFE8B850", "1.0": "#FFB07820"}, sz(0.09), "particles_alpha")
+    # Escudo de energía: hexágonos cian en la cúpula.
+    p("escudo_hex", "anillo", {**inst(1), "minecraft:emitter_shape_point": {}, **life(0.5), **spd(0), **mot()},
+      {"0.0": "#CC7FF4FF", "1.0": "#003FA8FF"}, sz(0.55, 0.75))
+    # Lluvia de tornillos: el tornillo cae del cielo.
+    p("tornillo", "cuadro", {**inst(1), "minecraft:emitter_shape_point": {"direction": [0, -1, 0]},
+                             **life(0.55), **spd(12), **mot(linear_acceleration=[0, -30, 0])},
+      {"0.0": "#FFD0D6E0", "1.0": "#FF8890A0"}, sz(0.22), "particles_alpha")
     # Carga de viento (dúo de elytra): remolino blanco celeste que se abre.
     p("viento", "humo", {**inst(14), "minecraft:emitter_shape_sphere": {"radius": 0.4, "direction": "outwards"},
                          **life(0.6), **spd(2.2), **mot(linear_drag_coefficient=3.5)},
@@ -1121,6 +1181,21 @@ def claude_animations():
             "rightLeg": {"position": [0, 0, 3]}, "leftLeg": {"position": [0, 0, 3]}}},
         "animation.claudenpc.colocar_abajo": {"animation_length": 0.4, "bones": {
             "rightArm": {"rotation": k((0, [-25, 0, 0]), (0.15, [-55, -10, 0]), (0.3, [-30, 0, 0]), (0.4, [-25, 0, 0]))}}},
+        # Herramientas (cinemática del robot): martillar, atornillar y apretar con la llave.
+        "animation.claudenpc.martillar": {"animation_length": 0.5, "bones": {
+            "rightArm": {"rotation": k((0, [-60, 0, 0]), (0.18, [-155, 0, 8]), (0.28, [-45, 0, 0]), (0.5, [-60, 0, 0]))},
+            "leftArm": {"rotation": [-55, 15, 0]},
+            "head": {"rotation": [18, 0, 0]},
+            "body": {"rotation": k((0, Z), (0.18, [-4, 0, 0]), (0.28, [6, 0, 0]), (0.5, Z))}}},
+        "animation.claudenpc.atornillar": {"animation_length": 0.6, "bones": {
+            "rightArm": {"rotation": k((0, [-78, -35, 0]), (0.15, [-78, 35, 0]), (0.3, [-78, -35, 0]), (0.45, [-78, 35, 0]), (0.6, [-78, -35, 0]))},
+            "leftArm": {"rotation": [-62, 22, 0]},
+            "head": {"rotation": [14, 0, 0]}}},
+        "animation.claudenpc.apretar": {"animation_length": 0.6, "bones": {
+            "rightArm": {"rotation": k((0, [-72, 0, 22]), (0.3, [-72, 0, -28]), (0.6, [-72, 0, 22]))},
+            "leftArm": {"rotation": [-50, 10, -10]},
+            "body": {"rotation": k((0, [0, -8, 0]), (0.3, [0, 8, 0]), (0.6, [0, -8, 0]))},
+            "head": {"rotation": [12, 0, 0]}}},
         # Beber una poción (química): lleva el frasco a la boca y echa la cabeza atrás.
         "animation.claudenpc.beber": {"animation_length": 1.0, "bones": {
             "rightArm": {"rotation": k((0, Z), (0.2, [-100, -25, 0]), (0.8, [-100, -25, 0]), (1.0, Z))},
@@ -1268,7 +1343,19 @@ def robot_geometry():
         "bones": bones}]}
 
 
-def robot_texture():
+# Colores de cada fase del robot (según el IQ): prototipo, turbo y genio.
+FASES_ROBOT = {
+    0: {"acento": NARANJA, "acento_osc": NARANJA_OSCURO, "acento_claro": NARANJA_CLARO, "visor": (90, 240, 255),
+        "peligro": (240, 196, 40), "metal": (150, 156, 166)},
+    1: {"acento": (214, 64, 48), "acento_osc": (150, 36, 30), "acento_claro": (244, 112, 86), "visor": (255, 92, 40),
+        "peligro": (232, 44, 36), "metal": (140, 144, 152)},
+    2: {"acento": ORO, "acento_osc": ORO_OSCURO, "acento_claro": (255, 238, 170), "visor": (255, 248, 196),
+        "peligro": (255, 206, 60), "metal": (176, 170, 156)},
+}
+
+
+def robot_texture(fase=0):
+    col = FASES_ROBOT[fase]
     img = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
     px = img.load()
 
@@ -1286,9 +1373,10 @@ def robot_texture():
                 n = ((x * 7 + y * 13) % 5 - 2) * 1.5
                 px[u + x, v + y] = tuple(clamp(k + n) for k in c) + (255,)
 
-    panel("metal", (150, 156, 166), (96, 100, 110), (196, 202, 212))
+    m = col["metal"]
+    panel("metal", m, tuple(int(c * 0.64) for c in m), tuple(min(255, int(c * 1.3)) for c in m))
     panel("metal_osc", (86, 92, 104), (52, 56, 64), (122, 128, 140))
-    panel("naranja", NARANJA, NARANJA_OSCURO, NARANJA_CLARO)
+    panel("naranja", col["acento"], col["acento_osc"], col["acento_claro"])
     u, v, w, h = REG_ROBOT["junta"]
     for y in range(h):
         for x in range(w):
@@ -1300,13 +1388,13 @@ def robot_texture():
     u, v, w, h = REG_ROBOT["peligro"]
     for y in range(h):
         for x in range(w):
-            px[u + x, v + y] = ((240, 196, 40) if ((x + y) // 2) % 2 else (30, 30, 30)) + (255,)
+            px[u + x, v + y] = (col["peligro"] if ((x + y) // 2) % 2 else (30, 30, 30)) + (255,)
     u, v, w, h = REG_ROBOT["cristal"]
     for y in range(h):
         for x in range(w):
             borde = x in (0, w - 1) or y in (0, h - 1)
             px[u + x, v + y] = ((230, 245, 255, 200) if (x == 2 and y < 4) else ((140, 200, 240, 170) if borde else (150, 210, 245, 90)))
-    for name, color in (("cian", (90, 240, 255)), ("brillo_naranja", (255, 170, 70)), ("rojo", (255, 70, 60))):
+    for name, color in (("cian", col["visor"]), ("brillo_naranja", (255, 170, 70)), ("rojo", (255, 70, 60))):
         u, v, w, h = REG_ROBOT[name]
         for y in range(h):
             for x in range(w):
@@ -1314,7 +1402,7 @@ def robot_texture():
     u, v, w, h = REG_ROBOT["emblema"]
     for y in range(h):
         for x in range(w):
-            px[u + x, v + y] = (NARANJA_OSCURO if x in (0, w - 1) or y in (0, h - 1) else NARANJA) + (255,)
+            px[u + x, v + y] = (col["acento_osc"] if x in (0, w - 1) or y in (0, h - 1) else col["acento"]) + (255,)
     for dx, dy in [(0, -5), (0, -4), (0, -3), (0, -2), (0, 2), (0, 3), (0, 4), (0, 5), (-5, 0), (-4, 0), (-3, 0), (-2, 0),
                    (2, 0), (3, 0), (4, 0), (5, 0), (-1, -1), (1, -1), (-1, 1), (1, 1), (0, -1), (0, 1), (-1, 0), (1, 0), (0, 0)]:
         px[u + 8 + dx, v + 8 + dy] = CREMA + (0,)
@@ -1335,6 +1423,18 @@ def robot_texture():
             r = math.hypot(x - (w - 1) / 2, y - (h - 1) / 2)
             px[u + x, v + y] = ((14, 14, 16) if r < 1.8 else (70, 74, 82)) + (255,)
     return img
+
+
+def puno_geometry():
+    """Antebrazo izquierdo del robot que sale volando (mira hacia -z)."""
+    return {"format_version": "1.16.0", "minecraft:geometry": [{
+        "description": {"identifier": "geometry.claudenpc.puno", "texture_width": 128, "texture_height": 128,
+                        "visible_bounds_width": 2.5, "visible_bounds_height": 2.5, "visible_bounds_offset": [0, 0.5, 0]},
+        "bones": [{"name": "puno", "pivot": [0, 6.5, 0], "locators": {"fuego": [0, 6.5, 9.5]}, "cubes": [
+            cubo([-5.5, 0, -9], [11, 13, 18], north="naranja", south="rejilla", resto="metal"),
+            cubo([-3.5, 4.25, -13.5], [7, 4.5, 4.5], north="lente", resto="metal_osc"),
+            cubo([-4.5, 1, 8.5], [9, 11, 1], resto="junta"),
+        ]}]}]}
 
 
 def misil_geometry():
@@ -1366,6 +1466,7 @@ def misil_texture():
 
 def robot_animations():
     paso = "query.modified_distance_moved * 22"
+    corre = "query.modified_distance_moved * 15"
     fuerza = "math.min(query.modified_move_speed * 1.6, 1)"
     r = "animation.claudenpc.robot."
     return {"format_version": "1.8.0", "animations": {
@@ -1401,9 +1502,78 @@ def robot_animations():
             "torso": {"position": k((0, Z), (0.6, [0, -2, 0]), (0.8, Z), (1.3, Z))},
             "brazo_der": {"rotation": k((0, Z), (0.4, [-40, 0, 10]), (0.8, Z), (1.3, Z))},
             "brazo_izq": {"rotation": k((0, Z), (0.4, [-40, 0, -10]), (0.8, Z), (1.3, Z))}}},
-        r + "golpe": {"animation_length": 0.7, "bones": {
-            "brazo_izq": {"rotation": k((0, Z), (0.25, [-110, 0, -10]), (0.4, [-60, 0, 0]), (0.7, Z))},
-            "torso": {"rotation": k((0, Z), (0.25, [0, -15, 0]), (0.7, Z))}}},
+        # Correr: zancada larga, el torso inclinado, los brazos van y vienen con fuerza.
+        r + "correr": {"loop": True, "bones": {
+            "pierna_der": {"rotation": [f"math.sin({corre}) * 52 * {fuerza}", 0, 0]},
+            "pierna_izq": {"rotation": [f"-math.sin({corre}) * 52 * {fuerza}", 0, 0]},
+            "espinilla_der": {"rotation": [f"math.max(0, -math.sin({corre})) * 62 * {fuerza}", 0, 0]},
+            "espinilla_izq": {"rotation": [f"math.max(0, math.sin({corre})) * 62 * {fuerza}", 0, 0]},
+            "brazo_der": {"rotation": [f"-math.sin({corre}) * 38 * {fuerza} - 12 * {fuerza}", 0, 6]},
+            "brazo_izq": {"rotation": [f"math.sin({corre}) * 38 * {fuerza} - 12 * {fuerza}", 0, -6]},
+            "torso": {"position": [0, f"math.abs(math.cos({corre})) * 2.6 * {fuerza} - 1.2 * {fuerza}", 0],
+                      "rotation": [f"14 * {fuerza}", f"math.sin({corre}) * 7 * {fuerza}", 0]},
+            "pod_der": {"rotation": [f"math.cos({corre}) * 6 * {fuerza}", 0, 0]},
+            "pod_izq": {"rotation": [f"-math.cos({corre}) * 6 * {fuerza}", 0, 0]}}},
+        # Golpe: el puño sale disparado (el impacto es al instante), el cuerpo entero se
+        # lanza hacia delante, el hombro retrocede y vuelve con peso.
+        r + "golpe": {"animation_length": 0.9, "bones": {
+            "brazo_izq": {"rotation": k((0, [-95, 0, -12]), (0.08, [-112, 0, -6]), (0.22, [-100, 0, -4]), (0.5, [-35, 0, -6]), (0.9, Z))},
+            "antebrazo_izq": {"rotation": k((0, [-10, 0, 0]), (0.08, Z), (0.5, [-20, 0, 0]), (0.9, Z))},
+            "brazo_der": {"rotation": k((0, [30, 0, 8]), (0.22, [36, 0, 10]), (0.9, Z))},
+            "torso": {"rotation": k((0, [6, 24, 0]), (0.1, [8, 28, 0]), (0.45, [2, 6, 0]), (0.9, Z))},
+            "root": {"position": k((0, [0, 0, -3]), (0.12, [0, 0, -4]), (0.5, [0, 0, -1]), (0.9, Z))},
+            "hombro_izq": {"rotation": k((0, Z), (0.08, [-14, 0, 0]), (0.3, [6, 0, 0]), (0.6, Z))},
+            "cabina": {"scale": k((0, [1, 1, 1]), (0.08, [1.06, 0.94, 1.06]), (0.3, [1, 1, 1]))}}},
+        # Golpe con el brazo de la minigun (de revés).
+        r + "golpe2": {"animation_length": 0.9, "bones": {
+            "brazo_der": {"rotation": k((0, [-70, 0, 70]), (0.1, [-85, 0, -15]), (0.3, [-80, 0, -25]), (0.9, Z))},
+            "torso": {"rotation": k((0, [0, -26, 0]), (0.1, [4, 18, 0]), (0.5, [0, 4, 0]), (0.9, Z))},
+            "root": {"position": k((0, Z), (0.1, [0, 0, -3]), (0.5, Z), (0.9, Z))}}},
+        # Salto aplastante: se agacha, sube con los brazos arriba y cae con todo el peso.
+        r + "agacharse": {"animation_length": 0.9, "bones": {
+            "torso": {"position": k((0, Z), (0.5, [0, -7, 0]), (0.9, [0, -7, 0]))},
+            "pierna_der": {"rotation": k((0, Z), (0.5, [-38, 0, 0]), (0.9, [-38, 0, 0]))},
+            "pierna_izq": {"rotation": k((0, Z), (0.5, [-38, 0, 0]), (0.9, [-38, 0, 0]))},
+            "espinilla_der": {"rotation": k((0, Z), (0.5, [62, 0, 0]), (0.9, [62, 0, 0]))},
+            "espinilla_izq": {"rotation": k((0, Z), (0.5, [62, 0, 0]), (0.9, [62, 0, 0]))},
+            "brazo_der": {"rotation": k((0, Z), (0.5, [40, 0, 12]), (0.9, [40, 0, 12]))},
+            "brazo_izq": {"rotation": k((0, Z), (0.5, [40, 0, -12]), (0.9, [40, 0, -12]))}}},
+        r + "salto": {"animation_length": 1.3, "bones": {
+            "brazo_der": {"rotation": k((0, [-160, 0, 20]), (1.0, [-160, 0, 20]), (1.15, [-60, 0, 30]), (1.3, Z))},
+            "brazo_izq": {"rotation": k((0, [-160, 0, -20]), (1.0, [-160, 0, -20]), (1.15, [-60, 0, -30]), (1.3, Z))},
+            "pierna_der": {"rotation": k((0, [-40, 0, 0]), (1.0, [-20, 0, 0]), (1.15, Z))},
+            "pierna_izq": {"rotation": k((0, [-40, 0, 0]), (1.0, [-20, 0, 0]), (1.15, Z))},
+            "espinilla_der": {"rotation": k((0, [70, 0, 0]), (1.0, [20, 0, 0]), (1.15, Z))},
+            "espinilla_izq": {"rotation": k((0, [70, 0, 0]), (1.0, [20, 0, 0]), (1.15, Z))},
+            "torso": {"position": k((0, Z), (1.15, [0, -6, 0]), (1.3, Z))}}},
+        # Puño cohete: apunta con el brazo izquierdo y el antebrazo sale volando.
+        r + "puno": {"animation_length": 1.0, "bones": {
+            "brazo_izq": {"rotation": k((0, Z), (0.25, [-92, 0, -6]), (0.3, [-80, 0, -6]), (0.85, [-88, 0, -6]), (1.0, [-92, 0, -6]))},
+            "torso": {"rotation": k((0, Z), (0.25, [0, 18, 0]), (0.32, [-4, 10, 0]), (1.0, [0, 14, 0]))}}},
+        r + "puno_espera": {"loop": True, "bones": {
+            "brazo_izq": {"rotation": [-88, 0, -6]}, "torso": {"rotation": [0, 12, 0]}}},
+        # Láser giratorio: abre los brazos y el torso da una vuelta entera.
+        r + "giro": {"animation_length": 3.0, "bones": {
+            "torso": {"rotation": k((0, Z), (0.75, [0, 90, 0]), (1.5, [0, 180, 0]), (2.25, [0, 270, 0]), (3.0, [0, 360, 0]))},
+            "brazo_der": {"rotation": [0, 0, 70]}, "brazo_izq": {"rotation": [0, 0, -70]}}},
+        # Imán: levanta los brazos y tiembla mientras atrae.
+        r + "iman": {"animation_length": 2.0, "bones": {
+            "brazo_der": {"rotation": k((0, Z), (0.3, [-125, 0, 28]), (1.7, [-125, 0, 28]), (2.0, Z))},
+            "brazo_izq": {"rotation": k((0, Z), (0.3, [-125, 0, -28]), (1.7, [-125, 0, -28]), (2.0, Z))},
+            "root": {"position": ["math.sin(query.anim_time * 2400) * 0.4", 0, 0]},
+            "cabina": {"scale": "1 + math.sin(query.anim_time * 1200) * 0.04"}}},
+        # Sobrecarga de IQ (cambio de fase): brazos arriba, sacudidas y la cabina late.
+        r + "sobrecarga": {"animation_length": 2.4, "bones": {
+            "brazo_der": {"rotation": k((0, Z), (0.4, [-170, 0, 26]), (2.0, [-170, 0, 26]), (2.4, Z))},
+            "brazo_izq": {"rotation": k((0, Z), (0.4, [-170, 0, -26]), (2.0, [-170, 0, -26]), (2.4, Z))},
+            "torso": {"rotation": k((0, Z), (0.4, [-14, 0, 0]), (2.0, [-14, 0, 0]), (2.4, Z))},
+            "root": {"position": ["math.sin(query.anim_time * 3000) * 0.6", 0, "math.cos(query.anim_time * 2600) * 0.4"]},
+            "cabina": {"scale": "1 + math.abs(math.sin(query.anim_time * 600)) * 0.12"}}},
+        # Escudo de energía: cruza los brazos delante.
+        r + "escudo": {"animation_length": 1.2, "bones": {
+            "brazo_der": {"rotation": k((0, Z), (0.3, [-80, -38, 0]), (0.9, [-80, -38, 0]), (1.2, Z))},
+            "brazo_izq": {"rotation": k((0, Z), (0.3, [-80, 38, 0]), (0.9, [-80, 38, 0]), (1.2, Z))},
+            "torso": {"position": k((0, Z), (0.3, [0, -2, 0]), (0.9, [0, -2, 0]), (1.2, Z))}}},
         r + "alarma": {"loop": True, "bones": {
             "root": {"rotation": [0, 0, "math.sin(query.life_time * 2400) * 1.5"]},
             "torso": {"position": ["math.sin(query.life_time * 3100) * 0.4", 0, 0]},
@@ -1413,6 +1583,8 @@ def robot_animations():
             "hombro_der": {"scale": k((0, [0.01, 0.01, 0.01]), (0.6, [0.01, 0.01, 0.01]), (1.0, [1.1, 1.1, 1.1]), (1.2, [1, 1, 1]))},
             "hombro_izq": {"scale": k((0, [0.01, 0.01, 0.01]), (0.7, [0.01, 0.01, 0.01]), (1.1, [1.1, 1.1, 1.1]), (1.3, [1, 1, 1]))},
             "cabina": {"scale": k((0, [0.01, 0.01, 0.01]), (0.9, [0.01, 0.01, 0.01]), (1.4, [1.1, 1.1, 1.1]), (1.6, [1, 1, 1]))}}},
+        "animation.claudenpc.puno.orientar": {"loop": True, "bones": {
+            "puno": {"rotation": ["query.target_x_rotation", 0, "query.life_time * 900"]}}},
         "animation.claudenpc.misil.orientar": {"loop": True, "bones": {
             "cuerpo": {"rotation": ["query.target_x_rotation", 0, "query.life_time * 720"]}}},
     }}
@@ -1489,13 +1661,24 @@ def render_controllers():
     return {"format_version": "1.8.0", "render_controllers": {
         "controller.render.claudenpc": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
-            "materials": [{"*": "Material.default"}, {"emblema": "Material.glow"}]},
+            "materials": [{"*": "Material.default"}, {"emblema": "Material.glow"}],
+            "part_visibility": [{"*": True}, {"herr_martillo": False}, {"herr_destornillador": False}, {"herr_llave": False}]},
+        "controller.render.claudenpc_npc": {
+            "geometry": "Geometry.default", "textures": ["Texture.default"],
+            "materials": [{"*": "Material.default"}, {"emblema": "Material.glow"}],
+            "part_visibility": [{"*": True},
+                                {"herr_martillo": "query.property('claudenpc:herramienta') == 1"},
+                                {"herr_destornillador": "query.property('claudenpc:herramienta') == 2"},
+                                {"herr_llave": "query.property('claudenpc:herramienta') == 3"}]},
         "controller.render.claudenpc_golden": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES]},
         "controller.render.claudenpc_robot": {
-            "geometry": "Geometry.default", "textures": ["Texture.default"],
-            "materials": [{"*": "Material.default"}, {"cupula": "Material.cristal"}]},
+            "arrays": {"textures": {"Array.fases": ["Texture.default", "Texture.turbo", "Texture.genio"]}},
+            "geometry": "Geometry.default", "textures": ["Array.fases[query.property('claudenpc:fase')]"],
+            "materials": [{"*": "Material.default"}, {"cupula": "Material.cristal"}],
+            "part_visibility": [{"*": True}, {"antebrazo_izq": "!query.property('claudenpc:sin_puno')"},
+                                {"laser_izq": "!query.property('claudenpc:sin_puno')"}]},
         "controller.render.claudenpc_aura": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}, {"brillo*": "Material.brillo"}]},
@@ -1520,7 +1703,8 @@ def client_entities():
     for name in ("golpe", "espadazo", "espadazo2", "hachazo", "estocada", "cubrirse", "bloqueo", "martillazo",
                  "lanzar", "colocar", "crafteo", "minar", "arco", "planeo", "cubeta", "agachado", "colocar_abajo",
                  "torre", "remar", "celebrar", "sentado", "tomar_notas", "levantar_mano", "aplaudir", "pescar",
-                 "pescar_espera", "recoger", "pilotar", "mirar_alrededor", "danza", "fusion", "beber"):
+                 "pescar_espera", "recoger", "pilotar", "mirar_alrededor", "danza", "fusion", "beber",
+                 "martillar", "atornillar", "apretar"):
         claude_anims[name] = f"animation.claudenpc.{name}"
     write_json(RP / "entity/claude.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:claude",
@@ -1531,7 +1715,7 @@ def client_entities():
         "scripts": {"animate": ["mirar", "caminar", "respirar", "parpadeo",
                                 {"cubrirse": "query.property('claudenpc:escudo')"},
                                 {"sentado": "query.property('claudenpc:sentado')"}]},
-        "render_controllers": ["controller.render.claudenpc"],
+        "render_controllers": ["controller.render.claudenpc_npc"],
         "enable_attachables": True,
         "spawn_egg": {"base_color": "#D97757", "overlay_color": "#F5ECDC"}}}})
     maestro_anims = dict(base_anims)
@@ -1588,17 +1772,31 @@ def client_entities():
         "scripts": {"animate": ["idle"]},
         "render_controllers": ["controller.render.claudenpc_aura"]}}})
     robot_anims = {n: f"animation.claudenpc.robot.{n}" for n in
-                   ("caminar", "reposo", "misiles", "laser", "metralla", "pisoton", "golpe", "alarma", "ensamblaje")}
+                   ("caminar", "correr", "reposo", "misiles", "laser", "metralla", "pisoton", "golpe", "golpe2", "alarma",
+                    "ensamblaje", "agacharse", "salto", "puno", "puno_espera", "giro", "iman", "sobrecarga", "escudo")}
+    robot_anims["ctrl_fase"] = "controller.animation.claudenpc.robot.fase"
     robot_anims["ctrl_vapor"] = "controller.animation.claudenpc.robot.vapor"
     write_json(RP / "entity/robot.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:robot",
         "materials": {"default": "entity_emissive_alpha", "cristal": "entity_alphablend"},
-        "textures": {"default": "textures/entity/claudenpc/robot"},
+        "textures": {"default": "textures/entity/claudenpc/robot", "turbo": "textures/entity/claudenpc/robot_turbo",
+                     "genio": "textures/entity/claudenpc/robot_genio"},
         "geometry": {"default": "geometry.claudenpc.robot"},
         "animations": robot_anims,
-        "particle_effects": {"vapor": "claudenpc:vapor"},
-        "scripts": {"animate": ["caminar", "reposo", {"alarma": "query.property('claudenpc:alarma')"}, "ctrl_vapor"]},
+        "particle_effects": {"vapor": "claudenpc:vapor", "turbo": "claudenpc:llama_misil", "genio": "claudenpc:aura_dorada"},
+        "scripts": {"animate": [{"caminar": "!query.property('claudenpc:corriendo')"}, {"correr": "query.property('claudenpc:corriendo')"},
+                                "reposo", {"puno_espera": "query.property('claudenpc:sin_puno')"},
+                                {"alarma": "query.property('claudenpc:alarma')"}, "ctrl_vapor", "ctrl_fase"]},
         "render_controllers": ["controller.render.claudenpc_robot"]}}})
+    write_json(RP / "entity/puno.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:puno",
+        "materials": {"default": "entity_emissive_alpha"},
+        "textures": {"default": "textures/entity/claudenpc/robot"},
+        "geometry": {"default": "geometry.claudenpc.puno"},
+        "animations": {"orientar": "animation.claudenpc.puno.orientar", "ctrl_fuego": "controller.animation.claudenpc.puno.fuego"},
+        "particle_effects": {"llama": "claudenpc:llama_misil", "humo": "claudenpc:humo_misil"},
+        "scripts": {"animate": ["orientar", "ctrl_fuego"]},
+        "render_controllers": ["controller.render.default"]}}})
     write_json(RP / "entity/misil.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:misil",
         "materials": {"default": "entity_emissive_alpha"},
@@ -1611,6 +1809,16 @@ def client_entities():
     write_json(RP / "animation_controllers/robot.animation_controllers.json", {"format_version": "1.10.0", "animation_controllers": {
         "controller.animation.claudenpc.robot.vapor": {"initial_state": "humea", "states": {"humea": {
             "particle_effects": [{"effect": "vapor", "locator": "escape_der"}, {"effect": "vapor", "locator": "escape_izq"}]}}},
+        # Por fase: turbo echa fuego por los escapes; genio, chispas doradas por todo el cuerpo.
+        "controller.animation.claudenpc.robot.fase": {"initial_state": "normal", "states": {
+            "normal": {"transitions": [{"turbo": "query.property('claudenpc:fase') == 1"}, {"genio": "query.property('claudenpc:fase') >= 2"}]},
+            "turbo": {"particle_effects": [{"effect": "turbo", "locator": "escape_der"}, {"effect": "turbo", "locator": "escape_izq"}],
+                      "transitions": [{"normal": "query.property('claudenpc:fase') == 0"}, {"genio": "query.property('claudenpc:fase') >= 2"}]},
+            "genio": {"particle_effects": [{"effect": "genio", "locator": "nucleo"}, {"effect": "turbo", "locator": "escape_der"},
+                                           {"effect": "turbo", "locator": "escape_izq"}],
+                      "transitions": [{"normal": "query.property('claudenpc:fase') == 0"}, {"turbo": "query.property('claudenpc:fase') == 1"}]}}},
+        "controller.animation.claudenpc.puno.fuego": {"initial_state": "vuela", "states": {"vuela": {
+            "particle_effects": [{"effect": "llama", "locator": "fuego"}, {"effect": "humo", "locator": "fuego"}]}}},
         "controller.animation.claudenpc.misil.humo": {"initial_state": "vuela", "states": {"vuela": {
             "particle_effects": [{"effect": "humo", "locator": "cola"}, {"effect": "llama", "locator": "cola"}]}}}}})
     write_json(RP / "animation_controllers/golden.animation_controllers.json", {"format_version": "1.10.0", "animation_controllers": {
@@ -1633,7 +1841,10 @@ def main():
     maestro_skin().save(tex / "maestro.png")
     for nombre in ("einstein", "tesla", "curie", "newton", "lovelace"):
         maestro_skin(ESTILOS[nombre]).save(tex / f"maestro_{nombre}.png")
-    robot_texture().save(tex / "robot.png")
+    robot_texture(0).save(tex / "robot.png")
+    robot_texture(1).save(tex / "robot_turbo.png")
+    robot_texture(2).save(tex / "robot_genio.png")
+    write_json(RP / "models/entity/puno.geo.json", puno_geometry())
     misil_texture().save(tex / "misil.png")
     eco_skin().save(tex / "eco.png")
     reflejo_skin().save(tex / "reflejo.png")

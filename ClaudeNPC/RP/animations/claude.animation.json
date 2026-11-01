@@ -1601,6 +1601,178 @@
         }
       }
     },
+    "animation.claudenpc.martillar": {
+      "animation_length": 0.5,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              -60,
+              0,
+              0
+            ],
+            "0.18": [
+              -155,
+              0,
+              8
+            ],
+            "0.28": [
+              -45,
+              0,
+              0
+            ],
+            "0.50": [
+              -60,
+              0,
+              0
+            ]
+          }
+        },
+        "leftArm": {
+          "rotation": [
+            -55,
+            15,
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            18,
+            0,
+            0
+          ]
+        },
+        "body": {
+          "rotation": {
+            "0.00": [
+              0,
+              0,
+              0
+            ],
+            "0.18": [
+              -4,
+              0,
+              0
+            ],
+            "0.28": [
+              6,
+              0,
+              0
+            ],
+            "0.50": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.claudenpc.atornillar": {
+      "animation_length": 0.6,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              -78,
+              -35,
+              0
+            ],
+            "0.15": [
+              -78,
+              35,
+              0
+            ],
+            "0.30": [
+              -78,
+              -35,
+              0
+            ],
+            "0.45": [
+              -78,
+              35,
+              0
+            ],
+            "0.60": [
+              -78,
+              -35,
+              0
+            ]
+          }
+        },
+        "leftArm": {
+          "rotation": [
+            -62,
+            22,
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            14,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.apretar": {
+      "animation_length": 0.6,
+      "bones": {
+        "rightArm": {
+          "rotation": {
+            "0.00": [
+              -72,
+              0,
+              22
+            ],
+            "0.30": [
+              -72,
+              0,
+              -28
+            ],
+            "0.60": [
+              -72,
+              0,
+              22
+            ]
+          }
+        },
+        "leftArm": {
+          "rotation": [
+            -50,
+            10,
+            -10
+          ]
+        },
+        "body": {
+          "rotation": {
+            "0.00": [
+              0,
+              -8,
+              0
+            ],
+            "0.30": [
+              0,
+              8,
+              0
+            ],
+            "0.60": [
+              0,
+              -8,
+              0
+            ]
+          }
+        },
+        "head": {
+          "rotation": [
+            12,
+            0,
+            0
+          ]
+        }
+      }
+    },
     "animation.claudenpc.beber": {
       "animation_length": 1.0,
       "bones": {

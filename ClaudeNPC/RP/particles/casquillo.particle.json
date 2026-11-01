@@ -1,0 +1,66 @@
+{
+  "format_version": "1.10.0",
+  "particle_effect": {
+    "description": {
+      "identifier": "claudenpc:casquillo",
+      "basic_render_parameters": {
+        "material": "particles_alpha",
+        "texture": "textures/particle/claudenpc"
+      }
+    },
+    "components": {
+      "minecraft:emitter_lifetime_once": {
+        "active_time": 0.1
+      },
+      "minecraft:particle_appearance_billboard": {
+        "size": [
+          0.09,
+          0.09
+        ],
+        "facing_camera_mode": "lookat_xyz",
+        "uv": {
+          "texture_width": 64,
+          "texture_height": 32,
+          "uv": [
+            56,
+            0
+          ],
+          "uv_size": [
+            8,
+            8
+          ]
+        }
+      },
+      "minecraft:particle_appearance_tinting": {
+        "color": {
+          "gradient": {
+            "0.0": "#FFE8B850",
+            "1.0": "#FFB07820"
+          },
+          "interpolant": "variable.particle_age / variable.particle_lifetime"
+        }
+      },
+      "minecraft:emitter_rate_instant": {
+        "num_particles": 1
+      },
+      "minecraft:emitter_shape_point": {
+        "direction": [
+          "math.random(-0.6, 0.6)",
+          1,
+          "math.random(-0.6, 0.6)"
+        ]
+      },
+      "minecraft:particle_lifetime_expression": {
+        "max_lifetime": 0.7
+      },
+      "minecraft:particle_initial_speed": 4,
+      "minecraft:particle_motion_dynamic": {
+        "linear_acceleration": [
+          0,
+          -22,
+          0
+        ]
+      }
+    }
+  }
+}

@@ -8,34 +8,58 @@
         "cristal": "entity_alphablend"
       },
       "textures": {
-        "default": "textures/entity/claudenpc/robot"
+        "default": "textures/entity/claudenpc/robot",
+        "turbo": "textures/entity/claudenpc/robot_turbo",
+        "genio": "textures/entity/claudenpc/robot_genio"
       },
       "geometry": {
         "default": "geometry.claudenpc.robot"
       },
       "animations": {
         "caminar": "animation.claudenpc.robot.caminar",
+        "correr": "animation.claudenpc.robot.correr",
         "reposo": "animation.claudenpc.robot.reposo",
         "misiles": "animation.claudenpc.robot.misiles",
         "laser": "animation.claudenpc.robot.laser",
         "metralla": "animation.claudenpc.robot.metralla",
         "pisoton": "animation.claudenpc.robot.pisoton",
         "golpe": "animation.claudenpc.robot.golpe",
+        "golpe2": "animation.claudenpc.robot.golpe2",
         "alarma": "animation.claudenpc.robot.alarma",
         "ensamblaje": "animation.claudenpc.robot.ensamblaje",
+        "agacharse": "animation.claudenpc.robot.agacharse",
+        "salto": "animation.claudenpc.robot.salto",
+        "puno": "animation.claudenpc.robot.puno",
+        "puno_espera": "animation.claudenpc.robot.puno_espera",
+        "giro": "animation.claudenpc.robot.giro",
+        "iman": "animation.claudenpc.robot.iman",
+        "sobrecarga": "animation.claudenpc.robot.sobrecarga",
+        "escudo": "animation.claudenpc.robot.escudo",
+        "ctrl_fase": "controller.animation.claudenpc.robot.fase",
         "ctrl_vapor": "controller.animation.claudenpc.robot.vapor"
       },
       "particle_effects": {
-        "vapor": "claudenpc:vapor"
+        "vapor": "claudenpc:vapor",
+        "turbo": "claudenpc:llama_misil",
+        "genio": "claudenpc:aura_dorada"
       },
       "scripts": {
         "animate": [
-          "caminar",
+          {
+            "caminar": "!query.property('claudenpc:corriendo')"
+          },
+          {
+            "correr": "query.property('claudenpc:corriendo')"
+          },
           "reposo",
+          {
+            "puno_espera": "query.property('claudenpc:sin_puno')"
+          },
           {
             "alarma": "query.property('claudenpc:alarma')"
           },
-          "ctrl_vapor"
+          "ctrl_vapor",
+          "ctrl_fase"
         ]
       },
       "render_controllers": [

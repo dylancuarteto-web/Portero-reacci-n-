@@ -12,3 +12,4 @@ item.spawn_egg.entity.claudenpc:maestro.name=Generar a Claude Maestro
 action.interact.claudenpc.hablar=Hablar
 action.interact.claudenpc.habilidades=Habilidades
 entity.claudenpc:reflejo.name=Reflejo de Claude
+entity.claudenpc:puno.name=Puño cohete
