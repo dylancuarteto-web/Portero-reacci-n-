@@ -4,6 +4,7 @@ import { estados } from "./estado.js";
 import { registrarGolden } from "./golden/index.js";
 import { caminarA, detener, velocidad } from "./movimiento.js";
 import { animate, burst, distancia, now, particleAt, soundAt, superficie } from "./util.js";
+import { salirDeClase } from "./clase.js";
 
 // Fusión: cinco Claudes con IQ 1000 dejan de perseguir al jugador, se reúnen en
 // círculo, bailan una danza propia, los envuelve una esfera de aura y, tras una
@@ -64,12 +65,17 @@ export function revisarFusion() {
     }
     const genios = lista.filter((n) => {
       const s = estados.get(n.id);
-      return s && s.iq >= FUSION.iq && !s.bote && !s.clase && !s.robot && !s.robotObra;
+      return s && s.iq >= FUSION.iq && !s.bote && !s.robot && !s.robotObra;
     });
     if (genios.length < FUSION.cantidad) {
       liberar(lista);
       if (busqueda?.dim === id) busqueda = undefined;
       continue;
+    }
+    // Los cinco genios dejan la clase: esto es más importante.
+    for (const n of genios) {
+      const s = estados.get(n.id);
+      if (s?.clase) salirDeClase(n, s, false);
     }
     const centroGenios = promedio(genios);
     let jugador;

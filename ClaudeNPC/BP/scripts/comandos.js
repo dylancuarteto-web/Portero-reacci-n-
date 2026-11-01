@@ -3,10 +3,12 @@ import { IQ, MAESTRO, NPC, PROP, VARIANTES } from "./config.js";
 import { obtenerEstado } from "./estado.js";
 import { aprender } from "./iq.js";
 import { claseAhora } from "./maestro.js";
+import { forzarRobot } from "./robot/construccion.js";
 
 // /claudenpc:iq <valor>: pone el IQ de los Claudes cercanos. Sirve para probar la
 // robot (5 Claudes con IQ 500) o la fusión (5 con IQ 1000) sin esperar. Requiere trucos.
 // /claudenpc:clase: el Claude Maestro más cercano toca la campana y empieza la clase.
+// /claudenpc:robot: los Claudes más cercanos (hasta cinco) construyen el robot ya.
 export function registrarComandos() {
   system.beforeEvents.startup.subscribe(({ customCommandRegistry }) => {
     customCommandRegistry.registerCommand(
@@ -56,6 +58,20 @@ export function registrarComandos() {
             p.sendMessage("§cNo se pudo generar al maestro aquí.");
           }
         });
+        return { status: CustomCommandStatus.Success };
+      },
+    );
+    customCommandRegistry.registerCommand(
+      {
+        name: "claudenpc:robot",
+        description: "Los Claudes más cercanos (hasta 5) construyen su robot ahora",
+        permissionLevel: CommandPermissionLevel.GameDirectors,
+        cheatsRequired: true,
+      },
+      (origin) => {
+        const p = origin.sourceEntity;
+        if (!(p instanceof Player)) return { status: CustomCommandStatus.Failure, message: "Úsalo como jugador." };
+        system.run(() => p.sendMessage(forzarRobot(p)));
         return { status: CustomCommandStatus.Success };
       },
     );

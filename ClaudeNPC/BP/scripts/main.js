@@ -1,5 +1,5 @@
 import { EntityDamageCause, GameMode, Player, system, world } from "@minecraft/server";
-import { COMBATE, DIMENSIONES, NPC } from "./config.js";
+import { COMBATE, DIMENSIONES, MODIFICA_MUNDO, NPC } from "./config.js";
 import { pausarRutina, tickRutina } from "./actividades/index.js";
 import { rumboBote, tickAgua, tickBote } from "./bote.js";
 import { tickAlumno } from "./clase.js";
@@ -7,18 +7,21 @@ import { animarGolpe, tickCombate } from "./combate.js";
 import { registrarComandos } from "./comandos.js";
 import { bloqueaProyectil, efectoBloqueo } from "./escudo.js";
 import { estados, obtenerEstado } from "./estado.js";
+import { nivelHab } from "./habilidades.js";
+import { contraataque } from "./habilidades/reflejos.js";
 import { revisarFusion } from "./fusion.js";
 import "./golden/index.js";
 import { aprender, ponerHaciendo } from "./iq.js";
 import "./maestro.js";
 import { revisarRobot } from "./robot/construccion.js";
 import { tickPiloto } from "./robot/index.js";
-import { caminarA, caminando, destinoActual, velocidad } from "./movimiento.js";
+import { caminarA, caminando, destinoActual, salidaDePozo, seAtasco, velocidad } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
+import { iniciarTorre } from "./obras/torre.js";
 import { hostil } from "./postura.js";
-import { perlaHasta, vigilarCaida } from "./tacticas.js";
-import { cada, now } from "./util.js";
+import { bloquePropio, golpear, perlaHasta, vigilarCaida } from "./tacticas.js";
+import { cada, now, superficie } from "./util.js";
 
 // Cerebro de cada Claude. Prioridades en cada turno:
 // fusión > clase > bote > agua (nadar a la orilla) > reunión de genios > obra corta
@@ -70,6 +73,16 @@ function cerebro(npc) {
     if (jugador && pelea) rumboBote(npc, jugador.location);
     return tickBote(npc, s);
   }
+  // Agua 2 y 3: nada rápido como un delfín y respira bajo el agua.
+  if (npc.isInWater && cada(s, "aguaHab", 60)) {
+    const na = nivelHab(npc, s, "agua");
+    try {
+      if (na >= 2) npc.addEffect("dolphins_grace", 80, { amplifier: 0, showParticles: false });
+      if (na >= 3) npc.addEffect("water_breathing", 200, { amplifier: 0, showParticles: false });
+    } catch {
+      // Sin efecto.
+    }
+  }
   if (tickAgua(npc, s, pelea ? jugador : undefined)) {
     hostil(npc, s, pelea);
     pausarRutina(npc, s);
@@ -80,7 +93,9 @@ function cerebro(npc) {
     pausarRutina(npc, s);
     ponerHaciendo(npc, s, s.robotObra ? "§b¡a construir el robot!" : "§d¡buscando al jugador!");
     const lejos = Math.hypot(npc.location.x - s.reunion.x, npc.location.z - s.reunion.z);
-    if (lejos > 6 && s.reunionDesde && now() - s.reunionDesde > 600) {
+    // Si tarda demasiado (o se atascó, o quedó bajo tierra), llega con una perla.
+    const espera = now() - (s.reunionDesde ?? now());
+    if (lejos > 6 && s.reunionDesde && (espera > 600 || (seAtasco(npc) && espera > 80))) {
       s.reunionDesde = now(); // tarda demasiado: llega con una perla
       perlaHasta(npc, s.reunion);
       return;
@@ -93,6 +108,21 @@ function cerebro(npc) {
     return;
   }
   hostil(npc, s, pelea);
+  // Quedó en un pozo o una cueva sin salida caminando: sale con una torre, como un
+  // jugador. Si a la tercera no lo logra (techo que su pico no rompe), sale con una perla.
+  const pozo = salidaDePozo(npc);
+  if (pozo !== undefined && !s.obra && !s.casa) {
+    s.intentosPozo = now() - (s.ultimoPozo ?? -10000) < 1200 ? (s.intentosPozo ?? 0) + 1 : 1;
+    s.ultimoPozo = now();
+    if (s.intentosPozo >= 3 || !MODIFICA_MUNDO) {
+      const top = superficie(npc.dimension, npc.location.x, npc.location.z);
+      if (top) perlaHasta(npc, { x: Math.floor(npc.location.x) + 0.5, y: top.location.y + 1, z: Math.floor(npc.location.z) + 0.5 });
+      s.intentosPozo = 0;
+    } else {
+      iniciarTorre(npc, s, pozo, bloquePropio(s));
+      ponerHaciendo(npc, s, "§7saliendo del pozo");
+    }
+  }
   if (tickObra(npc, s)) return;
   if (pelea) {
     pausarRutina(npc, s);
@@ -192,7 +222,17 @@ world.beforeEvents.entityHurt.subscribe((event) => {
   const npc = event.hurtEntity;
   if (bloqueaProyectil(npc, s, event.damageSource)) {
     event.cancel = true;
-    system.run(() => efectoBloqueo(npc, s));
+    const origen = event.damageSource.damagingEntity;
+    system.run(() => efectoBloqueo(npc, s, origen));
+    return;
+  }
+  // Reflejos 5: a veces el golpe le da a un reflejo; él esquiva y contraataca.
+  const atacante = event.damageSource.damagingEntity;
+  if (cause === EntityDamageCause.entityAttack && atacante instanceof Player && now() >= (s.cd.contra ?? 0)
+    && !s.robot && !s.clase && Math.random() < 0.35 && nivelHab(npc, s, "reflejos") >= 5) {
+    event.cancel = true;
+    s.cd.contra = now() + 80;
+    system.run(() => npc.isValid && atacante.isValid && contraataque(npc, s, atacante, golpear));
   }
 }, { entityFilter: { type: NPC } });
 

@@ -2,6 +2,8 @@ import { EntityDamageCause, system } from "@minecraft/server";
 import { ANIM, ARMAS, CONSTRUCCION, MODIFICA_MUNDO, PARTICLES } from "./config.js";
 import { ponerElytra, quitarElytra, sostener } from "./equipo.js";
 import { estados } from "./estado.js";
+import { nivelHab, practicar } from "./habilidades.js";
+import { estallidoDeViento, iniciarDuo } from "./habilidades/vuelo.js";
 import { velocidad } from "./movimiento.js";
 import { nivel } from "./iq.js";
 import { alturaSuelo, animate, blockAt, burst, colocar, flat, impulse, mirarA, now, sound } from "./util.js";
@@ -31,9 +33,46 @@ export function golpear(npc, jugador, dano, empuje, alto) {
   }
 }
 
+function dispararFlecha(npc, desde, dir, rapidez, fuego) {
+  try {
+    const flecha = npc.dimension.spawnEntity("minecraft:arrow", { x: desde.x + dir.x * 0.8, y: desde.y, z: desde.z + dir.z * 0.8 });
+    const proj = flecha.getComponent("minecraft:projectile");
+    if (proj) {
+      proj.owner = npc;
+      proj.shoot({ x: dir.x * rapidez, y: dir.y * rapidez, z: dir.z * rapidez });
+    }
+    if (fuego) flecha.setOnFire(8, false);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Lluvia de flechas (Arco nivel 5): ocho flechas caen del cielo sobre el jugador.
+function lluvia(npc, jugador) {
+  const c = { ...jugador.location };
+  for (let k = 0; k < 8; k++) {
+    system.runTimeout(() => {
+      if (!npc.isValid) return;
+      const p = { x: c.x + (Math.random() - 0.5) * 5, y: c.y + 14, z: c.z + (Math.random() - 0.5) * 5 };
+      dispararFlecha(npc, p, { x: 0, y: -1, z: 0 }, 1.6, false);
+    }, 14 + k * 2);
+  }
+  sound(npc, "random.bow", 0.5, 1);
+}
+
 // Arco: tensa con animación y dispara apuntando adonde estará el jugador.
 // Con más IQ predice mejor el movimiento y compensa la caída de la flecha.
+// Habilidad Arco: 1 puntería · 2 flechas de fuego · 3 tres flechas · 4 tiro perfecto
+// · 5 lluvia de flechas. Con Cálculo 2 predice tu movimiento a la perfección.
 export function arco(npc, state, jugador) {
+  const nv = nivelHab(npc, state, "arco");
+  const opciones = ["normal"];
+  if (nv >= 3) opciones.push("tres");
+  if (nv >= 4) opciones.push("perfecto");
+  if (nv >= 5) opciones.push("lluvia");
+  const especial = opciones[Math.floor(Math.random() * opciones.length)];
+  const prediccion = nivelHab(npc, state, "calculo") >= 2;
   state.ocupadoHasta = now() + 34;
   sostener(npc, "minecraft:bow");
   mirarA(npc, jugador.getHeadLocation());
@@ -48,30 +87,32 @@ export function arco(npc, state, jugador) {
     const head = npc.getHeadLocation();
     const objetivo = jugador.location;
     const h = Math.hypot(objetivo.x - head.x, objetivo.z - head.z);
-    const rapidez = 2.6;
+    const rapidez = especial === "perfecto" ? 3.3 : 2.6;
     const tiempo = h / rapidez;
     const v = jugador.getVelocity();
-    const lead = 0.3 + n * 0.7;
+    const lead = prediccion ? 1 : 0.3 + n * 0.7;
     const px = objetivo.x + v.x * tiempo * lead;
     const pz = objetivo.z + v.z * tiempo * lead;
     const py = objetivo.y + 1.1 + 0.5 * 0.05 * tiempo * tiempo;
-    const error = (1 - n) * 0.12;
+    let error = (1 - n) * 0.12 * (nv >= 1 ? 0.4 : 1);
+    if (especial === "perfecto") error = 0;
     const dx = px - head.x + (Math.random() - 0.5) * error * h;
     const dy = py - head.y;
     const dz = pz - head.z + (Math.random() - 0.5) * error * h;
     const len = Math.hypot(dx, dy, dz) || 1;
-    try {
-      const flecha = npc.dimension.spawnEntity("minecraft:arrow",
-        { x: head.x + (dx / len) * 0.8, y: head.y, z: head.z + (dz / len) * 0.8 });
-      const proj = flecha.getComponent("minecraft:projectile");
-      if (proj) {
-        proj.owner = npc;
-        proj.shoot({ x: (dx / len) * rapidez, y: (dy / len) * rapidez, z: (dz / len) * rapidez });
+    const fuego = nv >= 2 && Math.random() < 0.6;
+    const dir = { x: dx / len, y: dy / len, z: dz / len };
+    dispararFlecha(npc, head, dir, rapidez, fuego);
+    if (especial === "tres") {
+      for (const a of [-0.12, 0.12]) {
+        const c = Math.cos(a);
+        const s = Math.sin(a);
+        dispararFlecha(npc, head, { x: dir.x * c - dir.z * s, y: dir.y, z: dir.x * s + dir.z * c }, rapidez, fuego);
       }
-      sound(npc, "random.bow", 1.1);
-    } catch {
-      // Sin flecha.
     }
+    if (especial === "lluvia") lluvia(npc, jugador);
+    sound(npc, "random.bow", 1.1);
+    practicar(npc, state, "arco", 0.04);
     system.runTimeout(() => volverAlArma(npc, state), 8);
   }, 24);
 }
@@ -94,7 +135,8 @@ export function perla(npc, state, jugador) {
   system.runTimeout(() => {
     if (!npc.isValid || !jugador.isValid) return;
     burst(npc, PARTICLES.teletransporte);
-    const lado = nivel(state) > 0.4 ? -1 : 1; // con IQ alto aparece detrás del jugador
+    const nv = nivelHab(npc, state, "perlas");
+    const lado = nivel(state) > 0.4 || nv >= 2 ? -1 : 1; // con IQ alto (o Perlas 2) aparece detrás del jugador
     const d = flat(jugador.location, npc.location);
     try {
       npc.teleport({ x: jugador.location.x + d.x * 2.5 * lado, y: jugador.location.y, z: jugador.location.z + d.z * 2.5 * lado },
@@ -105,6 +147,31 @@ export function perla(npc, state, jugador) {
     burst(npc, PARTICLES.teletransporte);
     sound(npc, "mob.endermen.portal");
     volverAlArma(npc, state);
+    // Perlas 4: perla y golpe, en cuanto aparece.
+    if (nv >= 4) {
+      system.runTimeout(() => {
+        if (!npc.isValid || !jugador.isValid) return;
+        animate(npc, ANIM.espadazo);
+        golpear(npc, jugador, 6, 0.8, 0.35);
+      }, 4);
+    }
+    // Perlas 3: doble perla, otra vez al lado contrario para confundirte.
+    if (nv >= 3 && Math.random() < 0.6) {
+      system.runTimeout(() => {
+        if (!npc.isValid || !jugador.isValid) return;
+        const d2 = flat(jugador.location, npc.location);
+        burst(npc, PARTICLES.teletransporte);
+        try {
+          npc.teleport({ x: jugador.location.x - d2.z * 2.5, y: jugador.location.y, z: jugador.location.z + d2.x * 2.5 },
+            { facingLocation: jugador.location, checkForBlocks: true });
+          burst(npc, PARTICLES.teletransporte);
+          sound(npc, "mob.endermen.portal", 1.3);
+        } catch {
+          // Sin sitio.
+        }
+      }, 16);
+    }
+    practicar(npc, state, "perlas", 0.05);
   }, 18);
 }
 
@@ -125,7 +192,7 @@ export function perlaHasta(npc, destino) {
 function impactoMaza(npc, state, caida) {
   burst(npc, PARTICLES.onda, { x: 0, y: 0.1, z: 0 });
   sound(npc, "mace.heavy_smash_ground", 1);
-  const dano = Math.min(30, 6 + caida * 1.6);
+  const dano = Math.min(40, (6 + caida * 1.6) * (state.duo ? 1.5 : 1));
   let acerto = false;
   for (const p of npc.dimension.getPlayers({ location: npc.location, maxDistance: 3.5 })) {
     acerto = golpear(npc, p, dano, 1.2, 0.5) || acerto;
@@ -150,26 +217,38 @@ export function martillazo(npc, state, jugador) {
 
 // Elytra + maza: despega con un cohete, planea hacia el jugador y cae en picada
 // con la maza. El daño depende de la altura de la caída, como la maza real.
+// Habilidad Vuelo: 1 elytra y maza · 2 dúo de viento (un compañero lo impulsa con
+// cargas de viento; también lo hace cualquier Claude con IQ 150+) · 3 impulso de
+// viento propio al despegar · 4 doble picada.
 export function elytraMartillo(npc, state, jugador) {
-  state.ocupadoHasta = now() + 240;
-  state.sinCaidaHasta = now() + 300;
+  const nv = nivelHab(npc, state, "vuelo");
+  state.ocupadoHasta = now() + 300;
+  state.sinCaidaHasta = now() + 360;
+  state.volando = true;
+  state.duo = undefined;
   ponerElytra(npc);
   sostener(npc, "minecraft:firework_rocket");
   sound(npc, "firework.launch", 1);
   burst(npc, PARTICLES.cohete, { x: 0, y: 0.3, z: 0 });
   impulse(npc, { x: 0, y: 1.25, z: 0 });
+  iniciarDuo(npc, state, jugador);
+  if (nv >= 3) system.runTimeout(() => npc.isValid && estallidoDeViento(npc, undefined, 0.8), 10);
   let fase = "subir";
   let t = 0;
   let alturaPicada = 0;
+  let picadas = 0;
   const fin = () => {
     system.clearRun(id);
+    state.volando = false;
+    state.duo = undefined;
     if (!npc.isValid) return;
     quitarElytra(npc, state);
     state.ocupadoHasta = now() + 10;
     volverAlArma(npc, state);
+    practicar(npc, state, "vuelo", 0.05);
   };
   const id = system.runInterval(() => {
-    if (!npc.isValid || !jugador.isValid || ++t > 220) return fin();
+    if (!npc.isValid || !jugador.isValid || ++t > 260) return fin();
     const d = flat(npc.location, jugador.location);
     const v = npc.getVelocity();
     if (fase === "subir") {
@@ -201,6 +280,18 @@ export function elytraMartillo(npc, state, jugador) {
     impulse(npc, { x: d.x * 0.08, y: -0.4, z: d.z * 0.08 });
     if (npc.isOnGround || alturaSuelo(npc) < 0.5 || npc.location.y <= jugador.location.y + 0.3) {
       impactoMaza(npc, state, Math.max(0, alturaPicada - npc.location.y));
+      picadas++;
+      // Vuelo 4: doble picada. Vuelve a despegar y cae otra vez.
+      if (nv >= 4 && picadas < 2) {
+        fase = "subir";
+        t = 0;
+        sostener(npc, "minecraft:firework_rocket");
+        sound(npc, "firework.launch", 1.1);
+        burst(npc, PARTICLES.cohete, { x: 0, y: 0.3, z: 0 });
+        impulse(npc, { x: 0, y: 1.2, z: 0 });
+        state.sinCaidaHasta = now() + 300;
+        return;
+      }
       fin();
     }
   }, 1);
@@ -248,7 +339,7 @@ export function vigilarCaida(npc, state) {
   const v = npc.getVelocity();
   if (v.y > -0.3) return;
   const h = alturaSuelo(npc);
-  if (MODIFICA_MUNDO && h >= 2.5 && h < 12 && state.iq >= 110 && clutch(npc, state)) return;
+  if (MODIFICA_MUNDO && h >= 2.5 && h < 12 && (state.iq >= 110 || nivelHab(npc, state, "agua") >= 1) && clutch(npc, state)) return;
   if (v.y > -0.45 || h < 5) return;
   state.aguaActiva = true;
   sostener(npc, "minecraft:water_bucket");

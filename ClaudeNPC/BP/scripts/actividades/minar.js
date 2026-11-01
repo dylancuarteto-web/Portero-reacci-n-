@@ -1,12 +1,13 @@
 import { system } from "@minecraft/server";
-import { ANIM, MINERIA, MODIFICA_MUNDO } from "../config.js";
+import { ANIM, MINERIA, MODIFICA_MUNDO, PARTICLES } from "../config.js";
 import { romper } from "../construccion.js";
 import { pico, sostener } from "../equipo.js";
 import { ocupado } from "../estructuras.js";
+import { nivelHab, practicar } from "../habilidades.js";
 import { aprender } from "../iq.js";
 import { caminarA, caminando, seAtasco } from "../movimiento.js";
 import { perlaHasta } from "../tacticas.js";
-import { animate, blockAt, mirarA, now, rand, superficie } from "../util.js";
+import { animate, blockAt, burst, mirarA, now, rand, superficie } from "../util.js";
 
 // Minería: baja en escalera (cada Claude hasta su propia profundidad), sigue en
 // túnel y vuelve a subir a la superficie, un bloque por golpe, con antorchas y
@@ -68,6 +69,29 @@ function ponerAntorcha(npc, donde) {
   }
 }
 
+function olfatear(npc, mina) {
+  const p = { x: Math.floor(npc.location.x), y: Math.floor(npc.location.y), z: Math.floor(npc.location.z) };
+  let mejor;
+  let md = Infinity;
+  for (let dx = -4; dx <= 4; dx++) for (let dy = -1; dy <= 2; dy++) for (let dz = -4; dz <= 4; dz++) {
+    const b = blockAt(npc.dimension, { x: p.x + dx, y: p.y + dy, z: p.z + dz });
+    if (!b || !b.typeId.endsWith("_ore")) continue;
+    const d = Math.abs(dx) + Math.abs(dz);
+    if (d < md) {
+      md = d;
+      mejor = { dx, dz };
+    }
+  }
+  if (!mejor || md === 0) return;
+  const dir = Math.abs(mejor.dx) >= Math.abs(mejor.dz) ? { x: Math.sign(mejor.dx), z: 0 } : { x: 0, z: Math.sign(mejor.dz) };
+  if (dir.x === -mina.dir.x && dir.z === -mina.dir.z) return; // no da media vuelta
+  if (dir.x !== mina.dir.x || dir.z !== mina.dir.z) {
+    mina.dir = dir;
+    mina.cola = [];
+    burst(npc, PARTICLES.idea, { x: 0, y: 2.2, z: 0 });
+  }
+}
+
 export function enSuperficie(npc) {
   const top = superficie(npc.dimension, npc.location.x, npc.location.z);
   return !top || top.location.y < npc.location.y + 1;
@@ -91,7 +115,8 @@ function paso(npc, state) {
     sostener(npc, pico(state));
     mirarA(npc, centro(pos));
     animate(npc, ANIM.minar);
-    const t = Math.round(MINERIA.pasoCada * (state.pers?.ritmo ?? 1));
+    // Minería 1: pico rápido.
+    const t = Math.max(6, Math.round(MINERIA.pasoCada * (state.pers?.ritmo ?? 1) * (nivelHab(npc, state, "mineria") >= 1 ? 0.7 : 1)));
     state.ocupadoHasta = now() + t;
     system.runTimeout(() => {
       if (!npc.isValid || !state.mina) return;
@@ -99,11 +124,14 @@ function paso(npc, state) {
       mina.cola.shift();
       mina.fallos = 0;
       aprender(npc, state, 0.05);
+      if (mina.pasos % 6 === 0) practicar(npc, state, "mineria", 0.03);
     }, t - 4);
     return;
   }
   mina.cola.shift();
   if (mina.cola.length) return;
+  // Minería 2: olfato de minerales. En el túnel, si huele una veta cerca, va hacia ella.
+  if (mina.modo === "tunel" && mina.pasos % 3 === 0 && nivelHab(npc, state, "mineria") >= 2) olfatear(npc, mina);
 
   const atras = { ...npc.location };
   // Avanza un paso con el motor (sube el escalón solo si hace falta).

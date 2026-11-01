@@ -1,13 +1,28 @@
 # Claude NPC — Bedrock 26.60
 
-NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema de estrella luminoso, de diseño propio (no es el logo oficial). **Cada Claude tiene su propia personalidad** y hace lo que quiere: pelea con espada y escudo, construye, mina, tala, pesca, cultiva, rema en bote, se hace su casa y va a clase con **Claude Maestro** o con maestros genios (Einstein, Tesla, Curie, Newton y Lovelace). Su IQ sube hasta 1000: con **IQ 500**, cinco Claudes construyen un **robot** y lo manejan; con **IQ 1000**, cinco Claudes se fusionan en **Claude Golden**. Namespace `claudenpc`.
+NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema de estrella luminoso, de diseño propio (no es el logo oficial). **Cada Claude tiene su propia personalidad** y hace lo que quiere: pelea con espada y escudo, construye, mina, tala, pesca, cultiva, rema en bote, se hace su casa y va a clase con **Claude Maestro** o con maestros genios (Einstein, Tesla, Curie, Newton y Lovelace). Lo que estudian en clase se vuelve **habilidades con niveles** (redstone, reflejos, construcción, arco, perlas, vuelo, química...) y cada nivel desbloquea una variante nueva. Cuando se juntan dos o tres maestros construyen una **escuela, preparatoria o universidad**. Su IQ sube hasta 1000: con **IQ 500**, cinco Claudes construyen un **robot** y lo manejan; con **IQ 1000**, cinco Claudes se fusionan en **Claude Golden**. Namespace `claudenpc`.
 
 ## Instalación
 
 1. Abre `dist/ClaudeNPC.mcaddon` con Minecraft y activa el paquete de comportamiento en el mundo.
 2. Genera a Claude con el huevo "Generar a Claude" y al maestro con "Generar a Claude Maestro" (o `/summon claudenpc:claude` y `/summon claudenpc:maestro`).
 3. Para que te ataquen: PvP activado y estar en Supervivencia o Aventura.
-4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes.
+4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes; `/claudenpc:robot` (con trucos) hace que los Claudes más cercanos (hasta 5, con cualquier IQ) construyan el robot ya.
+5. **Toca a un Claude** (botón "Habilidades" en el celular) para ver qué sabe: cada tema con sus estrellas, la última variante que aprendió y si lo perfecciona o solo lo estudia.
+
+## Novedades de la v7
+
+| Antes | Ahora |
+|---|---|
+| Con IQ 500 no construían el robot | Ya no hace falta que los cinco estén libres a la vez: **dejan la clase, la obra o la mina** y van. Si el sitio tiene árboles o bloques, primero **lo despejan** (talan y quitan) y luego lo construyen. Aparece un aviso **(N/5) Claudes con IQ 500** cada vez que otro llega a 500. Comando `/claudenpc:robot` para probarlo. |
+| Se atascaban al querer salir | Si están dentro de una casa o un aula, **salen por la puerta** (y entran por ella). **Abren puertas y portones** al pasar y los cierran detrás. Si una pared les cierra el paso, **buscan un camino alrededor** (rodean muros, suben escaleras, cruzan puertas). Si quedan en un pozo sin salida, **hacen una torre** para salir. |
+| Los escalones a veces no los subían | El salto para subir un bloque ahora es **guiado**: siempre llega arriba. |
+| No subían en torre: se quedaban mirando arriba | La torre usa el mismo salto guiado: **se centran, miran abajo, saltan y ponen el bloque bajo sus pies** en lo alto del salto. Si fallan un bloque, caen y lo vuelven a intentar. |
+| El robot chocaba con los árboles | **El robot rompe todo lo que se le pone delante**: troncos, hojas, muros, cercas y casas (no el suelo ni las obras de los Claudes). Los troncos los pisa y se rompen. |
+| Cada maestro tenía su aula sola | **Dos maestros juntos construyen una ESCUELA** (o una **PREPARATORIA** si uno es un genio) y **tres, una UNIVERSIDAD**, más grande: aulas pegadas, pórtico con columnas, plaza, gran letrero con los profes y un campanario con campana. Cada profe da clase en su propia aula. |
+| Las clases solo subían el IQ | Cada tema se convierte en una **habilidad con niveles**. Cada nivel desbloquea una **variante nueva** (más combinaciones de redstone, distintos tipos de reflejo, distintas construcciones...). **Unos Claudes solo estudian** el tema y otros **lo perfeccionan**, según su personalidad y su talento, y lo perfeccionan **practicando** en su tiempo libre. |
+| — | Nueva lección **Reflejos** (y los genios Einstein y Newton enseñan la luz): copias de luz, cambio de lugar, destello cegador y contraataque. |
+| — | **Dúo de viento**: cuando un Claude saca las elytras, otro Claude cercano se da cuenta y le lanza **cargas de viento** para que vuele mucho más alto; la picada con la maza en dúo **pega x1,5**. |
 
 ## Novedades de la v6
 
@@ -42,6 +57,27 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 | Golpes sin animación | Cada golpe cuerpo a cuerpo tiene animación según el arma: espadazo (alterna derecha y revés), hachazo o estocada con tridente. |
 | Atacaban con el escudo | El escudo ya no golpea. Atacan con espada (casi siempre). El escudo va en la otra mano y lo **levantan cuando les apuntas con arco, ballesta o tridente** (o ven venir un proyectil): caminan despacio y las flechas que llegan por delante rebotan. Con más IQ reaccionan antes; para atacar lo bajan. |
 
+## Habilidades
+
+Al terminar una clase, los alumnos suben la habilidad del tema (con un maestro genio, un 40 % más). Cada nivel desbloquea una variante y las anteriores siguen disponibles (la más nueva sale más a menudo). Usarlas y practicarlas también las mejora.
+
+| Habilidad | Niveles (variantes que desbloquea) | Se aprende en |
+|---|---|---|
+| Construcción | 1 casa · 2 **jardín** con cerca y flores · 3 **torre vigía** con mirador · 4 **estatua de Claude** · 5 **fuente** | Construcción; Einstein (imaginación); Lovelace (ciencia poética) |
+| Redstone | 1 torreta de flechas · 2 **torreta doble** · 3 **torreta de TNT** · 4 **cañón de TNT** (te lanza TNT encendida en arco) · 5 **bobina de Tesla** (marca el suelo bajo tus pies y cae un rayo: ¡muévete!) | Redstone, Trampas; Tesla; Lovelace (bucles) |
+| Reflejos | 1 **reflejo señuelo** (una copia de luz con su nombre corre hacia ti) · 2 dos reflejos · 3 **cambio de lugar** con un reflejo · 4 **destello cegador** · 5 **contraataque** (a veces tu golpe le da a un reflejo; él esquiva y te pega) | Reflejos; Einstein (fotones); Newton (luz) |
+| Escudo | 1 reacción más rápida · 2 aguanta más tras el escudo · 3 **devuelve las flechas** | Escudo |
+| Vuelo | 1 elytra y maza · 2 **dúo de viento** · 3 impulso de viento propio al despegar · 4 **doble picada** | Elytra y maza; Newton (gravedad) |
+| Arco | 1 puntería · 2 **flechas de fuego** · 3 **tres flechas** · 4 tiro perfecto · 5 **lluvia de flechas** | Arco; Newton (leyes del movimiento) |
+| Perlas | 1 perla · 2 aparece a tu espalda · 3 **doble perla** · 4 **perla y golpe** | Perlas; Einstein (relatividad) |
+| Torres y puentes | 1 torre más rápida · 2 puente rápido · 3 sin fallar (y más alta) | Torres, Puentes |
+| Minería | 1 pico rápido · 2 **olfato de minerales** (en el túnel va hacia las vetas) · 3 **veta completa** | Minería |
+| Agua | 1 clutch · 2 nada rápido · 3 respira bajo el agua | Water drop |
+| Cálculo | 1 aprende un 15 % más rápido · 2 predice tu movimiento al disparar · 3 reacción veloz | Matemáticas; Curie (dos Nobel); Lovelace (algoritmos) |
+| Química | 1 poción de velocidad · 2 de fuerza · 3 regeneración (cuando está herido) · 4 **te lanza veneno** · 5 resistencia al fuego | Curie |
+
+**Solo estudian o perfeccionan.** Cada Claude tiene un talento distinto para cada tema (según su personalidad y un poco de azar): con mucho talento llega al último nivel; con poco, se queda en el 2 o el 3 aunque siga yendo a clase. Por ejemplo, el inventor perfecciona la redstone, el constructor la construcción, el arquero el arco, el guerrero los reflejos y el escudo, el explorador el vuelo y las perlas, y el pescador el agua. Los que todavía pueden mejorar **practican** en su tiempo libre: tiro al blanco, una lámpara de redstone que prende y apaga, reflejos, pociones en un soporte, saltos con viento, el escudo...
+
 ## Personalidades
 
 Al nacer, cada Claude recibe una personalidad (se evita repetir la de los Claudes cercanos) con valores variados al azar. Se ve sobre su cabeza junto a lo que está haciendo.
@@ -68,9 +104,20 @@ No ataca. Lleva lentes, cabello formal peinado de lado, saco de tweed con codera
 1. **Construye un aula** como un jugador: piso de abedul, paredes blancas con ventanales, techo con luces, pizarra negra con marco y tres carteles, mesa con campana, atril, estanterías, 12 pupitres con su silla, pasillo con alfombra, puerta, cartel "AULA", camino y faroles. Si no puede construir, da la clase al aire libre.
 2. **Toca la campana** (la primera clase a los ~30 s, luego cada 2-3 minutos). Los Claudes a menos de 64 bloques **dejan de perseguirte** y de hacer lo que hacían, van a clase por la puerta y el pasillo y se sientan mirando la pizarra (si alguno se atasca, llega con una perla de ender).
 3. **La clase dura ~75 s**: escribe el tema en la pizarra letra por letra, explica tres ideas (las ves en la barra de acción), señala alumnos, escribe los apuntes, hace una pregunta (un alumno levanta la mano y, si acierta, aplausos) y deja tarea. Los alumnos toman apuntes y suben de IQ todo el rato (hasta 300).
-4. Al terminar, se levantan y salen en orden por la puerta con **bono x2: aprenden el doble durante 5 minutos** (sale "x2" junto a su IQ) y usan más la táctica de la lección (torres, puentes, arco, escudo, water drop, redstone, trampas, perlas, elytra, construcción, minería o matemáticas).
+4. Al terminar, se levantan y salen en orden por la puerta con **bono x2: aprenden el doble durante 5 minutos** (sale "x2" junto a su IQ), usan más la táctica de la lección y **suben la habilidad del tema** (torres, puentes, arco, escudo, water drop, redstone, trampas, perlas, elytra, construcción, minería, reflejos o matemáticas).
 
 **Tócalo** (botón "Hablar") para ver su estado y la próxima lección, o para empezar la clase en ese momento. Si lo golpeas suspende la clase y los Claudes cercanos lo defienden.
+
+### Escuela, preparatoria y universidad
+
+Si un maestro nuevo aparece cerca (a menos de 48 bloques) del aula de otro maestro, construye **su aula pegada a esa**, con el mismo piso y la misma orientación, y los techos quedan unidos:
+
+| Maestros | Qué construyen |
+|---|---|
+| 2 | **ESCUELA DE LOS CLAUDES** (o **PREPARATORIA** si uno de los dos es un genio): dos aulas, pórtico blanco con columnas de cuarzo y techo, plaza con bancas y macetas, y un gran letrero con el nombre y los profes. |
+| 3 | **UNIVERSIDAD DE LOS CLAUDES**: tres aulas, un pórtico a lo largo de todas, una plaza más grande y un **campanario** de 12 bloques con campana (lo levantan desde un andamio que después quitan). |
+
+Cada maestro da su clase en su propia aula y a su ritmo. Al tocar a un maestro verás a qué escuela pertenece. Vista del plano: `source/vista_universidad.png`.
 
 ### Maestros genios
 
@@ -90,10 +137,10 @@ Encima del nombre lleva su **IQ** (de 70 a **1000**). Sube cuando te ve construi
 
 ## Robot de los Claudes (IQ 500)
 
-1. Cuando hay **cinco Claudes con IQ 500**, avisan ("¡IQ 500 × 5!"), te buscan y eligen un sitio libre a unos 14 bloques de ti.
-2. **Lo construyen con bloques**, por turnos: piernas de hierro, torso con núcleo de redstone y placas de cobre, brazos, lanzamisiles en los hombros y una cabina de vidrio con visor.
+1. Cada vez que otro Claude llega a IQ 500 verás cuántos van: **(3/5) Claudes con IQ 500**. Cuando hay cinco, **dejan lo que estaban haciendo** (clase, obra, mina), avisan ("¡IQ 500 × 5!"), te buscan y eligen un sitio a unos 13 bloques de ti, del lado donde estaban ellos.
+2. Si hay árboles o bloques en el sitio, primero **lo despejan** con el hacha, la pala o el pico. Después **lo construyen con bloques**, por turnos: piernas de hierro, torso con núcleo de redstone y placas de cobre, brazos, lanzamisiles en los hombros y una cabina de vidrio con visor.
 3. Saltan chispas, los bloques **se transforman en el robot** y los cinco **se suben**: uno en la cabina, dos sobre los hombros y dos en la espalda.
-4. El robot te persigue durante **5 minutos** (verás su vida arriba y el tiempo que le queda):
+4. El robot te persigue durante **5 minutos** (verás su vida arriba y el tiempo que le queda) y **rompe todo lo que se le pone delante**: troncos, hojas, cercas, muros y casas (el suelo natural no, para subir cuestas en vez de cavar zanjas; tampoco las casas y aulas de los Claudes):
 
 | Arma | Cómo esquivarla |
 |---|---|
@@ -107,7 +154,9 @@ Encima del nombre lleva su **IQ** (de 70 a **1000**). Sube cuando te ve construi
 
 ## Combate
 
-Se mueve como un jugador (camina, corre, salta al correr y te rodea con pasos laterales suaves, sin tirones), cambia de arma de vez en cuando (casi siempre una espada) y elige entre alternativas según la situación, lo que aprendió de ti y su personalidad: torre, puente, bote, arco con puntería predictiva, perla de ender, elytra + maza, salto al vacío con water drop, cavar, salto con maza, trampas, torretas de redstone y abrirse paso rompiendo tu pared.
+Se mueve como un jugador (camina, corre, salta al correr y te rodea con pasos laterales suaves, sin tirones), cambia de arma de vez en cuando (casi siempre una espada) y elige entre alternativas según la situación, lo que aprendió de ti, su personalidad y sus habilidades: torre, puente, bote, arco con puntería predictiva, perla de ender, elytra + maza (en dúo de viento con otro Claude), salto al vacío con water drop, cavar, salto con maza, trampas, torretas y cañones de redstone, reflejos, pociones y abrirse paso rompiendo tu pared. Una habilidad aprendida en clase desbloquea su táctica aunque el Claude tenga poco IQ, y cuanto más nivel tiene, más la usa.
+
+Para caminar abren puertas y portones, salen de casas y aulas por la puerta, rodean paredes buscando por dónde pasar y suben escalones con un salto que siempre llega.
 
 ## Fusión y Claude Golden
 
@@ -136,7 +185,7 @@ Para que no toquen bloques de tu mundo: `BP/scripts/config.js` → `MODIFICA_MUN
 
 ## Estado
 
-Validado con las herramientas del kit (0 errores, 0 advertencias) y con los tipos oficiales de `@minecraft/server` 2.11.0 y `@minecraft/server-ui` 2.3.0. El plano del aula y de las casas se revisó con una vista 3D generada desde el mismo código (`source/vista_aula.png`) y los modelos con `source/vista_previa.png`. **No probado en el juego.** Puntos a revisar: dónde quedan sentados los cinco Claudes sobre el robot, que el robot camine bien por terrenos con árboles (es alto), la orientación de los misiles, el salto de escalones, la postura sentada en las sillas, el escudo en la mano, el bote con un mob como remero y las partículas del ojo de Claude Golden.
+Validado con las herramientas del kit (0 errores, 0 advertencias) y con los tipos oficiales de `@minecraft/server` 2.11.0 y `@minecraft/server-ui` 2.3.0. La búsqueda de camino se probó fuera del juego con mapas de prueba (salir de una casa por la puerta, rodear un muro, subir una escalera y detectar un pozo sin salida). Los planos de la escuela y la universidad se revisaron con una vista 3D generada desde el mismo código (`source/vista_universidad.png`, `source/vista_escuela.png`), igual que el aula y las casas (`source/vista_aula.png`); los modelos con `source/vista_previa.png`. **No probado en el juego.** Puntos a revisar: que el salto guiado y la torre se vean fluidos, que las puertas se abran y cierren bien, dónde quedan sentados los cinco Claudes sobre el robot, cuánto rompe el robot al avanzar, el cañón de TNT y la bobina de Tesla, los reflejos (copias de luz) y el dúo de viento con elytras.
 
 ## Regenerar arte
 

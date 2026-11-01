@@ -38,6 +38,7 @@ export function ponerHaciendo(npc, state, texto) {
 // Cada 5 puntos enteros muestra una chispa de "idea".
 export function aprender(npc, state, puntos) {
   if (puntos > 0 && state.bono && now() < state.bono.hasta) puntos *= state.bono.x;
+  if (puntos > 0 && (state.hab?.niveles?.calculo ?? 0) >= 1) puntos *= 1.15; // Cálculo 1: aprende más rápido
   const antes = Math.floor(state.iq / 5);
   state.iq = Math.min(IQ.maximo, state.iq + puntos);
   try {

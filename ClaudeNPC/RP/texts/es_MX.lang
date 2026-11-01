@@ -10,3 +10,5 @@ entity.claudenpc:aura.name=Aura de fusión
 item.spawn_egg.entity.claudenpc:claude.name=Generar a Claude
 item.spawn_egg.entity.claudenpc:maestro.name=Generar a Claude Maestro
 action.interact.claudenpc.hablar=Hablar
+action.interact.claudenpc.habilidades=Habilidades
+entity.claudenpc:reflejo.name=Reflejo de Claude

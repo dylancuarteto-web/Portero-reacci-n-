@@ -5,6 +5,8 @@ import { caminarA, caminando, detener, velocidad } from "../movimiento.js";
 import { empezarCasa, tickCasa } from "../obras/casa.js";
 import { now, rand, sortear } from "../util.js";
 import { enSuperficie, minar } from "./minar.js";
+import { practica } from "./practicar.js";
+import { proyecto } from "./proyecto.js";
 import {
   craftear, decorar, descansar, explorar, granja, observar, paseoBote, pescar, talar,
 } from "./varias.js";
@@ -25,7 +27,7 @@ const casa = {
 };
 
 const ACTIVIDADES = {
-  minar, talar, explorar, descansar, observar, craftear, pescar, granja, decorar, bote: paseoBote, casa,
+  minar, talar, explorar, descansar, observar, craftear, pescar, granja, decorar, bote: paseoBote, casa, proyecto, practica,
 };
 
 function esDeNoche() {
@@ -59,7 +61,7 @@ function elegir(npc, s) {
   if (s.mina) return "minar";
   const lista = [];
   for (const [id, def] of Object.entries(ACTIVIDADES)) {
-    let p = s.pers?.gustos?.[id] ?? 0.25;
+    let p = def.peso ? def.peso(s) : s.pers?.gustos?.[id] ?? 0.25;
     if (p <= 0) continue;
     const vez = s.recientes.indexOf(id);
     if (vez === 0) p *= 0.12;

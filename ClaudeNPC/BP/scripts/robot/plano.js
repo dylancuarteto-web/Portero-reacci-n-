@@ -30,12 +30,13 @@ export function planRobot(c, frente, perm) {
   return lista.map(([b, h, bloque]) => ({ pos: P(b, h), bloque }));
 }
 
-// Volumen que debe estar libre para construirlo.
+// Volumen que debe estar libre para construirlo: el plano (5 de ancho, 9 de alto) y
+// el cuerpo del robot ya armado (3 x 3 de base, 6 de alto).
 export function volumenRobot(c, frente) {
   const f = FRENTES[frente];
+  const P = (b, h, a) => ({ x: c.x + f.x * a - f.z * b, y: c.y + h, z: c.z + f.z * a + f.x * b });
   const lista = [];
-  for (let b = -2; b <= 2; b++) {
-    for (let h = 0; h <= 8; h++) lista.push({ x: c.x - f.z * b, y: c.y + h, z: c.z + f.x * b });
-  }
+  for (let b = -2; b <= 2; b++) for (let h = 0; h <= 8; h++) lista.push(P(b, h, 0));
+  for (const a of [-1, 1]) for (let b = -1; b <= 1; b++) for (let h = 0; h <= 5; h++) lista.push(P(b, h, a));
   return lista;
 }

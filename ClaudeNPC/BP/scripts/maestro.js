@@ -6,13 +6,14 @@ import {
 } from "./clase.js";
 import { estados } from "./estado.js";
 import { aprender } from "./iq.js";
-import { listar, ocupado, registrar } from "./estructuras.js";
+import { listar, ocupado, ocupadoSalvo, registrar } from "./estructuras.js";
 import { LECCIONES, LECCIONES_GENIOS } from "./lecciones.js";
 import { caminarA, caminando, detener, velocidad } from "./movimiento.js";
 import { candidatosAlrededor, frenteHacia, sitioPlano } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
 import { ejecutarPlano, escribirLetrero } from "./obras/plano.js";
 import { AULA, planAula } from "./planes/aula_plano.js";
+import { centroAula, ladosAula, nombreEscuela, planEscuela } from "./planes/escuela_plano.js";
 import {
   animate, avisar, blockAt, burst, cada, distancia2D, FRENTES, mirarA, now, particleAt, rand, sortear, sound, soundAt,
   superficie,
@@ -100,7 +101,7 @@ function puntosAlAire(dimension, c, frente) {
 
 function prepararAula(dimension, datos) {
   if (datos.aire) return { ...datos, puntos: puntosAlAire(dimension, datos.c, datos.frente) };
-  const plano = planAula(datos.c, datos.frente, perm, datos.titulo ?? "Claude Maestro", datos.iq ?? 280);
+  const plano = planAula(datos.c, datos.frente, perm, datos.titulo ?? "Claude Maestro", datos.iq ?? 280, datos.lados ?? {});
   return { ...datos, puntos: plano.puntos, pasos: plano.pasos };
 }
 
@@ -109,6 +110,7 @@ function guardar(e, m) {
     const a = m.aula;
     e.setDynamicProperty(PROP_AULA, JSON.stringify({
       c: a?.c, frente: a?.frente, listo: a?.listo, aire: a?.aire, leccion: m.leccion, dadas: m.dadas, titulo: m.titulo, iq: m.iq,
+      lados: a?.lados, escuela: a?.escuela, k: a?.k, fachada: a?.fachada,
     }));
   } catch {
     // No se pudo guardar.
@@ -247,22 +249,125 @@ function haciaPizarra(m) {
 function inicio(e, m) {
   m.cd.clase ??= now() + MAESTRO_CFG.primeraClase;
   if (m.aula) {
-    m.fase = m.aula.listo ? "recreo" : "construir";
-    if (!m.aula.listo) prepararObra(m);
+    const a = m.aula;
+    if (!a.aire) registrar("aula", { x: a.c.x, y: a.c.y, z: a.c.z, frente: a.frente, escuela: a.escuela, k: a.k, iq: m.iq, profe: m.variante.id });
+    m.fase = a.listo ? "recreo" : "construir";
+    if (!a.listo) prepararObra(m);
+    else if (a.escuela && !a.fachada && MODIFICA_MUNDO) empezarFachada(e, m);
     return;
   }
   // ¿Hay un aula sin maestro cerca? La adopta.
   const enUso = new Set([...maestros.values()].filter((x) => x !== m && x.aula).map((x) => `${x.aula.c.x},${x.aula.c.z}`));
   const cercana = listar("aula").find((a) => Math.hypot(a.x - e.location.x, a.z - e.location.z) < 48 && !enUso.has(`${a.x},${a.z}`));
   if (cercana?.frente) {
-    m.aula = prepararAula(e.dimension, { c: { x: cercana.x, y: cercana.y, z: cercana.z }, frente: cercana.frente, listo: true, titulo: m.titulo, iq: m.iq });
+    m.aula = prepararAula(e.dimension, { c: { x: cercana.x, y: cercana.y, z: cercana.z }, frente: cercana.frente, listo: true,
+      titulo: m.titulo, iq: m.iq, escuela: cercana.escuela, k: cercana.k, fachada: true });
+    registrar("aula", { ...cercana, iq: m.iq, profe: m.variante.id });
     guardar(e, m);
     m.fase = "recreo";
     return;
   }
   if (!MODIFICA_MUNDO) return alAireLibre(e, m);
+  if (unirseAEscuela(e, m)) return;
   m.busqueda = { candidatos: candidatosAlrededor(e, 8, 26), vueltas: 0 };
   m.fase = "buscar";
+}
+
+// --- Escuela: 2 maestros juntos (escuela o preparatoria) o 3 (universidad) ------------
+
+const claveDe = (c) => `${c.x},${c.y},${c.z}`;
+
+// Aulas de la escuela cuya aula principal está en "principal".
+function aulasDe(principal) {
+  const k0 = claveDe(principal);
+  return listar("aula").filter((a) => claveDe(a) === k0 || (a.escuela && claveDe(a.escuela) === k0));
+}
+
+const ASIGNATURA = { general: "IQ y tácticas", einstein: "Física", tesla: "Electricidad", curie: "Química",
+  newton: "Matemáticas", lovelace: "Programación" };
+
+function profeDe(registro) {
+  const v = VARIANTES.find((x) => x.id === registro?.profe) ?? VARIANTES[0];
+  return { nombre: v.nombre.replace(/^Claude\s+/, ""), materia: ASIGNATURA[v.materia] ?? "IQ", genio: v.iq >= 500 };
+}
+
+// Si otro maestro tiene su aula cerca, este construye la suya pegada a ella (mismo
+// piso, misma orientación): juntos forman una escuela. El tercero, una universidad.
+function unirseAEscuela(e, m) {
+  for (const x of maestros.values()) {
+    if (x === m || !x.e.isValid || !x.aula || x.aula.aire || x.e.dimension.id !== e.dimension.id) continue;
+    if (Math.hypot(x.aula.c.x - e.location.x, x.aula.c.z - e.location.z) > 48) continue;
+    const principal = x.aula.escuela ?? x.aula.c;
+    const frente = x.aula.frente;
+    const lista = aulasDe(principal);
+    if (lista.length >= 3) continue;
+    const tomados = new Set(lista.map((a) => a.k ?? 0));
+    for (const k of [1, 2]) {
+      if (tomados.has(k)) continue;
+      const c = centroAula(principal, frente, k);
+      const deLaEscuela = (o) => o.tipo === "proyecto" || (o.tipo === "aula" && lista.some((a) => claveDe(a) === claveDe(o)));
+      if (ocupadoSalvo(c.x, c.z, 7, deLaEscuela)) continue;
+      const top = superficie(e.dimension, c.x, c.z);
+      if (!top || (top.isLiquid && top.location.y >= c.y - 1) || top.location.y > c.y + 8) continue;
+      m.aula = prepararAula(e.dimension, { c, frente, listo: false, titulo: m.titulo, iq: m.iq, lados: ladosAula(k, 3),
+        escuela: { ...principal }, k });
+      registrar("aula", { x: c.x, y: c.y, z: c.z, frente, escuela: { ...principal }, k, iq: m.iq, profe: m.variante.id });
+      guardar(e, m);
+      prepararObra(m);
+      const nombreEsc = nombreEscuela(lista.length + 1, [...lista.map((a) => a.iq ?? 280), m.iq].some((iq) => iq >= 500));
+      avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡Construiré mi aula junto a la de ${x.titulo}! Juntos haremos una ${nombreEsc.toLowerCase()}.`, 48);
+      m.fase = "construir";
+      return true;
+    }
+  }
+  return false;
+}
+
+// La fachada que une las aulas: pórtico, plaza, gran letrero y (universidad) campanario.
+function empezarFachada(e, m) {
+  const principal = m.aula.escuela;
+  const frente = m.aula.frente;
+  const lista = aulasDe(principal);
+  const total = Math.min(3, Math.max(2, lista.length));
+  const porK = new Map(lista.map((a) => [a.k ?? 0, a]));
+  const profes = [0, 1, 2].filter((k) => porK.has(k)).map((k) => profeDe(porK.get(k)));
+  const f = FRENTES[frente];
+  const P = (a, h, b) => ({ x: principal.x + f.x * a - f.z * b, y: principal.y + h, z: principal.z + f.z * a + f.x * b });
+  // Si delante hay otra obra (la casa de un Claude), no hace plaza: solo pórtico y letrero.
+  const deLaEscuela = (o) => o.tipo === "proyecto" || (o.tipo === "aula" && lista.some((a) => claveDe(a) === claveDe(o)));
+  const frenteLibre = !ocupadoSalvo(P(12, 0, 0).x, P(12, 0, 0).z, 4, deLaEscuela);
+  const plano = planEscuela(principal, frente, perm, total, profes, frenteLibre);
+  const plaza = P(11, 0, total >= 3 ? 0 : 5);
+  m.obraAula = { c: plaza, plan: plano.pasos, i: 0, lejos: 30, animCelebrar: ANIM.maestroAplaudir,
+    pararse: (pos) => {
+      const dx = pos.x - principal.x;
+      const dz = pos.z - principal.z;
+      const b = Math.round(-dx * f.z + dz * f.x);
+      return centro(P(11, 1, b));
+    } };
+  m.fachadaNombre = plano.nombre;
+  registrar("proyecto", { x: P(11, 0, 0).x, y: principal.y, z: P(11, 0, 0).z, r: 13 });
+  m.fase = "fachada";
+}
+
+function fachada(e, m) {
+  const o = m.obraAula;
+  nombre(e, `construyendo la ${m.fachadaNombre.toLowerCase()} ${Math.min(99, Math.floor((o.i / o.plan.length) * 100))}%`);
+  velocidad(e, 0);
+  if (!ejecutarPlano(e, m, o)) return;
+  m.aula.fachada = true;
+  guardar(e, m);
+  m.fase = "recreo";
+  m.cd.clase = now() + MAESTRO_CFG.primeraClase;
+  const titulo = m.fachadaNombre === "UNIVERSIDAD" ? "§6§l¡UNIVERSIDAD DE LOS CLAUDES!" : `§e§l¡${m.fachadaNombre} DE LOS CLAUDES!`;
+  for (const p of e.dimension.getPlayers({ location: e.location, maxDistance: 64 })) {
+    try {
+      p.onScreenDisplay.setTitle(titulo, { subtitle: "§fLos maestros unieron sus aulas", fadeInDuration: 10, stayDuration: 60, fadeOutDuration: 15 });
+    } catch {
+      // Sin título.
+    }
+  }
+  soundAt(e.dimension, e.location, "random.levelup", 0.8, 1);
 }
 
 function alAireLibre(e, m) {
@@ -278,6 +383,7 @@ function alAireLibre(e, m) {
 function buscar(e, m) {
   nombre(e, "buscando lugar para el aula");
   if (caminando(e)) return;
+  if (cada(m, "escuela", 100) && unirseAEscuela(e, m)) return; // otro maestro ya empezó la suya cerca
   const b = m.busqueda;
   const cand = b.candidatos.shift();
   if (!cand) {
@@ -294,7 +400,7 @@ function buscar(e, m) {
   if (!sitio) return;
   const frente = frenteHacia(sitio, e);
   m.aula = prepararAula(e.dimension, { c: sitio, frente, listo: false, titulo: m.titulo, iq: m.iq });
-  registrar("aula", { x: sitio.x, y: sitio.y, z: sitio.z, frente });
+  registrar("aula", { x: sitio.x, y: sitio.y, z: sitio.z, frente, iq: m.iq, profe: m.variante.id });
   guardar(e, m);
   prepararObra(m);
   avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡Aquí construiré el aula para mis alumnos!`, 40);
@@ -328,6 +434,7 @@ function construir(e, m) {
   m.cd.clase = now() + MAESTRO_CFG.primeraClase;
   letrero(m, 1, `§lPróxima:§r\n${leccionActual(m).tema}`);
   avisar(e.dimension, e.location, `§6${m.titulo}:§r ¡El aula está lista! La primera clase empieza muy pronto.`, 48);
+  if (m.aula.escuela && !m.aula.fachada && MODIFICA_MUNDO) empezarFachada(e, m);
 }
 
 // Recreo: lee en el atril, prepara la pizarra, revisa pupitres, mira por la ventana
@@ -425,7 +532,7 @@ function llamar(e, m) {
   m.tarea = undefined;
   m.fase = "campana";
   m.sesion = { maestro: e, aula: m.aula, alumnos: new Map(), activa: true, leccion: leccionActual(m),
-    puntos: m.variante?.puntos ?? MAESTRO_CFG.puntos, bono: m.variante?.bono ?? MAESTRO_CFG.bono.x };
+    puntos: m.variante?.puntos ?? MAESTRO_CFG.puntos, bono: m.variante?.bono ?? MAESTRO_CFG.bono.x, genio: (m.iq ?? 280) >= 500 };
 }
 
 function campana(e, m) {
@@ -627,6 +734,7 @@ function tickMaestro(e) {
     case "inicio": return inicio(e, m);
     case "buscar": return buscar(e, m);
     case "construir": return construir(e, m);
+    case "fachada": return fachada(e, m);
     case "recreo": return recreo(e, m);
     case "campana": return campana(e, m);
     case "esperando": return esperando(e, m);
@@ -680,7 +788,17 @@ world.afterEvents.entityRemove.subscribe(({ removedEntityId }) => {
 const ESTADOS = {
   inicio: "Preparándose", buscar: "Buscando dónde construir el aula", construir: "Construyendo el aula",
   recreo: "En el recreo", campana: "Llamando a clase", esperando: "Esperando a los alumnos", clase: "Dando clase",
+  fachada: "Construyendo la escuela",
 };
+
+// Nombre de la escuela a la que pertenece su aula (o undefined si es un aula sola).
+function escuelaDe(m) {
+  if (!m.aula || m.aula.aire) return undefined;
+  const lista = aulasDe(m.aula.escuela ?? m.aula.c);
+  if (lista.length < 2) return undefined;
+  const nombreEsc = nombreEscuela(lista.length, lista.some((a) => (a.iq ?? 280) >= 500));
+  return `${nombreEsc} DE LOS CLAUDES (${lista.length} maestros)`;
+}
 
 function menu(player, e, m) {
   const L = leccionActual(m);
@@ -696,6 +814,7 @@ function menu(player, e, m) {
     .title(`§l${v.nombre}`)
     .body(`${v.iq >= 500 ? "§c" : "§d"}IQ ${v.iq}§r · ${v.lema}\n\n`
       + `§7Estado:§r ${ESTADOS[m.fase] ?? "Pensando"}${progreso}\n`
+      + (escuelaDe(m) ? `§7Escuela:§r ${escuelaDe(m)}\n` : "")
       + `§7Claudes cerca:§r ${cerca}\n§7Clases dadas:§r ${m.dadas ?? 0}\n`
       + `§7Próxima lección:§r ${m.sesion?.leccion.tema ?? L.tema}\n\n`
       + `§7En clase los Claudes ganan IQ y después aprenden ${v.bono >= 3 ? "el triple" : "el doble"} durante 5 minutos.`);

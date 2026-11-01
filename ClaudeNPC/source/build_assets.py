@@ -488,6 +488,19 @@ def eco_skin():
     return img
 
 
+def reflejo_skin():
+    """Reflejo de un Claude: su misma piel hecha de cristal celeste translúcido."""
+    img = claude_skin()
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = px[x, y]
+            if a:
+                lum = r * 0.3 + g * 0.59 + b * 0.11
+                px[x, y] = (int(lum * 0.45 + 80), int(lum * 0.6 + 110), min(255, int(lum * 0.5 + 170)), 150)
+    return img
+
+
 def region(px, x0, y0, w, h, fn):
     for y in range(h):
         for x in range(w):
@@ -837,6 +850,10 @@ def write_particles():
     p("idea", "estrella", {**inst(5), "minecraft:emitter_shape_sphere": {"radius": 0.25, "direction": "outwards"},
                            **life(0.8), **spd(0.5), **mot(linear_acceleration=[0, 0.8, 0])},
       {"0.0": "#FFB4F0FF", "1.0": "#00FFD25A"}, sz(0.2, 0.03))
+    # Carga de viento (dúo de elytra): remolino blanco celeste que se abre.
+    p("viento", "humo", {**inst(14), "minecraft:emitter_shape_sphere": {"radius": 0.4, "direction": "outwards"},
+                         **life(0.6), **spd(2.2), **mot(linear_drag_coefficient=3.5)},
+      {"0.0": "#DDF2FBFF", "0.6": "#88CFEFFF", "1.0": "#00CFEFFF"}, sz(0.3, 0.9), "particles_alpha")
     p("remo", "chispa", {**inst(6), "minecraft:emitter_shape_disc": {"radius": 0.3, "plane_normal": "y"},
                          **life(0.4), **spd(0.8), **mot(linear_acceleration=[0, -6, 0])},
       {"0.0": "#DDBEE6FF", "1.0": "#004682C8"}, sz(0.1, 0.04))
@@ -1104,6 +1121,10 @@ def claude_animations():
             "rightLeg": {"position": [0, 0, 3]}, "leftLeg": {"position": [0, 0, 3]}}},
         "animation.claudenpc.colocar_abajo": {"animation_length": 0.4, "bones": {
             "rightArm": {"rotation": k((0, [-25, 0, 0]), (0.15, [-55, -10, 0]), (0.3, [-30, 0, 0]), (0.4, [-25, 0, 0]))}}},
+        # Beber una poción (química): lleva el frasco a la boca y echa la cabeza atrás.
+        "animation.claudenpc.beber": {"animation_length": 1.0, "bones": {
+            "rightArm": {"rotation": k((0, Z), (0.2, [-100, -25, 0]), (0.8, [-100, -25, 0]), (1.0, Z))},
+            "head": {"rotation": k((0, Z), (0.2, [-22, 0, 0]), (0.8, [-22, 0, 0]), (1.0, Z))}}},
         # Torre: mira hacia abajo y coloca en el punto alto del salto.
         "animation.claudenpc.torre": {"animation_length": 0.55, "bones": {
             "head": {"rotation": k((0, [40, 0, 0]), (0.1, [75, 0, 0]), (0.45, [75, 0, 0]), (0.55, [40, 0, 0]))},
@@ -1499,7 +1520,7 @@ def client_entities():
     for name in ("golpe", "espadazo", "espadazo2", "hachazo", "estocada", "cubrirse", "bloqueo", "martillazo",
                  "lanzar", "colocar", "crafteo", "minar", "arco", "planeo", "cubeta", "agachado", "colocar_abajo",
                  "torre", "remar", "celebrar", "sentado", "tomar_notas", "levantar_mano", "aplaudir", "pescar",
-                 "pescar_espera", "recoger", "pilotar", "mirar_alrededor", "danza", "fusion"):
+                 "pescar_espera", "recoger", "pilotar", "mirar_alrededor", "danza", "fusion", "beber"):
         claude_anims[name] = f"animation.claudenpc.{name}"
     write_json(RP / "entity/claude.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:claude",
@@ -1548,6 +1569,14 @@ def client_entities():
         "textures": {"default": "textures/entity/claudenpc/eco"},
         "geometry": {"default": "geometry.claudenpc.claude"},
         "animations": dict(base_anims, celebrar="animation.claudenpc.celebrar", golpe="animation.claudenpc.golpe"),
+        "scripts": {"animate": ["mirar", "caminar", "respirar"]},
+        "render_controllers": ["controller.render.claudenpc"]}}})
+    write_json(RP / "entity/reflejo.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:reflejo",
+        "materials": {"default": "entity_alphablend", "glow": "entity_alphablend"},
+        "textures": {"default": "textures/entity/claudenpc/reflejo"},
+        "geometry": {"default": "geometry.claudenpc.claude"},
+        "animations": dict(base_anims, golpe="animation.claudenpc.golpe", espadazo="animation.claudenpc.espadazo"),
         "scripts": {"animate": ["mirar", "caminar", "respirar"]},
         "render_controllers": ["controller.render.claudenpc"]}}})
     write_json(RP / "entity/aura.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
@@ -1607,6 +1636,7 @@ def main():
     robot_texture().save(tex / "robot.png")
     misil_texture().save(tex / "misil.png")
     eco_skin().save(tex / "eco.png")
+    reflejo_skin().save(tex / "reflejo.png")
     sphere_texture().save(tex / "aura.png")
     (RP / "textures/particle").mkdir(parents=True, exist_ok=True)
     particle_atlas().save(RP / "textures/particle/claudenpc.png")

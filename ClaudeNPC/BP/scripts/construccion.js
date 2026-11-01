@@ -2,7 +2,8 @@ import { BlockPermutation, ItemStack, system } from "@minecraft/server";
 import { ANIM, NIVEL_BLOQUE, PARTICLES } from "./config.js";
 import { pico, sostener } from "./equipo.js";
 import { protegido } from "./estructuras.js";
-import { animate, blockAt, flat, now, particleAt, sound } from "./util.js";
+import { nivelHab } from "./habilidades.js";
+import { animate, blockAt, flat, now, particleAt, romperDestruyendo, sound } from "./util.js";
 
 function solido(block) {
   return !!block && !block.isAir && !block.isLiquid;
@@ -21,9 +22,32 @@ export function romper(npc, state, block) {
     particleAt(npc.dimension, PARTICLES.construir, center);
     sound(npc, "dig.stone");
     state.minados++;
+    // Minería 3: veta completa. Saca también los minerales iguales pegados.
+    if (drop.endsWith("_ore") && nivelHab(npc, state, "mineria") >= 3) veta(npc, center, drop);
     return true;
   } catch {
     return false;
+  }
+}
+
+function veta(npc, desde, tipo) {
+  const vistos = new Set();
+  const cola = [{ x: Math.floor(desde.x), y: Math.floor(desde.y), z: Math.floor(desde.z) }];
+  let sacados = 0;
+  while (cola.length && sacados < 8) {
+    const p = cola.shift();
+    if (!p) break;
+    for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) {
+      const q = { x: p.x + dx, y: p.y + dy, z: p.z + dz };
+      const k = `${q.x},${q.y},${q.z}`;
+      if (vistos.has(k)) continue;
+      vistos.add(k);
+      const b = blockAt(npc.dimension, q);
+      if (b?.typeId !== tipo || protegido(q)) continue;
+      romperDestruyendo(npc.dimension, q);
+      cola.push(q);
+      if (++sacados >= 8) break;
+    }
   }
 }
 
@@ -61,14 +85,13 @@ function direccionDispensador(dir) {
 
 // Torreta de redstone: dispensador cargado (flechas o TNT) que dispara al jugador
 // con pulsos de un bloque de redstone; se desmonta sola.
-export function torreta(npc, jugador) {
+export function torreta(npc, jugador, { tnt = Math.random() < 0.3, lado: ladoSigno = 1 } = {}) {
   const dir = flat(npc.location, jugador.location);
-  const lado = { x: -dir.z * 2, z: dir.x * 2 };
+  const lado = { x: -dir.z * 2 * ladoSigno, z: dir.x * 2 * ladoSigno };
   const base = { x: npc.location.x + lado.x, y: npc.location.y, z: npc.location.z + lado.z };
   const pos = blockAt(npc.dimension, base);
   const arriba = blockAt(npc.dimension, { x: base.x, y: base.y + 1, z: base.z });
   if (!pos?.isAir || !arriba?.isAir || protegido(base)) return false;
-  const tnt = Math.random() < 0.3;
   try {
     sostener(npc, "minecraft:dispenser");
     animate(npc, ANIM.colocar);

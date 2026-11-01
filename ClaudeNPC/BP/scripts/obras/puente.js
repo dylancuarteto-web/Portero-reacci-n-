@@ -2,6 +2,7 @@ import { system } from "@minecraft/server";
 import { ANIM, CONSTRUCCION } from "../config.js";
 import { sostener } from "../equipo.js";
 import { protegido } from "../estructuras.js";
+import { nivelHab, practicar } from "../habilidades.js";
 import { nivel } from "../iq.js";
 import { caminarA, detener, velocidad } from "../movimiento.js";
 import { animate, blockAt, centro, colocar, flat, impulse, mirarA, now, piso, rand, reemplazable, sound } from "../util.js";
@@ -16,7 +17,9 @@ export function iniciarPuente(npc, state, destino, bloque = CONSTRUCCION.bloque)
   detener(npc);
   velocidad(npc, 0);
   const n = nivel(state);
-  const modo = n > 0.55 ? "salto" : n > 0.2 ? "rapido" : "agachado";
+  const nt = nivelHab(npc, state, "torres"); // Torres y puentes 2: puente rápido; 3: desde el aire
+  const modo = n > 0.55 || nt >= 3 ? "salto" : n > 0.2 || nt >= 2 ? "rapido" : "agachado";
+  practicar(npc, state, "torres", 0.03);
   state.obra = { tipo: "puente", destino: { ...destino }, bloque, modo, puestos: 0, equipado: false };
 }
 

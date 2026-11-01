@@ -1,15 +1,20 @@
 import { GameMode, ItemStack, system, world } from "@minecraft/server";
-import { ANIM, DIMENSIONES, PARTICLES, PROP, ROBOT, ROBOT_CFG } from "../config.js";
+import { ANIM, DIMENSIONES, MODIFICA_MUNDO, PARTICLES, PROP, ROBOT, ROBOT_CFG } from "../config.js";
 import { estados } from "../estado.js";
+import { protegido } from "../estructuras.js";
 import { ponerHaciendo } from "../iq.js";
+import { IRROMPIBLES } from "../obras/excavar.js";
 import { hostil, sentarse } from "../postura.js";
-import { animate, cada, distancia, now, particleAt, rand, sound, soundAt } from "../util.js";
+import {
+  animate, blockAt, cada, distancia, now, particleAt, rand, reemplazable, romperDestruyendo, sound, soundAt,
+} from "../util.js";
 import { explosionFinal, laser, lanzarMisiles, limpiarMisiles, metralla, pisoton } from "./armas.js";
 
 // Robot de los Claudes: lo construyen cinco Claudes con IQ 500, se suben (cabina, dos
-// hombros y la espalda) y lo manejan. Te persigue y te ataca con misiles, láser,
-// metralla y pisotones. A los 5 minutos suena la alarma y se autodestruye (o antes,
-// si lo destruyes tú); los Claudes saltan a tiempo.
+// hombros y la espalda) y lo manejan. Te persigue rompiendo todo lo que se le pone
+// delante (árboles, muros, casas) y te ataca con misiles, láser, metralla y pisotones.
+// A los 5 minutos suena la alarma y se autodestruye (o antes, si lo destruyes tú);
+// los Claudes saltan a tiempo.
 
 export const robots = new Map(); // id del robot → estado
 
@@ -124,6 +129,57 @@ function terminar(r, motivo) {
   }
 }
 
+// Terreno natural a la altura de los pies: no lo rompe (así sube cuestas en vez de
+// cavar zanjas). Árboles, vallas, muros y construcciones sí.
+const TERRENO = /(dirt|grass_block|^minecraft:grass$|stone$|sand|sandstone|gravel|deepslate|tuff|clay|mud|snow|ice|terracotta|netherrack|basalt|blackstone|end_stone|podzol|mycelium|moss_block|calcite|granite|diorite|andesite|_ore|farmland|grass_path|dirt_path)$/;
+
+// Rompe lo que tiene delante (cuerpo entero, un poco más ancho que él), como si lo
+// apartara al caminar. Hasta 10 bloques cada vez para no trabar el juego.
+function abrirCamino(r, j) {
+  const e = r.e;
+  let dir;
+  if (j && distancia(e.location, j.location) > 3.5) {
+    const dx = j.location.x - e.location.x;
+    const dz = j.location.z - e.location.z;
+    const d = Math.hypot(dx, dz) || 1;
+    dir = { x: dx / d, z: dz / d };
+  } else {
+    const v = e.getVelocity();
+    const h = Math.hypot(v.x, v.z);
+    if (h < 0.03) return;
+    dir = { x: v.x / h, z: v.z / h };
+  }
+  const lado = { x: -dir.z, z: dir.x };
+  const dim = e.dimension;
+  const y0 = Math.floor(e.location.y + 0.01);
+  const vistos = new Set();
+  let rotos = 0;
+  for (const adelante of [1.7, 2.5]) {
+    for (const l of [-1.3, -0.45, 0.45, 1.3]) {
+      const x = Math.floor(e.location.x + dir.x * adelante + lado.x * l);
+      const z = Math.floor(e.location.z + dir.z * adelante + lado.z * l);
+      for (let h = 0; h <= 5; h++) {
+        const p = { x, y: y0 + h, z };
+        const k = `${x},${p.y},${z}`;
+        if (vistos.has(k)) continue;
+        vistos.add(k);
+        const b = blockAt(dim, p);
+        if (!b || b.isAir || b.isLiquid || reemplazable(b)) continue;
+        if (IRROMPIBLES.test(b.typeId) || (h === 0 && TERRENO.test(b.typeId)) || protegido(p)) continue;
+        if (!romperDestruyendo(dim, p)) continue;
+        if (++rotos >= 10) break;
+      }
+      if (rotos >= 10) break;
+    }
+    if (rotos >= 10) break;
+  }
+  if (rotos) {
+    animate(e, ANIM.robotGolpe);
+    soundAt(dim, e.location, "random.anvil_land", 0.5, 0.5);
+    particleAt(dim, PARTICLES.polvo, { x: e.location.x + dir.x * 2, y: e.location.y + 1, z: e.location.z + dir.z * 2 });
+  }
+}
+
 function atacar(r, j) {
   const e = r.e;
   const d = distancia(e.location, j.location);
@@ -184,6 +240,7 @@ system.runInterval(() => {
           if (!montado) e.getComponent("minecraft:rideable")?.addRider(npc);
         }
       }
+      if (MODIFICA_MUNDO && r.tic % 4 === 0) abrirCamino(r, j);
       if (j && now() >= r.cd.ataque) atacar(r, j);
     } catch {
       // Descargado.

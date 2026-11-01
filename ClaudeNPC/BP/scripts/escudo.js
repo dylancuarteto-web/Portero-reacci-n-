@@ -1,6 +1,7 @@
 import { EntityDamageCause, Player, system, world } from "@minecraft/server";
 import { ANIM, ESCUDO, NPC, PARTICLES } from "./config.js";
 import { estados } from "./estado.js";
+import { nivelHab, practicar } from "./habilidades.js";
 import { aprender, nivel } from "./iq.js";
 import { poseEscudo } from "./postura.js";
 import { animate, burst, now, sound } from "./util.js";
@@ -60,7 +61,8 @@ function ve(npc, jugador) {
 function reaccionar(npc, s, amenaza, ticks) {
   const n = nivel(s);
   const base = ESCUDO.reaccion[0] - (ESCUDO.reaccion[0] - ESCUDO.reaccion[1]) * n;
-  const demora = Math.max(2, Math.round(base - Math.min(5, s.memoria.arco * 0.7)));
+  const rapida = nivelHab(npc, s, "escudo") >= 1 ? 3 : 0; // Escudo 1: reacción rápida
+  const demora = Math.max(2, Math.round(base - Math.min(5, s.memoria.arco * 0.7) - rapida));
   system.runTimeout(() => {
     if (npc.isValid && amenaza.isValid) subirEscudo(npc, s, amenaza, ticks);
   }, demora);
@@ -113,7 +115,8 @@ system.runInterval(() => {
       if (s.escudoArriba) {
         const n = nivel(s);
         // Con IQ alto no se queda quieto tras el escudo para siempre: lo baja y contraataca.
-        if (now() > s.escudo.hasta || (n > 0.3 && now() - s.escudo.desde > 90)) {
+        const aguante = nivelHab(npc, s, "escudo") >= 2 ? 150 : 90; // Escudo 2: aguanta más
+        if (now() > s.escudo.hasta || (n > 0.3 && now() - s.escudo.desde > aguante)) {
           bajarEscudo(npc, s, 30);
           continue;
         }
@@ -159,12 +162,35 @@ export function bloqueaProyectil(npc, s, damageSource) {
   return (v.x * dx + v.z * dz) / (d * h) > -0.15; // unos 100° a cada lado
 }
 
-export function efectoBloqueo(npc, s) {
+export function efectoBloqueo(npc, s, origen) {
   if (!npc.isValid) return;
   animate(npc, ANIM.bloqueo);
   sound(npc, "item.shield.block", 1);
   burst(npc, PARTICLES.bloqueo, { x: 0, y: 1.2, z: 0 });
   s.memoria.bloqueos++;
   aprender(npc, s, 0.2);
+  practicar(npc, s, "escudo", 0.04);
   if (s.escudo) s.escudo.hasta = Math.max(s.escudo.hasta, now() + 20);
+  // Escudo 3: devuelve la flecha a quien la disparó.
+  if (origen?.isValid && nivelHab(npc, s, "escudo") >= 3) devolverFlecha(npc, origen);
+}
+
+function devolverFlecha(npc, origen) {
+  try {
+    const a = npc.getHeadLocation();
+    const b = origen.getHeadLocation ? origen.getHeadLocation() : origen.location;
+    const dx = b.x - a.x;
+    const dy = b.y - 0.3 - a.y;
+    const dz = b.z - a.z;
+    const d = Math.hypot(dx, dy, dz) || 1;
+    const flecha = npc.dimension.spawnEntity("minecraft:arrow", { x: a.x + (dx / d) * 0.9, y: a.y, z: a.z + (dz / d) * 0.9 });
+    const proj = flecha.getComponent("minecraft:projectile");
+    if (proj) {
+      proj.owner = npc;
+      proj.shoot({ x: (dx / d) * 2.4, y: (dy / d) * 2.4 + d * 0.006, z: (dz / d) * 2.4 });
+    }
+    sound(npc, "random.bow", 1.5, 0.8);
+  } catch {
+    // Sin flecha.
+  }
 }

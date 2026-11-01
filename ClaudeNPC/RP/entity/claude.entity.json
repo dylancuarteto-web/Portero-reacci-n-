@@ -48,7 +48,8 @@
         "pilotar": "animation.claudenpc.pilotar",
         "mirar_alrededor": "animation.claudenpc.mirar_alrededor",
         "danza": "animation.claudenpc.danza",
-        "fusion": "animation.claudenpc.fusion"
+        "fusion": "animation.claudenpc.fusion",
+        "beber": "animation.claudenpc.beber"
       },
       "scripts": {
         "animate": [

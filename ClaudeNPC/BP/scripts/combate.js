@@ -1,10 +1,14 @@
 import { system, world } from "@minecraft/server";
 import { ANIM, ARMAS, COMBATE, EXCAVAR, MODIFICA_MUNDO, NPC } from "./config.js";
 import { aguaDelante, subirABote } from "./bote.js";
-import { cavar, torreta, trampa } from "./construccion.js";
+import { cavar, trampa } from "./construccion.js";
 import { armaInicial, sostener } from "./equipo.js";
 import { bajarEscudo } from "./escudo.js";
 import { estados } from "./estado.js";
+import { nivelHab } from "./habilidades.js";
+import { usarPocion } from "./habilidades/quimica.js";
+import { usarRedstone } from "./habilidades/redstone.js";
+import { usarReflejo } from "./habilidades/reflejos.js";
 import { aprender, nivel } from "./iq.js";
 import { ritmo } from "./movimiento.js";
 import { iniciarExcavar, muroDelante } from "./obras/excavar.js";
@@ -18,22 +22,27 @@ import { animate, now, rand, sortear, sound } from "./util.js";
 // Nodos de decisión: cada situación tiene varias alternativas. El IQ desbloquea
 // nodos, acorta el tiempo de reacción; la memoria de lo que le funcionó (y lo que
 // aprendió en clase) y su personalidad cambian la probabilidad de cada una.
+// "hab": la habilidad que también lo desbloquea (aunque tenga poco IQ) y que lo hace
+// más probable a más nivel. Reflejos y pociones solo se usan si se estudiaron.
 const NODOS = [
   // El jugador sube para escapar: construir, disparar, volar o teletransportarse.
-  { id: "torre", iq: 70, cd: 40, si: (c) => c.alto > 2 && c.dist < 6 && MODIFICA_MUNDO, peso: () => 3 },
+  { id: "torre", iq: 70, hab: "torres", cd: 40, si: (c) => c.alto > 2 && c.dist < 6 && MODIFICA_MUNDO, peso: () => 3 },
   // Hay un hueco o agua entre los dos: puente o bote.
   { id: "puente", iq: 70, cd: 40, si: (c) => c.borde && c.dist > 2.5 && Math.abs(c.alto) < 4 && MODIFICA_MUNDO, peso: () => 3.5 },
   { id: "bote", iq: 70, cd: 200, si: (c) => c.agua && c.dist > 4 && MODIFICA_MUNDO, peso: () => 5 },
-  { id: "arco", iq: 70, cd: 50, si: (c) => c.dist > 9 || c.alto > 3, peso: (c) => 2.5 + (c.dist > 15 ? 2 : 0) + c.mem.torres * 0.3 },
-  { id: "elytra", iq: 125, cd: 500, si: (c) => (c.alto > 4 || c.dist > 16) && c.cielo, peso: (c) => 1.5 + c.mem.torres * 0.5 },
-  { id: "perla", iq: 85, cd: 220, si: (c) => c.dist > 14 || c.alto > 5, peso: (c) => 1.2 + c.mem.arco * 0.4 },
+  { id: "arco", iq: 70, hab: "arco", cd: 50, si: (c) => c.dist > 9 || c.alto > 3, peso: (c) => 2.5 + (c.dist > 15 ? 2 : 0) + c.mem.torres * 0.3 },
+  { id: "elytra", iq: 125, hab: "vuelo", cd: 500, si: (c) => (c.alto > 4 || c.dist > 16) && c.cielo, peso: (c) => 1.5 + c.mem.torres * 0.5 },
+  { id: "perla", iq: 85, hab: "perlas", cd: 220, si: (c) => c.dist > 14 || c.alto > 5, peso: (c) => 1.2 + c.mem.arco * 0.4 },
   // El jugador está abajo: saltar con water drop o cavar.
   { id: "vacio", iq: 100, cd: 160, si: (c) => c.alto < -5 && c.dist < 10 && c.borde, peso: () => 3 },
   { id: "cavar", iq: 70, cd: 16, si: (c) => c.alto < -3 && c.dist < 4 && MODIFICA_MUNDO, peso: () => 2 },
   // Cerca: salto con maza; con más IQ, trampas y torretas.
   { id: "martillazo", iq: 75, cd: 140, si: (c) => c.dist < 5 && c.alto > -1 && c.alto < 2, peso: () => 1.5 },
-  { id: "torreta", iq: 110, cd: 1100, si: (c) => c.dist > 7 && c.dist < 18 && MODIFICA_MUNDO, peso: () => 0.8 },
-  { id: "trampa", iq: 120, cd: 700, si: (c) => c.dist > 4 && c.dist < 12 && MODIFICA_MUNDO, peso: () => 0.8 },
+  { id: "torreta", iq: 110, hab: "redstone", cd: 1100, si: (c) => c.dist > 7 && c.dist < 18 && MODIFICA_MUNDO, peso: () => 0.8 },
+  { id: "trampa", iq: 120, hab: "redstone", cd: 700, si: (c) => c.dist > 4 && c.dist < 12 && MODIFICA_MUNDO, peso: () => 0.8 },
+  // Habilidades de clase: reflejos (señuelos de luz) y pociones de química.
+  { id: "reflejo", iq: Infinity, hab: "reflejos", cd: 260, si: (c) => c.dist > 2 && c.dist < 12, peso: () => 2.4 },
+  { id: "pocion", iq: Infinity, hab: "quimica", cd: 340, si: (c) => c.dist < 18, peso: () => 1.6 },
 ];
 
 const ACCIONES = {
@@ -44,7 +53,9 @@ const ACCIONES = {
   elytra: elytraMartillo,
   vacio: saltarAlVacio,
   cavar: (npc, s) => cavar(npc, s),
-  torreta: (npc, s, j) => torreta(npc, j),
+  torreta: (npc, s, j) => usarRedstone(npc, s, j),
+  reflejo: (npc, s, j) => usarReflejo(npc, s, j),
+  pocion: (npc, s, j) => usarPocion(npc, s, j),
   trampa: (npc, s, j) => trampa(npc, j),
 };
 
@@ -107,14 +118,16 @@ export function tickCombate(npc, state, jugador) {
   // Reacción: con IQ bajo piensa cada 1,5 s; con IQ máximo, cada 0,5 s.
   const n = nivel(state);
   if (now() < (state.cd.pensar ?? 0)) return;
-  state.cd.pensar = now() + Math.round(30 - n * 20);
+  // Cálculo 3: reacción veloz.
+  state.cd.pensar = now() + Math.round((30 - n * 20) * (nivelHab(npc, state, "calculo") >= 3 ? 0.7 : 1));
 
   const candidatos = [];
   const estilo = state.pers?.estilo ?? {};
   for (const nodo of NODOS) {
-    if (state.iq < nodo.iq || now() < (state.cd[nodo.id] ?? 0) || !nodo.si(c)) continue;
+    const nh = nodo.hab ? nivelHab(npc, state, nodo.hab) : 0;
+    if ((state.iq < nodo.iq && nh <= 0) || now() < (state.cd[nodo.id] ?? 0) || !nodo.si(c)) continue;
     const exito = state.memoria.exitos[nodo.id] ?? 0;
-    candidatos.push({ nodo, p: nodo.peso(c) * (1 + exito * 0.2) * (estilo[nodo.id] ?? 1) });
+    candidatos.push({ nodo, p: nodo.peso(c) * (1 + exito * 0.2) * (estilo[nodo.id] ?? 1) * (1 + nh * 0.25) });
   }
   // Cerca, a menudo lo mejor es seguir peleando con la espada.
   if (c.dist < 4) candidatos.push({ nodo: null, p: 4 - n * 2 });

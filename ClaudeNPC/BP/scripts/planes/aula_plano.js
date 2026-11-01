@@ -20,7 +20,9 @@ const FILAS = [-1, 1, 3];     // pupitres; la silla va en a + 1
 const COLUMNAS = [-3, -1, 1, 3];
 const pasilloDe = (b) => (Math.abs(b) === 1 ? 0 : Math.sign(b) * 2);
 
-export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280) {
+// lados: { izq, der } si hay otra aula pegada a ese lado (escuela): no limpia encima de
+// ella ni le pone alero, y une los techos.
+export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280, lados = {}) {
   const f = FRENTES[frente];
   const der = { x: -f.z, z: f.x };
   const P = (a, h, b) => ({ x: c.x + f.x * a + der.x * b, y: c.y + h, z: c.z + f.z * a + der.z * b });
@@ -32,8 +34,10 @@ export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280) {
   const pilar = (a, b) => Math.abs(b) === AULA.b && (Math.abs(a) === AULA.a || a === -3 || a === 0 || a === 3);
   const esquina = (a, b) => Math.abs(a) === AULA.a && Math.abs(b) === AULA.b;
 
-  // 1. Limpiar el terreno (con un margen).
-  for (let h = 6; h >= 1; h--) for (let a = -7; a <= 7; a++) for (let b = -6; b <= 6; b++) add({ tipo: "quitar", pos: P(a, h, b) });
+  // 1. Limpiar el terreno (con un margen, salvo del lado de un aula vecina).
+  const bMin = lados.izq ? -AULA.b : -AULA.b - 1;
+  const bMax = lados.der ? AULA.b : AULA.b + 1;
+  for (let h = 6; h >= 1; h--) for (let a = -7; a <= 7; a++) for (let b = bMin; b <= bMax; b++) add({ tipo: "quitar", pos: P(a, h, b) });
 
   // 2. Cimiento y piso en zigzag: borde de ladrillo de piedra, piso de abedul.
   for (let a = -AULA.a; a <= AULA.a; a++) {
@@ -93,11 +97,13 @@ export function planAula(c, frente, perm, titulo = "Claude Maestro", iq = 280) {
     for (let a = -AULA.a; a <= AULA.a; a++) for (let b = -AULA.b; b <= AULA.b; b++) {
       if (Math.max(Math.abs(a), Math.abs(b)) !== r) continue;
       const luz = luces.has(`${a},${b}`);
-      add({ tipo: "colocar", pos: P(a, 5, b), bloque: luz ? "minecraft:glowstone" : "minecraft:dark_oak_planks", techo: true });
+      const union = (lados.izq && b === -AULA.b) || (lados.der && b === AULA.b); // une el techo con el de la vecina
+      add({ tipo: "colocar", pos: P(a, 5, b), bloque: luz ? "minecraft:glowstone" : "minecraft:dark_oak_planks", techo: true, forzar: union });
     }
   }
   for (let a = -AULA.a - 1; a <= AULA.a + 1; a++) for (let b = -AULA.b - 1; b <= AULA.b + 1; b++) {
     if (Math.abs(a) !== AULA.a + 1 && Math.abs(b) !== AULA.b + 1) continue;
+    if (b < bMin || b > bMax) continue; // ese lado es la pared de la vecina
     add({ tipo: "colocar", pos: P(a, 5, b), bloque: perm("minecraft:dark_oak_slab", { "minecraft:vertical_half": "bottom" }), techo: true });
   }
 

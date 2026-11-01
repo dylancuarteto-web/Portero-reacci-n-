@@ -26,7 +26,7 @@ export function loPusoUnJugador(dimension, p) {
   return puestosPorJugador.has(clave(dimension, p));
 }
 
-const IRROMPIBLES = /bedrock|barrier|command_block|structure_|jigsaw|end_portal|^minecraft:portal$|end_gateway|reinforced_deepslate|border_block|^minecraft:allow$|^minecraft:deny$|light_block|moving_block|spawner|vault|lava|water/;
+export const IRROMPIBLES = /bedrock|barrier|command_block|structure_|jigsaw|end_portal|^minecraft:portal$|end_gateway|reinforced_deepslate|border_block|^minecraft:allow$|^minecraft:deny$|light_block|moving_block|spawner|vault|lava|water/;
 // Cosas por las que se puede pasar (no son pared).
 const PASABLE = /torch|rail|redstone_wire|button|lever|_sign|pressure_plate|tripwire|^minecraft:fire$|carpet|frame|repeater|comparator|seagrass|kelp|coral_fan|waterlily|string|ladder|vine|_banner|candle|snow_layer/;
 const BLANDO = /glass|leaves|ice|wool|torch|flower|sapling|button|lever|cake|candle|cobweb|^minecraft:bed$|glowstone|sea_lantern|shroomlight|^minecraft:tnt$/;

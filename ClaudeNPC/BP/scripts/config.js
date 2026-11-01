@@ -7,6 +7,7 @@ export const ESPEJISMO = "claudenpc:espejismo";
 export const ROBOT = "claudenpc:robot";
 export const MISIL = "claudenpc:misil";
 export const ECO = "claudenpc:eco";
+export const REFLEJO = "claudenpc:reflejo";
 export const AURA = "claudenpc:aura";
 export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
@@ -58,6 +59,7 @@ export const PARTICLES = {
   confeti: "claudenpc:confeti",
   midas: "claudenpc:midas",
   notas: "claudenpc:notas",
+  viento: "claudenpc:viento",
 };
 
 export const ANIM = {
@@ -70,6 +72,7 @@ export const ANIM = {
   martillazo: "animation.claudenpc.martillazo",
   lanzar: "animation.claudenpc.lanzar",
   colocar: "animation.claudenpc.colocar",
+  beber: "animation.claudenpc.beber",
   colocarAbajo: "animation.claudenpc.colocar_abajo",
   crafteo: "animation.claudenpc.crafteo",
   minar: "animation.claudenpc.minar",

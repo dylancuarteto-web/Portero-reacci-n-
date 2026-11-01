@@ -5,6 +5,7 @@ import { bajar } from "./bote.js";
 import { pico, sostener } from "./equipo.js";
 import { bajarEscudo } from "./escudo.js";
 import { obtenerEstado, estados } from "./estado.js";
+import { estudiar } from "./habilidades.js";
 import { aprender, nivel, ponerHaciendo } from "./iq.js";
 import { caminarA, caminando, detener, seAtasco, velocidad } from "./movimiento.js";
 import { terminarObra } from "./obras/index.js";
@@ -287,8 +288,8 @@ export function aplausos(sesion) {
   for (const { npc } of sentados(sesion)) animate(npc, ANIM.aplaudir);
 }
 
-// Fin de la clase: aprenden la táctica de la lección, se levantan y salen del aula
-// con el bono de aprendizaje (aprenden el doble durante un rato).
+// Fin de la clase: aprenden la táctica de la lección, suben la habilidad del tema,
+// se levantan y salen del aula con el bono de aprendizaje (aprenden el doble un rato).
 export function terminarClase(sesion, completa) {
   sesion.terminada = true;
   const nodo = sesion.leccion?.nodo;
@@ -298,6 +299,8 @@ export function terminarClase(sesion, completa) {
       if (nodo === "escudo") s.memoria.arco += 3;
       else s.memoria.exitos[nodo] = (s.memoria.exitos[nodo] ?? 0) + 3;
     }
+    // El tema de la clase sube su habilidad (más con un maestro genio).
+    if (completa && sesion.leccion?.habilidad) estudiar(npc, s, sesion.leccion.habilidad, sesion.genio);
     empezarSalida(npc, s, completa);
   }
 }
