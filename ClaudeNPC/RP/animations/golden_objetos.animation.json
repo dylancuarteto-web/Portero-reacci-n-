@@ -1,0 +1,285 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.claudenpc.corazon.girar": {
+      "loop": true,
+      "bones": {
+        "corazon": {
+          "rotation": [
+            0,
+            "query.life_time * 110",
+            "math.sin(query.life_time * 80) * 6"
+          ],
+          "position": [
+            0,
+            "math.sin(query.life_time * 120) * 0.8",
+            0
+          ],
+          "scale": "query.property('claudenpc:tam') * math.min(1, query.life_time * 3) * (1 + math.pow(math.sin(query.life_time * 420), 16) * 0.12)"
+        }
+      }
+    },
+    "animation.claudenpc.orbe.giro": {
+      "loop": true,
+      "bones": {
+        "raiz": {
+          "scale": "query.property('claudenpc:tam') * math.min(1, query.life_time * 6)"
+        },
+        "amarilla": {
+          "rotation": [
+            "query.life_time * 400",
+            "query.life_time * 300",
+            0
+          ]
+        },
+        "azul": {
+          "rotation": [
+            "query.life_time * -300",
+            "query.life_time * 420",
+            0
+          ]
+        },
+        "def_nucleo": {
+          "scale": "1 + math.sin(query.life_time * 1400) * 0.06"
+        },
+        "def_azul": {
+          "rotation": [
+            0,
+            "query.life_time * 160",
+            "query.life_time * 40"
+          ]
+        },
+        "def_amarilla": {
+          "rotation": [
+            "query.life_time * -50",
+            "query.life_time * -220",
+            0
+          ]
+        },
+        "def_anillo": {
+          "rotation": [
+            0,
+            "query.life_time * 300",
+            0
+          ],
+          "scale": "1 + math.sin(query.life_time * 600) * 0.08"
+        }
+      }
+    },
+    "animation.claudenpc.reloj.tic": {
+      "loop": true,
+      "bones": {
+        "reloj": {
+          "rotation": [
+            0,
+            "query.life_time * 45",
+            0
+          ],
+          "position": [
+            0,
+            "math.sin(query.life_time * 100) * 0.8",
+            0
+          ]
+        },
+        "minutero_f": {
+          "rotation": [
+            0,
+            0,
+            "-math.floor(query.life_time * 2) * 30"
+          ]
+        },
+        "minutero_t": {
+          "rotation": [
+            0,
+            0,
+            "math.floor(query.life_time * 2) * 30"
+          ]
+        },
+        "horario_f": {
+          "rotation": [
+            0,
+            0,
+            "-query.life_time * 15"
+          ]
+        },
+        "horario_t": {
+          "rotation": [
+            0,
+            0,
+            "query.life_time * 15"
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.reloj.alarma": {
+      "loop": true,
+      "bones": {
+        "reloj": {
+          "position": [
+            "math.sin(query.life_time * 2400) * 0.35",
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 1800) * 4"
+          ]
+        },
+        "minutero_f": {
+          "rotation": [
+            0,
+            0,
+            "-query.life_time * 720"
+          ]
+        },
+        "minutero_t": {
+          "rotation": [
+            0,
+            0,
+            "query.life_time * 720"
+          ]
+        },
+        "campana_izq": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 3000) * 12"
+          ]
+        },
+        "campana_der": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 3000) * -12"
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.reloj.apagado": {
+      "loop": true,
+      "bones": {
+        "reloj": {
+          "rotation": [
+            8,
+            "query.life_time * 4",
+            14
+          ],
+          "position": [
+            0,
+            -1,
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.signo.flotar": {
+      "loop": true,
+      "bones": {
+        "signo": {
+          "rotation": [
+            0,
+            "query.life_time * 160",
+            0
+          ],
+          "position": [
+            0,
+            "math.sin(query.life_time * 260) * 1.2",
+            0
+          ],
+          "scale": "3.2 * math.min(1, query.life_time * 5)"
+        }
+      }
+    },
+    "animation.claudenpc.rayo.destello": {
+      "animation_length": 0.6,
+      "bones": {
+        "rayo": {
+          "scale": {
+            "0.0": [
+              1.4,
+              1,
+              1.4
+            ],
+            "0.05": [
+              0.0,
+              1,
+              0.0
+            ],
+            "0.1": [
+              1.2,
+              1,
+              1.2
+            ],
+            "0.25": [
+              1.0,
+              1,
+              1.0
+            ],
+            "0.45": [
+              0.5,
+              1,
+              0.5
+            ],
+            "0.6": [
+              0.0,
+              1,
+              0.0
+            ]
+          }
+        },
+        "rayo_0": {
+          "scale": "query.property('claudenpc:variante') == 0 ? 1 : 0"
+        },
+        "rayo_1": {
+          "scale": "query.property('claudenpc:variante') == 1 ? 1 : 0"
+        },
+        "rayo_2": {
+          "scale": "query.property('claudenpc:variante') == 2 ? 1 : 0"
+        }
+      }
+    },
+    "animation.claudenpc.marioneta.seguir": {
+      "loop": true,
+      "bones": {
+        "cabeza": {
+          "position": [
+            0,
+            "query.property('claudenpc:ojos') * 16",
+            0
+          ]
+        },
+        "pecho": {
+          "position": [
+            0,
+            "query.property('claudenpc:pecho') * 16",
+            "-query.property('claudenpc:frente') * 16"
+          ]
+        },
+        "corazon": {
+          "rotation": [
+            0,
+            "query.life_time * 90",
+            0
+          ],
+          "scale": "1 + math.pow(math.sin(query.life_time * 300), 12) * 0.25"
+        },
+        "hilos": {
+          "rotation": [
+            "math.sin(query.life_time * 70) * 10",
+            "query.life_time * -60",
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.ilusion.aparecer": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "scale": "math.min(1, query.life_time * 4)"
+        }
+      }
+    }
+  }
+}

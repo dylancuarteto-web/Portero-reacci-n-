@@ -1,0 +1,33 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:marioneta",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/marioneta"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.marioneta"
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ],
+      "animations": {
+        "seguir": "animation.claudenpc.marioneta.seguir",
+        "ctrl_ojos": "controller.animation.claudenpc.marioneta.ojos"
+      },
+      "scripts": {
+        "animate": [
+          "seguir",
+          "ctrl_ojos"
+        ]
+      },
+      "particle_effects": {
+        "ojo": "claudenpc:ojos_marioneta"
+      }
+    }
+  }
+}

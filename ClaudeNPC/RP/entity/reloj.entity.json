@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:reloj",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/reloj",
+        "apagado": "textures/entity/claudenpc/reloj_apagado"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.reloj"
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_reloj"
+      ],
+      "animations": {
+        "tic": "animation.claudenpc.reloj.tic",
+        "alarma": "animation.claudenpc.reloj.alarma",
+        "apagado": "animation.claudenpc.reloj.apagado",
+        "ctrl_estado": "controller.animation.claudenpc.reloj.estado"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl_estado"
+        ]
+      },
+      "particle_effects": {
+        "humo": "claudenpc:humo_reloj"
+      }
+    }
+  }
+}

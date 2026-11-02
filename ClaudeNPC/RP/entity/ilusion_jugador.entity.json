@@ -1,0 +1,35 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:ilusion_jugador",
+      "materials": {
+        "default": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/ilusion"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.claude"
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_ilusion"
+      ],
+      "animations": {
+        "mirar": "animation.claudenpc.mirar",
+        "caminar": "animation.claudenpc.caminar",
+        "respirar": "animation.claudenpc.respirar",
+        "lanzar": "animation.claudenpc.lanzar",
+        "aparecer": "animation.claudenpc.ilusion.aparecer"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "caminar",
+          "respirar",
+          "aparecer"
+        ]
+      }
+    }
+  }
+}

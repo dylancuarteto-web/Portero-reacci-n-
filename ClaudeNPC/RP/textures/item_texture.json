@@ -1,0 +1,9 @@
+{
+  "resource_pack_name": "claudenpc",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "claudenpc_corazon_dorado": {
+      "textures": "textures/items/corazon_dorado"
+    }
+  }
+}

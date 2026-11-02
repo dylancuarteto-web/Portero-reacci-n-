@@ -26,7 +26,9 @@ export const ola = {
     const id = system.runInterval(() => {
       t++;
       try {
-        if (!e.isValid) {
+        if (!e.isValid || g.final) {
+          // Se cortó (por ejemplo, empezó la fase final).
+          g.vueloPropio = false;
           system.clearRun(id);
           return;
         }

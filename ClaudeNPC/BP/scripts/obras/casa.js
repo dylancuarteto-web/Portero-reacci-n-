@@ -2,7 +2,7 @@ import { BlockPermutation, ItemStack, system } from "@minecraft/server";
 import { ANIM, CASA, PARTICLES } from "../config.js";
 import { simularCrafteo } from "../crafteo.js";
 import { hacha, sostener } from "../equipo.js";
-import { dentroDeOtra, mismaObra, ocupado, registrar } from "../estructuras.js";
+import { cercaDeEscuela, dentroDeOtra, escuelaCercana, mismaObra, ocupado, registrar } from "../estructuras.js";
 import { aprender, ponerHaciendo } from "../iq.js";
 import { caminarA, detener, velocidad } from "../movimiento.js";
 import { planCasa } from "../planes/casa_plano.js";
@@ -125,6 +125,27 @@ export function candidatosAlrededor(npc, rmin = 5, rmax = 15) {
   return lista;
 }
 
+// Sitios para la casa de un Claude: si está cerca del colegio, busca del otro lado, lejos
+// de la escuela (las casas no van pegadas al colegio).
+function candidatosCasa(npc) {
+  const c = npc.location;
+  const esc = escuelaCercana(c.x, c.z, CASA.lejosEscuela + 15);
+  if (!esc) return candidatosAlrededor(npc);
+  let dx = c.x - esc.x;
+  let dz = c.z - esc.z;
+  const d = Math.hypot(dx, dz);
+  if (d < 0.5) {
+    const a = Math.random() * Math.PI * 2;
+    dx = Math.cos(a);
+    dz = Math.sin(a);
+  } else {
+    dx /= d;
+    dz /= d;
+  }
+  const lejos = esc.r + CASA.lejosEscuela + 16; // hasta los sitios más cercanos quedan fuera de los 28 bloques
+  return candidatosAlrededor({ location: { x: esc.x + dx * lejos, y: c.y, z: esc.z + dz * lejos } });
+}
+
 export function frenteHacia(c, npc) {
   const dx = npc.location.x - c.x;
   const dz = npc.location.z - c.z;
@@ -148,6 +169,7 @@ function elegirSitio(npc, state, casa) {
   for (let k = 0; k < 3 && casa.candidatos.length; k++) {
     const cand = casa.candidatos.shift();
     if (ocupado(cand.x, cand.z, 10)) continue;
+    if (cercaDeEscuela(cand.x, cand.z, CASA.lejosEscuela)) continue; // las casas, lejos del colegio
     const sitio = sitioPlano(npc.dimension, cand.x, cand.z, 4, 4, 3); // con desnivel: lo aplana antes
     if (!sitio) continue;
     const frente = frenteHacia(sitio, npc);
@@ -186,7 +208,7 @@ function terminar(npc, state, casa) {
 export function empezarCasa(npc, state) {
   detener(npc);
   velocidad(npc, 0);
-  state.casa = { fase: "talar", tala: {}, candidatos: candidatosAlrededor(npc) };
+  state.casa = { fase: "talar", tala: {}, candidatos: candidatosCasa(npc) };
 }
 
 export function tickCasa(npc, state) {

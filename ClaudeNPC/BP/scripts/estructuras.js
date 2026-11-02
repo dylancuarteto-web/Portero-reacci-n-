@@ -70,6 +70,26 @@ export function ocupado(x, z, distancia) {
   return todas().some((e) => distanciaA(e, x, z) < distancia);
 }
 
+// ¿Hay un aula o una escuela a menos de "distancia" bloques? (las casas van lejos del colegio)
+export function cercaDeEscuela(x, z, distancia) {
+  return todas().some((e) => (e.tipo === "aula" || (e.tipo === "proyecto" && e.rect)) && distanciaA(e, x, z) < distancia);
+}
+
+// La escuela (o aula) más cercana a menos de "distancia" bloques: su centro.
+export function escuelaCercana(x, z, distancia) {
+  let mejor;
+  let dmin = distancia;
+  for (const e of todas()) {
+    if (!(e.tipo === "aula" || (e.tipo === "proyecto" && e.rect))) continue;
+    const d = distanciaA(e, x, z);
+    if (d >= dmin) continue;
+    dmin = d;
+    mejor = e.rect ? { x: (e.rect.x0 + e.rect.x1) / 2, z: (e.rect.z0 + e.rect.z1) / 2, r: Math.max(e.rect.x1 - e.rect.x0, e.rect.z1 - e.rect.z0) / 2 }
+      : { x: e.x, z: e.z, r: e.r };
+  }
+  return mejor;
+}
+
 // Igual, pero sin contar las obras para las que "salvo(e)" es true (su propia escuela).
 export function ocupadoSalvo(x, z, distancia, salvo) {
   return todas().some((e) => !salvo(e) && distanciaA(e, x, z) < distancia);

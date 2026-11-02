@@ -715,7 +715,11 @@ function recreo(e, m) {
     m.cd.clase = hasta; // todavía es recreo para todos
   }
   const faltan = Math.max(0, Math.ceil((m.cd.clase - now()) / 20));
-  nombre(e, `próxima clase en ${faltan} s`);
+  // Durante el recreo de la escuela lo muestra bien claro (y cuánto falta).
+  const finRecreo = finesDeClase.filter((f) => f.dim === e.dimension.id && Math.hypot(f.x - e.location.x, f.z - e.location.z) < MAESTRO_CFG.llamada)
+    .reduce((mx, f) => Math.max(mx, f.t + MAESTRO_CFG.recreo), 0);
+  if (now() < finRecreo) nombre(e, `§a¡recreo! §7(${Math.ceil((finRecreo - now()) / 20)} s)`);
+  else nombre(e, `próxima clase en ${faltan} s`);
   if (caminando(e)) return;
   const aula = m.aula;
   if (!aula.aire && !dentro(aula, e.location) && !m.tarea) {
@@ -951,7 +955,18 @@ function clase(e, m) {
 }
 
 function terminar(e, m, completa) {
-  if (m.sesion) finesDeClase.push({ dim: e.dimension.id, x: e.location.x, z: e.location.z, t: now() });
+  if (m.sesion) {
+    finesDeClase.push({ dim: e.dimension.id, x: e.location.x, z: e.location.z, t: now() });
+    // ¡Recreo! Para todos los de la escuela, 120 s sin clases.
+    for (const p of e.dimension.getPlayers({ location: e.location, maxDistance: MAESTRO_CFG.llamada })) {
+      try {
+        p.onScreenDisplay.setTitle("§a§l¡RECREO!", { subtitle: `§f${Math.round(MAESTRO_CFG.recreo / 20)} segundos libres`, fadeInDuration: 6, stayDuration: 40, fadeOutDuration: 12 });
+      } catch {
+        // Sin título.
+      }
+    }
+    tocarCampana(e, m, 2);
+  }
   if (m.sesion) {
     terminarClase(m.sesion, completa);
     abrirPuerta(m, true);

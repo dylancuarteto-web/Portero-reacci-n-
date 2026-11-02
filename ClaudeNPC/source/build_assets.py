@@ -229,7 +229,17 @@ def golden_geometry():
         rayos.append({"origin": [-5.5, 27.32, -4.62], "size": [7.0, 0.36, 0], "uv": plano("rayo"),
                       "pivot": ojo, "rotation": [0, 0, ang]})
     bones.append(bone("ojo_rayos", ojo, "head", rayos))
-    return geo("geometry.claudenpc.golden", bones, bounds=(3, 3.5, 1.6))
+    # Fase final (v7.9): sombra en los ojos, alas, corona, espadas con estelas y orbes en las manos.
+    from golden_final_assets import huesos_golden_final
+    por_nombre = {b["name"]: b for b in bones}
+    por_nombre["rightArm"]["locators"] = {"mano_der": [-6, 9.5, -0.5]}
+    por_nombre["leftArm"]["locators"] = {"mano_izq": [6, 9.5, -0.5]}
+    por_nombre["body"]["locators"] = {"pecho": [0, 19, -2.5]}
+    bones += huesos_golden_final()
+    datos = geo("geometry.claudenpc.golden", bones, bounds=(4.5, 4, 1.6))
+    datos["minecraft:geometry"][0]["description"]["texture_width"] = 128
+    datos["minecraft:geometry"][0]["description"]["texture_height"] = 128
+    return datos
 
 
 def maestro_geometry():
@@ -524,6 +534,14 @@ def golden_skin(alpha_cuerpo=205):
     u, v, w, h = REG["rayo_v"]
     for y in range(h):
         px[u, v + y] = gradiente(abs(y - (h - 1) / 2) / ((h - 1) / 2))
+    return img
+
+
+def golden_skin_final():
+    from golden_final_assets import pintar_golden_final
+    img = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    img.paste(golden_skin(), (0, 0))  # copia exacta (los píxeles brillantes tienen alfa 0)
+    pintar_golden_final(img)
     return img
 
 
@@ -1827,6 +1845,7 @@ def golden_animations():
         "animation.claudenpc.golden.pensar": {"animation_length": 3.0, "bones": {
             "rightArm": {"rotation": k((0, Z), (0.3, [-120, 40, 0]), (2.7, [-120, 40, 0]), (3.0, Z))},
             "head": {"rotation": k((0, Z), (0.3, [10, 0, 10]), (2.7, [10, 0, 10]), (3.0, Z))}}},
+        **__import__("golden_final_assets").animaciones_golden_final(),
     }}
 
 
@@ -1862,7 +1881,17 @@ def render_controllers():
                                 {"herr_bateria": "query.property('claudenpc:herramienta') == 4"}]},
         "controller.render.claudenpc_golden": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
-            "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES]},
+            "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES]
+                         + [{"sombra": "Material.aura"}, {"fantasma_*": "Material.aura"}],
+            "part_visibility": [
+                {"*": True},
+                {"sombra": "query.property('claudenpc:pose') == 1 || query.property('claudenpc:pose') == 2"},
+                {"ojo_brillo": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"},
+                {"ojo_rayos": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"},
+                {"corona": "query.property('claudenpc:corona')"}, {"halo": "!query.property('claudenpc:corona')"},
+                {"alas": "query.property('claudenpc:alas')"}, {"ala_*": "query.property('claudenpc:alas')"},
+                {"espada_*": "query.property('claudenpc:espadas')"}, {"fantasma_*": "query.property('claudenpc:espadas')"},
+                {"orbe_mano_*": "query.property('claudenpc:orbes_manos')"}]},
         "controller.render.claudenpc_robot": {
             "arrays": {"textures": {"Array.fases": ["Texture.default", "Texture.turbo", "Texture.genio"]}},
             "geometry": "Geometry.default", "textures": ["Array.fases[query.property('claudenpc:fase')]"],
@@ -1926,9 +1955,17 @@ def client_entities():
         "enable_attachables": True,
         "spawn_egg": {"base_color": "#74543A", "overlay_color": "#D97757"}}}})
     golden_anims = dict(base_anims)
-    for name in ("flotar", "halo", "aura", "poder", "chasquido", "dirigir", "pensar", "ojo", "golpe", "aturdido", "risa", "picada"):
+    from golden_final_assets import POSES, POSES_EN_SUELO, POSES_SIN_MIRAR
+    for name in ("flotar", "halo", "aura", "poder", "chasquido", "dirigir", "pensar", "ojo", "golpe", "aturdido", "risa", "picada",
+                 "alas", "alas_batir", "chasquido_izq", "chasquido_der", "lanzar_orbe", "combo", "sacar_espadas", "temblor_final",
+                 "espada_listo", "corte_der", "corte_izq", "corte_x") + tuple(f"pose_{n}" for n, _ in POSES.values()):
         golden_anims[name] = f"animation.claudenpc.golden.{name}"
     golden_anims["ctrl_ojo"] = "controller.animation.claudenpc.golden.ojo"
+    golden_anims["ctrl_pose"] = "controller.animation.claudenpc.golden.pose"
+    golden_anims["ctrl_espadas"] = "controller.animation.claudenpc.golden.espadas"
+    golden_anims["ctrl_orbes"] = "controller.animation.claudenpc.golden.orbes_mano"
+    sin_mirar = " && ".join(f"query.property('claudenpc:pose') != {n}" for n in POSES_SIN_MIRAR)
+    sin_flotar = " && ".join(f"query.property('claudenpc:pose') != {n}" for n in POSES_EN_SUELO)
     for ident, archivo in (("claudenpc:claude_golden", "claude_golden"), ("claudenpc:espejismo", "espejismo")):
         write_json(RP / f"entity/{archivo}.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
             "identifier": ident,
@@ -1936,8 +1973,15 @@ def client_entities():
             "textures": {"default": "textures/entity/claudenpc/golden"},
             "geometry": {"default": "geometry.claudenpc.golden"},
             "animations": golden_anims,
-            "particle_effects": {"ojo": "claudenpc:ojo_golden", "halo_ojo": "claudenpc:ojo_halo"},
-            "scripts": {"animate": ["mirar", "respirar", "parpadeo", "flotar", "halo", "aura", "ojo", "ctrl_ojo"]},
+            "particle_effects": {"ojo": "claudenpc:ojo_golden", "halo_ojo": "claudenpc:ojo_halo",
+                                 "estela_am": "claudenpc:estela_amarilla", "estela_az": "claudenpc:estela_azul",
+                                 "destello_corte": "claudenpc:destello_corte", "chasquido": "claudenpc:chasquido_destello",
+                                 "plumas": "claudenpc:plumas_doradas", "mano_am": "claudenpc:mano_amarilla",
+                                 "mano_az": "claudenpc:mano_azul"},
+            "sound_effects": {"corte": "claudenpc.golden.corte"},
+            "scripts": {"animate": [{"mirar": sin_mirar}, "respirar", "parpadeo", {"flotar": sin_flotar}, "halo", "aura", "ojo",
+                                    "ctrl_ojo", "ctrl_pose", "ctrl_espadas", "ctrl_orbes",
+                                    {"alas": "query.property('claudenpc:alas')"}]},
             "render_controllers": ["controller.render.claudenpc_golden"],
             "enable_attachables": True}}})
     write_json(RP / "entity/eco.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
@@ -2047,9 +2091,14 @@ def client_entities():
             "particle_effects": [{"effect": "llama", "locator": "fuego"}, {"effect": "humo", "locator": "fuego"}]}}},
         "controller.animation.claudenpc.misil.humo": {"initial_state": "vuela", "states": {"vuela": {
             "particle_effects": [{"effect": "humo", "locator": "cola"}, {"effect": "llama", "locator": "cola"}]}}}}})
+    from golden_final_assets import controladores_golden_final
+    herido = "query.property('claudenpc:pose') == 1 || query.property('claudenpc:pose') == 2"
     write_json(RP / "animation_controllers/golden.animation_controllers.json", {"format_version": "1.10.0", "animation_controllers": {
-        "controller.animation.claudenpc.golden.ojo": {"initial_state": "brillar", "states": {"brillar": {
-            "particle_effects": [{"effect": "ojo", "locator": "ojo_derecho"}, {"effect": "halo_ojo", "locator": "ojo_derecho"}]}}}}})
+        "controller.animation.claudenpc.golden.ojo": {"initial_state": "brillar", "states": {
+            "brillar": {"particle_effects": [{"effect": "ojo", "locator": "ojo_derecho"}, {"effect": "halo_ojo", "locator": "ojo_derecho"}],
+                        "transitions": [{"apagado": herido}]},
+            "apagado": {"transitions": [{"brillar": f"!({herido})"}]}}},
+        **controladores_golden_final()}})
 
 
 def main():
@@ -2063,7 +2112,7 @@ def main():
     tex = RP / "textures/entity/claudenpc"
     tex.mkdir(parents=True, exist_ok=True)
     claude_skin().save(tex / "claude.png")
-    golden_skin().save(tex / "golden.png")
+    golden_skin_final().save(tex / "golden.png")
     maestro_skin().save(tex / "maestro.png")
     for nombre in ("einstein", "tesla", "curie", "newton", "lovelace"):
         maestro_skin(ESTILOS[nombre]).save(tex / f"maestro_{nombre}.png")
@@ -2088,6 +2137,8 @@ def main():
     write_json(RP / "animations/aura.animation.json", aura_animations())
     write_json(RP / "render_controllers/claudenpc.render_controllers.json", render_controllers())
     client_entities()
+    import golden_final_assets
+    golden_final_assets.generar()
 
     icon = Image.new("RGBA", (128, 128), NARANJA + (255,))
     d = ImageDraw.Draw(icon)

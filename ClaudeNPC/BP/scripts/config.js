@@ -3,6 +3,9 @@
 export const NPC = "claudenpc:claude";
 export const MAESTRO = "claudenpc:maestro";
 export const GOLDEN = "claudenpc:claude_golden";
+// Marco de la barra de jefe de Claude Golden (sin letras): ala izquierda, su cara y ala
+// derecha, dibujados en RP/font/glyph_E9.png (caracteres U+E900 a U+E906).
+export const GOLDEN_MARCO = "\uE900\uE901\uE902\uE903\uE904\uE905\uE906";
 export const ESPEJISMO = "claudenpc:espejismo";
 export const ROBOT = "claudenpc:robot";
 export const MISIL = "claudenpc:misil";
@@ -17,7 +20,12 @@ export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraf
 // Propiedades de entidad (las ve el paquete de recursos para las posturas).
 export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia", variante: "claudenpc:variante",
   alarma: "claudenpc:alarma", herramienta: "claudenpc:herramienta", fase: "claudenpc:fase", corriendo: "claudenpc:corriendo",
-  sinPuno: "claudenpc:sin_puno", volando: "claudenpc:volando", apagado: "claudenpc:apagado", cargando: "claudenpc:cargando" };
+  sinPuno: "claudenpc:sin_puno", volando: "claudenpc:volando", apagado: "claudenpc:apagado", cargando: "claudenpc:cargando",
+  // Fase final de Claude Golden y sus objetos
+  pose: "claudenpc:pose", alas: "claudenpc:alas", corona: "claudenpc:corona", espadas: "claudenpc:espadas", corte: "claudenpc:corte",
+  orbesManos: "claudenpc:orbes_manos", corteVel: "claudenpc:corte_vel", corteDist: "claudenpc:corte_dist", corteRot: "claudenpc:corte_rot",
+  tam: "claudenpc:tam", brillo: "claudenpc:brillo", tipo: "claudenpc:tipo", estado: "claudenpc:estado", ojos: "claudenpc:ojos",
+  pecho: "claudenpc:pecho", frente: "claudenpc:frente" };
 
 // Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
 export const EVENTO = {
@@ -70,6 +78,22 @@ export const PARTICLES = {
   casquillo: "claudenpc:casquillo",
   escudoHex: "claudenpc:escudo_hex",
   tornillo: "claudenpc:tornillo",
+  converge: "claudenpc:converge_dorado",
+  lluviaDorada: "claudenpc:lluvia_dorada",
+  hilo: "claudenpc:hilo",
+  explosionDorada: "claudenpc:explosion_dorada",
+  explosionAzul: "claudenpc:explosion_azul",
+  explosionDefinitiva: "claudenpc:explosion_definitiva",
+  avisoAmarillo: "claudenpc:aviso_amarillo",
+  avisoAzul: "claudenpc:aviso_azul",
+  impactoAmarillo: "claudenpc:impacto_amarillo",
+  impactoAzul: "claudenpc:impacto_azul",
+  ondaPausa: "claudenpc:onda_pausa",
+  fragmento: "claudenpc:fragmento_dorado",
+  curacion: "claudenpc:curacion_dorada",
+  chasquido: "claudenpc:chasquido_destello",
+  plumas: "claudenpc:plumas_doradas",
+  destelloCorte: "claudenpc:destello_corte",
 };
 
 export const ANIM = {
@@ -114,6 +138,12 @@ export const ANIM = {
   goldenAturdido: "animation.claudenpc.golden.aturdido",
   goldenRisa: "animation.claudenpc.golden.risa",
   goldenPicada: "animation.claudenpc.golden.picada",
+  goldenChasquidoIzq: "animation.claudenpc.golden.chasquido_izq",
+  goldenChasquidoDer: "animation.claudenpc.golden.chasquido_der",
+  goldenLanzarOrbe: "animation.claudenpc.golden.lanzar_orbe",
+  goldenCombo: "animation.claudenpc.golden.combo",
+  goldenSacarEspadas: "animation.claudenpc.golden.sacar_espadas",
+  goldenAlasBatir: "animation.claudenpc.golden.alas_batir",
   robotMisiles: "animation.claudenpc.robot.misiles",
   robotLaser: "animation.claudenpc.robot.laser",
   robotMetralla: "animation.claudenpc.robot.metralla",
@@ -199,6 +229,7 @@ export const BOTE = {
 };
 
 export const CASA = {
+  lejosEscuela: 28, // bloques: no construyen su casa más cerca de un aula o de la escuela
   reintento: 1800,
   alcance: 4.6,
   alcanceTecho: 6.4,
@@ -256,6 +287,37 @@ export const GOLDEN_CFG = {
   poderCada: [[110, 170], [60, 105]],
   golpe: { dano: [6, 8], cada: 30, alcance: 2.8 },
   reflejo: [0.7, 0.85],
+};
+
+// Fase final de Claude Golden (con menos de 100 de vida): cinemática del corazón dorado,
+// arena dorada, barra de jefe con 1000 de vida y poderes nuevos. Daño en medios corazones.
+export const GOLDEN_FINAL = {
+  umbral: 100, // vida a la que empieza (una sola vez)
+  vida: 1000,
+  espadas: 500, // con esta vida saca las dos espadas
+  radioCine: 64, // jugadores que ven la cinemática
+  arenaRadio: 13,
+  arenaAlto: 10,
+  poderCada: [50, 90], // ticks entre poderes
+  danoOrbe: 6, // 3 corazones
+  danoRayo: 6,
+  danoPausa: 10, // 5 corazones
+  danoIlusion: 5,
+  danoGolpe: 8,
+  relojes: { cantidad: 4, tiempo: 400, golpes: 2 }, // ticks para apagarlos y golpes para apagar cada uno
+  marionetas: { cantidad: 6, duran: 2400 }, // 2 minutos
+  revivirAlTerminar: true, // los caídos vuelven al terminar la pelea (false: se quedan como espectadores)
+  volumenMusica: 1.0,
+};
+export const FINAL = {
+  corazon: "claudenpc:corazon_dorado", fondo: "claudenpc:fondo", orbe: "claudenpc:orbe", reloj: "claudenpc:reloj",
+  signo: "claudenpc:signo", rayo: "claudenpc:rayo", marioneta: "claudenpc:marioneta", ilusion: "claudenpc:ilusion_jugador",
+};
+export const ITEM_CORAZON = "claudenpc:corazon_dorado";
+export const SONIDO = {
+  corazon: "claudenpc.golden.corazon", combate: "claudenpc.golden.combate", chasquido: "claudenpc.golden.chasquido",
+  tictac: "claudenpc.golden.tictac", pausa: "claudenpc.golden.pausa", reanudar: "claudenpc.golden.reanudar",
+  latido: "claudenpc.golden.latido", corte: "claudenpc.golden.corte", carga: "claudenpc.golden.carga",
 };
 
 // Claude Maestro: IQ fijo, alcance de la campana, cada cuánto da clase, cuánto

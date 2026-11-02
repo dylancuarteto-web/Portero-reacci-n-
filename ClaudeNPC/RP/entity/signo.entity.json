@@ -1,0 +1,29 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:signo",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/signo_amarillo",
+        "azul": "textures/entity/claudenpc/signo_azul"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.signo"
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_signo"
+      ],
+      "animations": {
+        "flotar": "animation.claudenpc.signo.flotar"
+      },
+      "scripts": {
+        "animate": [
+          "flotar"
+        ]
+      }
+    }
+  }
+}

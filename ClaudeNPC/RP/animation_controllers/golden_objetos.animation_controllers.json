@@ -1,0 +1,193 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.claudenpc.corazon.brillo": {
+      "initial_state": "apagado",
+      "states": {
+        "apagado": {
+          "transitions": [
+            {
+              "normal": "query.property('claudenpc:brillo') == 1"
+            },
+            {
+              "fuerte": "query.property('claudenpc:brillo') == 2"
+            }
+          ]
+        },
+        "normal": {
+          "particle_effects": [
+            {
+              "effect": "brillo",
+              "locator": "centro"
+            },
+            {
+              "effect": "rayos",
+              "locator": "centro"
+            }
+          ],
+          "transitions": [
+            {
+              "apagado": "query.property('claudenpc:brillo') == 0"
+            },
+            {
+              "fuerte": "query.property('claudenpc:brillo') == 2"
+            }
+          ]
+        },
+        "fuerte": {
+          "particle_effects": [
+            {
+              "effect": "fuerte",
+              "locator": "centro"
+            },
+            {
+              "effect": "rayos",
+              "locator": "centro"
+            }
+          ],
+          "transitions": [
+            {
+              "apagado": "query.property('claudenpc:brillo') == 0"
+            },
+            {
+              "normal": "query.property('claudenpc:brillo') == 1"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.claudenpc.orbe.efectos": {
+      "initial_state": "inicio",
+      "states": {
+        "inicio": {
+          "transitions": [
+            {
+              "amarilla": "query.property('claudenpc:tipo') == 0"
+            },
+            {
+              "azul": "query.property('claudenpc:tipo') == 1"
+            },
+            {
+              "definitiva": "query.property('claudenpc:tipo') == 2"
+            }
+          ]
+        },
+        "amarilla": {
+          "particle_effects": [
+            {
+              "effect": "estela_am",
+              "locator": "centro"
+            }
+          ],
+          "transitions": [
+            {
+              "inicio": "query.property('claudenpc:tipo') != 0"
+            }
+          ]
+        },
+        "azul": {
+          "particle_effects": [
+            {
+              "effect": "estela_az",
+              "locator": "centro"
+            }
+          ],
+          "transitions": [
+            {
+              "inicio": "query.property('claudenpc:tipo') != 1"
+            }
+          ]
+        },
+        "definitiva": {
+          "particle_effects": [
+            {
+              "effect": "sonico",
+              "locator": "centro"
+            },
+            {
+              "effect": "chispas",
+              "locator": "centro"
+            },
+            {
+              "effect": "estela_am",
+              "locator": "centro"
+            }
+          ],
+          "transitions": [
+            {
+              "inicio": "query.property('claudenpc:tipo') != 2"
+            }
+          ]
+        }
+      }
+    },
+    "controller.animation.claudenpc.reloj.estado": {
+      "initial_state": "tic",
+      "states": {
+        "tic": {
+          "animations": [
+            "tic"
+          ],
+          "transitions": [
+            {
+              "alarma": "query.property('claudenpc:estado') == 1"
+            },
+            {
+              "apagado": "query.property('claudenpc:estado') == 2"
+            }
+          ],
+          "blend_transition": 0.2
+        },
+        "alarma": {
+          "animations": [
+            "tic",
+            "alarma"
+          ],
+          "transitions": [
+            {
+              "tic": "query.property('claudenpc:estado') == 0"
+            },
+            {
+              "apagado": "query.property('claudenpc:estado') == 2"
+            }
+          ],
+          "blend_transition": 0.2
+        },
+        "apagado": {
+          "animations": [
+            "apagado"
+          ],
+          "particle_effects": [
+            {
+              "effect": "humo",
+              "locator": "arriba"
+            }
+          ],
+          "transitions": [
+            {
+              "tic": "query.property('claudenpc:estado') == 0"
+            }
+          ],
+          "blend_transition": 0.4
+        }
+      }
+    },
+    "controller.animation.claudenpc.marioneta.ojos": {
+      "initial_state": "brillan",
+      "states": {
+        "brillan": {
+          "particle_effects": [
+            {
+              "effect": "ojo",
+              "locator": "ojo_i"
+            },
+            {
+              "effect": "ojo",
+              "locator": "ojo_d"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

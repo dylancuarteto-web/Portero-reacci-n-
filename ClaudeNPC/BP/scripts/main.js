@@ -13,6 +13,7 @@ import { nivelHab } from "./habilidades.js";
 import { contraataque } from "./habilidades/reflejos.js";
 import { revisarFusion } from "./fusion.js";
 import "./golden/index.js";
+import "./corazon.js";
 import { aprender, ponerHaciendo } from "./iq.js";
 import { suspenderPorAtaque } from "./maestro.js";
 import { revisarRobot } from "./robot/construccion.js";

@@ -30,6 +30,105 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "claudenpc.golden.corazon": {
+      "category": "music",
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/corazon",
+          "stream": true,
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.combate": {
+      "category": "music",
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/combate",
+          "stream": true,
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.chasquido": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/chasquido",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.tictac": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/tictac",
+          "volume": 0.8,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.pausa": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/pausa",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.reanudar": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/reanudar",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.latido": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/latido",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.corte": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/corte",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.carga": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/carga",
+          "volume": 0.9,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }

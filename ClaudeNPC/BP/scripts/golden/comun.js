@@ -34,24 +34,15 @@ export function empujar(jugador, desde, fuerza, alto) {
   }
 }
 
-// Nombre del poder en la barra de acción de los jugadores cercanos.
+// Claude Golden no dice nada (ni el nombre de sus poderes): solo se ven sus efectos.
+// eslint-disable-next-line no-unused-vars
 export function anunciar(g, nombre, color = "§6") {
   g.anuncioHasta = now() + 50;
-  for (const p of objetivos(g.entidad.dimension, g.entidad.location, 48)) {
-    try {
-      p.onScreenDisplay.setActionBar(`§6Claude Golden: ${color}§l« ${nombre} »`);
-    } catch {
-      // Sin pantalla.
-    }
-  }
 }
 
+// eslint-disable-next-line no-unused-vars
 export function avisarJugador(jugador, texto) {
-  try {
-    jugador.onScreenDisplay.setActionBar(texto);
-  } catch {
-    // Sin pantalla.
-  }
+  // Sin letras.
 }
 
 // Suelo (bloque de aire sobre algo sólido) cerca de una altura de referencia.

@@ -89,6 +89,47 @@
         },
         {
           "aura_lleg": "Material.aura"
+        },
+        {
+          "sombra": "Material.aura"
+        },
+        {
+          "fantasma_*": "Material.aura"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "sombra": "query.property('claudenpc:pose') == 1 || query.property('claudenpc:pose') == 2"
+        },
+        {
+          "ojo_brillo": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"
+        },
+        {
+          "ojo_rayos": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"
+        },
+        {
+          "corona": "query.property('claudenpc:corona')"
+        },
+        {
+          "halo": "!query.property('claudenpc:corona')"
+        },
+        {
+          "alas": "query.property('claudenpc:alas')"
+        },
+        {
+          "ala_*": "query.property('claudenpc:alas')"
+        },
+        {
+          "espada_*": "query.property('claudenpc:espadas')"
+        },
+        {
+          "fantasma_*": "query.property('claudenpc:espadas')"
+        },
+        {
+          "orbe_mano_*": "query.property('claudenpc:orbes_manos')"
         }
       ]
     },

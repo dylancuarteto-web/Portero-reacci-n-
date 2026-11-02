@@ -10,6 +10,71 @@
           "type": "bool",
           "default": false,
           "client_sync": true
+        },
+        "claudenpc:pose": {
+          "type": "int",
+          "range": [
+            0,
+            15
+          ],
+          "default": 0,
+          "client_sync": true
+        },
+        "claudenpc:alas": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        },
+        "claudenpc:corona": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        },
+        "claudenpc:espadas": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        },
+        "claudenpc:orbes_manos": {
+          "type": "bool",
+          "default": false,
+          "client_sync": true
+        },
+        "claudenpc:corte": {
+          "type": "int",
+          "range": [
+            0,
+            1000000
+          ],
+          "default": 0,
+          "client_sync": true
+        },
+        "claudenpc:corte_vel": {
+          "type": "float",
+          "range": [
+            0.2,
+            3.0
+          ],
+          "default": 1.0,
+          "client_sync": true
+        },
+        "claudenpc:corte_dist": {
+          "type": "float",
+          "range": [
+            0.0,
+            3.0
+          ],
+          "default": 1.0,
+          "client_sync": true
+        },
+        "claudenpc:corte_rot": {
+          "type": "float",
+          "range": [
+            0.0,
+            3.0
+          ],
+          "default": 1.0,
+          "client_sync": true
         }
       }
     },
@@ -43,7 +108,7 @@
         "is_pushable_by_piston": false
       },
       "minecraft:nameable": {
-        "always_show": true,
+        "always_show": false,
         "allow_name_tag_renaming": false
       },
       "minecraft:fire_immune": true,

@@ -3,40 +3,21 @@ import { ANIM, DIMENSIONES, ESPEJISMO, GOLDEN, GOLDEN_CFG, MODIFICA_MUNDO, PARTI
 import { animate, blockAt, burst, distancia, now, particleAt, piso, rand, sortear, sound, soundAt } from "../util.js";
 import { danar, empujar, estallido, goldens, historial, objetivos } from "./comun.js";
 import { PODERES } from "./poderes/index.js";
+import { cerebroFinal, controlarDano, finalInterrumpido, reanudarFinal, revisarUmbral } from "./final/index.js";
 
 // Claude Golden: nace de la fusión de cinco Claudes con IQ 1000 y es un jefe HOSTIL.
 // Vuela en órbita a tu alrededor, se lanza a golpearte con la palma dorada, te devuelve
 // las flechas y usa poderes creativos (cada uno en golden/poderes). Con la mitad de
 // vida entra en fase 2: piensa al 200%, usa poderes más seguido y su ojo derecho brilla
-// todavía más. Si lo vences, se disuelve en luz y deja regalos.
+// todavía más. Con menos de 100 de vida empieza su fase final (golden/final): cinemática
+// del corazón dorado, arena dorada, 1000 de vida con barra de jefe y poderes nuevos.
 
 const LUZ = "minecraft:light_block_15";
-const COLORES = ["§c", "§6", "§e", "§a", "§b", "§9", "§d"];
-const LETRAS = ["I", "Q", ":", " ", "?", "?", "?"];
 
-// --- Nombre: "IQ: ???" con letras que rebotan y cambian de color -----------------
 
-function etiqueta(frame) {
-  let arriba = "";
-  let abajo = "";
-  LETRAS.forEach((ch, i) => {
-    if (ch === " ") {
-      arriba += "  ";
-      abajo += "  ";
-      return;
-    }
-    const color = COLORES[(i + frame) % COLORES.length];
-    const hueco = ch === ":" || ch === "I" ? " " : "  ";
-    if (Math.sin(frame * 0.8 + i * 0.9) > 0) {
-      arriba += `${color}§l${ch}§r`;
-      abajo += hueco;
-    } else {
-      abajo += `${color}§l${ch}§r`;
-      arriba += hueco;
-    }
-  });
-  return `${arriba}\n${abajo}\n§6§lClaude Golden`;
-}
+// --- Nombre: sin letras ni etiqueta sobre la cabeza. Su nombre (en los textos del paquete)
+// es el marco de la barra de jefe: alas doradas y su cara, dibujados en la fuente del
+// paquete (RP/font/glyph_E9.png).
 
 // --- Registro y luz ------------------------------------------------------------------
 
@@ -49,10 +30,13 @@ export function registrarGolden(entidad, espera = 0) {
     luz: undefined, fase: 1, ocupadoHasta: 0, quietoHasta: 0, aturdidoHasta: 0, ultimo: undefined, presentado: false,
   });
   try {
+    entidad.nameTag = "";
     entidad.setProperty(PROP.furia, false);
   } catch {
     // Paquete antiguo.
   }
+  // Si el mundo se cerró en plena batalla final, sigue en la batalla.
+  reanudarFinal(goldens.get(entidad.id));
 }
 
 function limpiarLuz(g) {
@@ -119,13 +103,6 @@ function presentarse(g, jugador) {
     }
     burst(e, PARTICLES.fusionDestello, { x: 0, y: 1.5, z: 0 });
     sound(e, "ambient.weather.thunder", 1.4, 0.6);
-    for (const p of objetivos(e.dimension, e.location, 48)) {
-      try {
-        p.onScreenDisplay.setTitle("§6§lCLAUDE GOLDEN", { subtitle: "§e¡Que empiece la función!", fadeInDuration: 8, stayDuration: 40, fadeOutDuration: 12 });
-      } catch {
-        // Sin título.
-      }
-    }
   }, 8);
   g.cd.poder = now() + 60;
 }
@@ -142,13 +119,6 @@ function faseDos(g) {
   particleAt(e.dimension, PARTICLES.fusionDestello, { x: e.location.x, y: e.location.y + 1.5, z: e.location.z });
   particleAt(e.dimension, PARTICLES.fusionAnillo, e.location);
   sound(e, "mob.wither.spawn", 1.4, 0.6);
-  for (const p of objetivos(e.dimension, e.location, 48)) {
-    try {
-      p.onScreenDisplay.setTitle("§6§l¡IQ AL 200%!", { subtitle: "§eClaude Golden se lo toma en serio", fadeInDuration: 6, stayDuration: 34, fadeOutDuration: 10 });
-    } catch {
-      // Sin título.
-    }
-  }
 }
 
 function golpeDorado(g, jugador) {
@@ -231,7 +201,7 @@ system.runInterval(() => {
       goldens.delete(id);
       continue;
     }
-    if (g.vueloPropio) continue; // un poder lo está moviendo
+    if (g.vueloPropio || g.final?.control) continue; // un poder o una cinemática lo está moviendo
     try {
       const j = g.jugador?.isValid ? g.jugador : undefined;
       const mirar = j ? j.getHeadLocation() : { x: g.ancla.x, y: g.ancla.y + 1, z: g.ancla.z };
@@ -310,9 +280,6 @@ system.runInterval(() => {
     if (!e.isValid) continue;
     try {
       g.frame++;
-      const nombre = etiqueta(g.frame);
-      e.nameTag = nombre;
-      for (const m of g.espejismos ?? []) if (m.isValid) m.nameTag = nombre;
       if (g.frame % 2 === 0) burst(e, PARTICLES.auraDorada, { x: 0, y: 1, z: 0 });
       if (g.frame % 3 === 0) {
         moverLuz(g);
@@ -327,15 +294,23 @@ system.runInterval(() => {
       }
       if (!j?.isValid || now() < g.calmaHasta) continue;
       if (!g.presentado) presentarse(g, j);
+      if (g.final) {
+        // Fase final: golpe dorado, embestidas y los poderes nuevos (golden/final).
+        if (g.final.etapa !== "pelea" || g.final.curando || now() < g.aturdidoHasta || g.vueloPropio) continue;
+        const dist = distancia(e.location, j.location);
+        if (dist < GOLDEN_CFG.golpe.alcance && now() >= (g.cd.golpe ?? 0)) golpeDorado(g, j);
+        if (now() >= g.cd.embestida && now() >= g.ocupadoHasta && dist < 14) {
+          g.embestidaHasta = now() + 45;
+          g.cd.embestida = now() + rand(70, 110);
+          animate(e, ANIM.goldenPicada);
+        }
+        if (now() >= (g.embestidaHasta ?? 0)) cerebroFinal(g, j);
+        continue;
+      }
+      if (revisarUmbral(g, j, (x) => quitarEspejismos(x))) continue;
       const { actual, max } = vida(e);
       if (g.fase === 1 && actual <= max / 2) faseDos(g);
-      if (now() >= (g.anuncioHasta ?? 0) && g.frame % 5 === 0) {
-        try {
-          j.onScreenDisplay.setActionBar(`§6§lClaude Golden §r§7- §c${Math.ceil(actual)}§7/§c${max}${g.fase === 2 ? " §6§l(IQ 200%)" : ""}`);
-        } catch {
-          // Sin pantalla.
-        }
-      }
+
       if (now() < g.aturdidoHasta || g.preguntando) continue;
       // Golpe dorado si estás cerca; embestidas cada tanto para buscar el cuerpo a cuerpo.
       const dist = distancia(e.location, j.location);
@@ -370,7 +345,7 @@ system.runInterval(() => {
       const dim = world.getDimension(id);
       for (const e of dim.getEntities({ type: GOLDEN })) registrarGolden(e);
       for (const m of dim.getEntities({ type: ESPEJISMO })) {
-        const dueno = [...goldens.values()].some((g) => g.espejismos?.includes(m));
+        const dueno = [...goldens.values()].some((g) => g.espejismos?.includes(m) || g.final?.ilusiones?.includes(m));
         if (!dueno) m.remove();
       }
     } catch {
@@ -389,7 +364,6 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
       estallido(hurtEntity.dimension, { x: hurtEntity.location.x, y: hurtEntity.location.y + 1, z: hurtEntity.location.z });
       soundAt(hurtEntity.dimension, hurtEntity.location, "random.pop", 0.8, 1);
       atacante.addEffect("blindness", 30, { amplifier: 0, showParticles: false });
-      atacante.onScreenDisplay.setActionBar("§d¡Ese no era! Era un espejismo");
       hurtEntity.remove();
     } catch {
       // Ya no existe.
@@ -399,22 +373,19 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
   if (hurtEntity.typeId !== GOLDEN) return;
   const g = goldens.get(hurtEntity.id);
   if (!g) return;
-  if (g.espejismos?.length && atacante instanceof Player) {
-    quitarEspejismos(g);
-    try {
-      atacante.onScreenDisplay.setActionBar("§6¡Me encontraste!");
-    } catch {
-      // Sin pantalla.
-    }
-  }
+  if (g.espejismos?.length && atacante instanceof Player) quitarEspejismos(g);
 });
 
 // Devuelve la mayoría de las flechas (dorada, hacia quien la tiró); aturdido recibe el doble.
+// Después, la fase final decide (con menos de 100 empieza; en cinemáticas no recibe daño).
 world.beforeEvents.entityHurt.subscribe((event) => {
   const g = goldens.get(event.hurtEntity.id);
   if (g && now() < g.aturdidoHasta) event.damage *= 2;
-  if (event.damageSource.cause !== EntityDamageCause.projectile) return;
-  if (Math.random() > GOLDEN_CFG.reflejo[(g?.fase ?? 1) - 1]) return;
+  const refleja = event.damageSource.cause === EntityDamageCause.projectile && Math.random() <= GOLDEN_CFG.reflejo[(g?.fase ?? 1) - 1];
+  if (!refleja) {
+    if (g) controlarDano(g, event, (x) => quitarEspejismos(x));
+    return;
+  }
   event.cancel = true;
   const e = event.hurtEntity;
   const tirador = event.damageSource.damagingEntity;
@@ -448,6 +419,7 @@ world.afterEvents.entityDie.subscribe(({ deadEntity }) => {
   if (g) {
     limpiarLuz(g);
     quitarEspejismos(g);
+    finalInterrumpido(g);
   }
   goldens.delete(deadEntity.id);
   try {

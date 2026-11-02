@@ -37,8 +37,16 @@ def rot_z(a):
 
 
 def euler(r):
+    """Giro de un hueso o cubo como lo hace el motor (espacio del modelo de Bedrock, con x
+    espejada respecto del mundo): primero x, después y, después z. Comprobado con las
+    animaciones vanilla: x positivo baja la cara, y positivo gira la cara hacia su derecha
+    (-x) y z positivo abre el brazo derecho hacia afuera."""
     x, y, z = r if r else (0, 0, 0)
-    return rot_x(x) @ rot_y(y) @ rot_z(z)
+    cy, sy = math.cos(math.radians(y)), math.sin(math.radians(y))
+    cz, sz = math.cos(math.radians(z)), math.sin(math.radians(z))
+    ry = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])
+    rz = np.array([[cz, sz, 0], [-sz, cz, 0], [0, 0, 1]])
+    return rz @ ry @ rot_x(x)
 
 
 class Affine:

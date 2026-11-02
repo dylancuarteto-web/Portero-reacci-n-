@@ -1,0 +1,99 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.claudenpc_orbe": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "def_azul*": "Material.capa"
+        },
+        {
+          "def_amarilla*": "Material.capa"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "amarilla": "query.property('claudenpc:tipo') == 0"
+        },
+        {
+          "azul": "query.property('claudenpc:tipo') == 1"
+        },
+        {
+          "definitiva": "query.property('claudenpc:tipo') == 2"
+        },
+        {
+          "def_*": "query.property('claudenpc:tipo') == 2"
+        }
+      ]
+    },
+    "controller.render.claudenpc_reloj": {
+      "arrays": {
+        "textures": {
+          "Array.pieles": [
+            "Texture.default",
+            "Texture.apagado"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "textures": [
+        "Array.pieles[query.property('claudenpc:estado') == 2 ? 1 : 0]"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ]
+    },
+    "controller.render.claudenpc_signo": {
+      "arrays": {
+        "textures": {
+          "Array.colores": [
+            "Texture.default",
+            "Texture.azul"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "textures": [
+        "Array.colores[query.property('claudenpc:tipo')]"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ]
+    },
+    "controller.render.claudenpc_ilusion": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "emblema": false
+        },
+        {
+          "herr_*": false
+        }
+      ]
+    }
+  }
+}
