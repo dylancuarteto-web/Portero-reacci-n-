@@ -6,7 +6,8 @@ import { ponerHaciendo } from "../iq.js";
 import { saltando, saltoGuiado } from "../movimiento.js";
 import { hostil, sentarse } from "../postura.js";
 import { animate, avisar, blockAt, distancia, now, particleAt, reemplazable, sound, soundAt } from "../util.js";
-import { sePuedeQuitar, sueloEn } from "./combinaciones.js";
+import { protegido } from "../estructuras.js";
+import { sePuedeQuitar, sueloBajo, sueloEn } from "./combinaciones.js";
 
 // Plataforma voladora del Robot multi. Sirve cuando te subes alto y te pones techo (o la
 // rampa no bastó): el robot construye una plataforma de 3 x 3, la agarra con la pinza,
@@ -47,7 +48,7 @@ function sitio(dim, centro) {
     let ok = true;
     for (let dx = -1; dx <= 1 && ok; dx++) {
       for (let dz = -1; dz <= 1 && ok; dz++) {
-        if (!solido(blockAt(dim, { x: cx + dx, y: y - 1, z: cz + dz }))) ok = false;
+        if (!solido(blockAt(dim, { x: cx + dx, y: y - 1, z: cz + dz })) || protegido({ x: cx + dx, y, z: cz + dz })) ok = false;
         for (let h = 0; h <= 3 && ok; h++) if (!libre(blockAt(dim, { x: cx + dx, y: y + h, z: cz + dz }))) ok = false;
       }
     }
@@ -236,7 +237,7 @@ function bajar(P, x, destino) {
   s.provocadoHasta = now() + 600;
   hostil(n, s, true);
   ponerHaciendo(n, s, "§c¡a pelear!");
-  const meta = destino ?? { x: n.location.x, y: sueloEn(P.dim, Math.floor(n.location.x), n.location.y, Math.floor(n.location.z)), z: n.location.z };
+  const meta = destino ?? { x: n.location.x, y: sueloBajo(P.dim, Math.floor(n.location.x), n.location.y + 0.5, Math.floor(n.location.z)), z: n.location.z };
   const d = distancia(n.location, meta);
   saltoGuiado(n, meta, { ticks: Math.max(8, Math.round(d * 2)), alto: 0.6, retraso: 0 });
 }
@@ -368,7 +369,14 @@ export function tickPlataforma(r, h) {
       r.texto = "subiendo Claudes a la plataforma";
       if (P.t === 2) {
         elegirPasajeros(P);
-        if (!P.pasajeros.length) return soltar(r, "nadie pudo subir");
+        if (!P.pasajeros.length) {
+          // Nadie puede subir ahora: se queda en el suelo esperando a que un Claude pueda.
+          P.fase = "esperar";
+          P.t = 0;
+          P.esperaDesde ??= now();
+          r.texto = "esperando Claudes para subir";
+          return;
+        }
       }
       for (const x of P.pasajeros) {
         if (x.sentado || !x.n.isValid || saltando(x.n)) continue;
@@ -379,7 +387,13 @@ export function tickPlataforma(r, h) {
       }
       P.pasajeros = P.pasajeros.filter((x) => x.n.isValid);
       if (P.pasajeros.every((x) => x.sentado) || P.t > 100) {
-        if (!P.pasajeros.some((x) => x.sentado)) return soltar(r, "nadie pudo subir");
+        if (!P.pasajeros.some((x) => x.sentado)) {
+          for (const x of [...P.pasajeros]) bajar(P, x);
+          P.fase = "esperar";
+          P.t = 0;
+          P.esperaDesde ??= now();
+          return;
+        }
         for (const x of P.pasajeros.filter((y) => !y.sentado)) bajar(P, x);
         P.fase = "volar";
         P.t = 0;
@@ -393,7 +407,12 @@ export function tickPlataforma(r, h) {
     case "volar": {
       r.texto = `llevando ${P.pasajeros.length} Claudes`;
       P.pasajeros = P.pasajeros.filter((x) => x.n.isValid);
-      if (!P.pasajeros.length) return soltar(r);
+      if (!P.pasajeros.length) {
+        // Se quedó sin pasajeros en el aire: baja y espera en el suelo a otros.
+        P.fase = "aterrizar";
+        P.t = 0;
+        return;
+      }
       if (P.t % 10 === 2) {
         // Meta: a tu lado (por el lado de donde viene), a la altura de tus pies. Primero sube
         // a tu altura, después cruza y al final se ajusta.
@@ -446,11 +465,36 @@ export function tickPlataforma(r, h) {
       }
       return;
     }
+    case "aterrizar": {
+      // Baja hasta el suelo y ahí espera a que un Claude pueda subirse.
+      r.texto = "bajando a buscar Claudes";
+      propiedad(P, true);
+      P.meta = { x: P.pos.x, y: sueloBajo(P.dim, Math.floor(P.pos.x), P.pos.y + 0.5, Math.floor(P.pos.z)), z: P.pos.z };
+      if (P.llego || P.bloqueo || P.t > 300) {
+        P.fase = "esperar";
+        P.t = 0;
+        P.esperaDesde = now();
+        propiedad(P, false);
+      }
+      return;
+    }
+    case "esperar": {
+      // En el suelo: cada 2 s mira si ya hay Claudes que puedan subir; si en 60 s no hay
+      // ninguno, la desarma.
+      r.texto = "esperando Claudes para subir";
+      propiedad(P, false);
+      if (now() - (P.esperaDesde ?? now()) > MULTI_CFG.esperaPlataforma) return soltar(r, "nadie vino a subirse");
+      if (P.t % 40 === 0) {
+        P.fase = "cargar";
+        P.t = 0;
+      }
+      return;
+    }
     case "soltar": {
       r.texto = "bajando la plataforma";
-      const y = sueloEn(P.dim, Math.floor(P.pos.x), P.pos.y, Math.floor(P.pos.z));
-      P.meta = { x: P.pos.x, y: y + 0.0, z: P.pos.z };
-      if (P.llego || P.bloqueo || P.t > 160) terminar(r);
+      const y = sueloBajo(P.dim, Math.floor(P.pos.x), P.pos.y + 0.5, Math.floor(P.pos.z));
+      P.meta = { x: P.pos.x, y, z: P.pos.z };
+      if (P.llego || P.bloqueo || P.t > 300) terminar(r);
       return;
     }
     default:
@@ -508,7 +552,7 @@ system.runInterval(() => {
         else activas.delete(P);
         continue;
       }
-      if (P.fase === "volar" || P.fase === "soltar") avanzar(P);
+      if (P.fase === "volar" || P.fase === "soltar" || P.fase === "aterrizar") avanzar(P);
       colocar(P);
       if (now() % 10 === 0) cadenas(P);
     } catch {

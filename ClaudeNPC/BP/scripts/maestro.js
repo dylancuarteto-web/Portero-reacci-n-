@@ -2,7 +2,7 @@ import { BlockPermutation, ItemStack, Player, system, world } from "@minecraft/s
 import { ActionFormData } from "@minecraft/server-ui";
 import { ANIM, DIMENSIONES, IQ, MAESTRO, MAESTRO_CFG, MODIFICA_MUNDO, NPC, PARTICLES, PROP, VARIANTES } from "./config.js";
 import {
-  acierta, alumnos, aplausos, convocar, darPuntos, gestos, levantarMano, saliendo, sentados, terminarClase,
+  acierta, alumnos, aplausos, convocar, darPuntos, gestos, levantarMano, saliendo, sentados, soltarPorAtaque, terminarClase,
 } from "./clase.js";
 import { estados } from "./estado.js";
 import { aprender } from "./iq.js";
@@ -691,8 +691,29 @@ function construir(e, m) {
 
 // Recreo: lee en el atril, prepara la pizarra, revisa pupitres, mira por la ventana
 // y saluda a los jugadores que se acercan.
+// Recreo de la escuela: ningún maestro cercano (64 bloques) empieza una clase hasta 120 s
+// después de que terminó otra, ni mientras otro maestro cercano está dando clase.
+const finesDeClase = [];
+
+function recreoCerca(e, m) {
+  while (finesDeClase.length && now() - finesDeClase[0].t > MAESTRO_CFG.recreo) finesDeClase.shift();
+  const l = e.location;
+  for (const f of finesDeClase) {
+    if (f.dim === e.dimension.id && Math.hypot(f.x - l.x, f.z - l.z) < MAESTRO_CFG.llamada) return f.t + MAESTRO_CFG.recreo;
+  }
+  for (const otro of maestros.values()) {
+    if (otro === m || !otro.sesion?.activa || !otro.e?.isValid || otro.e.dimension.id !== e.dimension.id) continue;
+    if (Math.hypot(otro.e.location.x - l.x, otro.e.location.z - l.z) < MAESTRO_CFG.llamada) return now() + 200;
+  }
+  return undefined;
+}
+
 function recreo(e, m) {
-  if (now() >= m.cd.clase) return llamar(e, m);
+  if (now() >= m.cd.clase) {
+    const hasta = recreoCerca(e, m);
+    if (hasta === undefined) return llamar(e, m);
+    m.cd.clase = hasta; // todavía es recreo para todos
+  }
   const faltan = Math.max(0, Math.ceil((m.cd.clase - now()) / 20));
   nombre(e, `próxima clase en ${faltan} s`);
   if (caminando(e)) return;
@@ -930,6 +951,7 @@ function clase(e, m) {
 }
 
 function terminar(e, m, completa) {
+  if (m.sesion) finesDeClase.push({ dim: e.dimension.id, x: e.location.x, z: e.location.z, t: now() });
   if (m.sesion) {
     terminarClase(m.sesion, completa);
     abrirPuerta(m, true);
@@ -1019,7 +1041,11 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
   const m = maestros.get(hurtEntity.id);
   animate(hurtEntity, ANIM.maestroLentes);
   avisar(hurtEntity.dimension, hurtEntity.location, `§6${m?.titulo ?? "Claude Maestro"}:§r ¡Ay! ¡Al maestro no se le pega!`, 24);
-  if (m?.sesion) cancelar(hurtEntity, m, "§c¡Se suspende la clase!");
+  if (m?.sesion) {
+    // Los alumnos se olvidan de la clase al instante y te atacan.
+    soltarPorAtaque(m.sesion);
+    cancelar(hurtEntity, m, "§c¡Se suspende la clase!");
+  }
   try {
     for (const npc of hurtEntity.dimension.getEntities({ type: NPC, location: hurtEntity.location, maxDistance: 32 })) {
       const s = estados.get(npc.id);
@@ -1029,6 +1055,23 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
     // Sin Claudes.
   }
 });
+
+// Atacaste a un alumno en clase: el maestro suspende la clase y todos te atacan.
+export function suspenderPorAtaque(sesion) {
+  if (!sesion) return;
+  const m = maestros.get(sesion.maestro?.id);
+  soltarPorAtaque(sesion);
+  if (m?.sesion === sesion && m.e?.isValid) cancelar(m.e, m, "§c¡Atacaron a un alumno! Se suspende la clase.");
+  try {
+    const c = sesion.maestro.location;
+    for (const npc of sesion.maestro.dimension.getEntities({ type: NPC, location: c, maxDistance: 32 })) {
+      const s = estados.get(npc.id);
+      if (s && !s.clase) s.provocadoHasta = now() + 1200;
+    }
+  } catch {
+    // Sin Claudes.
+  }
+}
 
 world.afterEvents.entityRemove.subscribe(({ removedEntityId }) => {
   const m = maestros.get(removedEntityId);

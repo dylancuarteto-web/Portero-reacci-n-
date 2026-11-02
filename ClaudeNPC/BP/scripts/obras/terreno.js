@@ -16,6 +16,8 @@ const NATURAL = new RegExp("^minecraft:(dirt|coarse_dirt|grass_block|podzol|myce
   + "|water|flowing_water|lava|flowing_lava|sculk|sculk_vein|amethyst_block|budding_amethyst|amethyst_cluster"
   + "|[a-z_]*_amethyst_bud|big_dripleaf|small_dripleaf_block|hanging_roots|spore_blossom|sweet_berry_bush)$");
 const ARBOL = /(_log|_leaves|_wood|mushroom_block|mushroom_stem|vine|bamboo|cocoa|bee_nest|azalea)$/;
+// Mesas y bloques de trabajo que dejan los Claudes: en una obra estorban y se quitan.
+const UTILES = /(crafting_table|furnace|smoker|smithing_table|fletching_table|cartography_table|loom|stonecutter_block|stonecutter|grindstone|composter)$/;
 // Lo que nunca se rompe, ni siquiera dentro de la obra.
 const NUNCA = /bedrock|barrier|command_block|structure_|jigsaw|end_portal|^minecraft:portal$|end_gateway|reinforced_deepslate|border_block|^minecraft:allow$|^minecraft:deny$|light_block|moving_block|spawner|vault|chest|barrel|shulker|_bed$|^minecraft:bed$/;
 
@@ -91,7 +93,7 @@ export function planTerreno(dim, area, y, listo, opciones = {}) {
             if (ocupadas.has(k) && !(todoAdentro && adentro && estorbaEnLaObra(b, ocupadas.get(k)))) continue;
             const planta = reemplazable(b);
             const todo = todoAdentro && adentro && !NUNCA.test(b.typeId);
-            if (!todo && (planta ? !adentro : !esNatural(b))) continue;
+            if (!todo && (planta ? !adentro : !(esNatural(b) || UTILES.test(b.typeId)))) continue;
             if (h === tope && tope < 32 && ARBOL.test(b.typeId)) tope++; // un árbol: hasta la copa
             picar.push({ tipo: "quitar", pos: { x, y: y + h, z }, terreno: true });
           }

@@ -70,7 +70,11 @@ export function convocar(sesion) {
   for (const npc of lista) {
     if (!libres.length || sesion.alumnos.size >= MAESTRO_CFG.maxAlumnos) break;
     const s = obtenerEstado(npc);
-    if (s.fusion || s.clase || s.reunion || s.robot || s.robotObra) continue;
+    if (s.fusion || s.clase || s.reunion || s.robot || s.robotObra || s.multiObra || s.reparacion || s.plataforma) continue;
+    // Recreo: el que acaba de salir de una clase queda libre 120 s (no lo vuelven a llamar).
+    if (now() < (s.recreoHasta ?? 0)) continue;
+    // El que está peleando contigo no deja la pelea para ir a clase.
+    if (now() < (s.provocadoHasta ?? -Infinity) || now() <= (s.combateHasta ?? -Infinity)) continue;
     unirse(npc, s, sesion, libres.shift());
   }
   return sesion.alumnos.size;
@@ -223,6 +227,7 @@ export function salirDeClase(npc, s, conBono) {
   if (!c) return;
   c.sesion.alumnos.delete(npc.id);
   s.clase = undefined;
+  s.recreoHasta = now() + MAESTRO_CFG.recreo; // recreo: 120 s libre para hacer lo suyo
   if (s.sentado) sentarse(npc, s, false);
   velocidad(npc, VELOCIDAD.caminar);
   sostener(npc, pico(s));
@@ -233,6 +238,19 @@ export function salirDeClase(npc, s, conBono) {
   }
   ponerHaciendo(npc, s, "");
   s.ocupadoHasta = now() + rand(10, 40);
+}
+
+// Atacaste a alguien de la clase: se olvidan de la clase al instante (sin salir en fila)
+// y todos te atacan.
+export function soltarPorAtaque(sesion) {
+  for (const npc of [...sesion.alumnos.keys()].map((id) => estados.get(id)?.npc).filter((n) => n?.isValid)) {
+    const s = estados.get(npc.id);
+    if (!s?.clase) continue;
+    salirDeClase(npc, s, false);
+    s.provocadoHasta = now() + 1200;
+    hostil(npc, s, true);
+    ponerHaciendo(npc, s, "§c¡a pelear!");
+  }
 }
 
 // --- Lo que el maestro hace con sus alumnos ----------------------------------------

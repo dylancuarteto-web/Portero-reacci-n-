@@ -14,7 +14,7 @@ import { contraataque } from "./habilidades/reflejos.js";
 import { revisarFusion } from "./fusion.js";
 import "./golden/index.js";
 import { aprender, ponerHaciendo } from "./iq.js";
-import "./maestro.js";
+import { suspenderPorAtaque } from "./maestro.js";
 import { revisarRobot } from "./robot/construccion.js";
 import { tickPiloto } from "./robot/index.js";
 import { tickArmador } from "./multi/index.js";
@@ -280,7 +280,9 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
     if (!s) return;
     if (damageSource.cause === EntityDamageCause.projectile) s.memoria.arco++;
     else s.memoria.golpes++;
-    if (!s.clase) s.provocadoHasta = now() + 1200;
+    // Si estaba en clase, la clase se suspende y todos (alumnos y Claudes cercanos) te atacan.
+    if (s.clase) suspenderPorAtaque(s.clase.sesion);
+    s.provocadoHasta = now() + 1200;
     aprender(hurtEntity, s, 0.4);
   } else if (hurtEntity instanceof Player && atacante?.typeId === NPC) {
     const s = estados.get(atacante.id);

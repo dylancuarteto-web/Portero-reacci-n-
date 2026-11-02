@@ -47,6 +47,15 @@ export function cardinal(desde, hacia) {
   return { x: 0, z: Math.sign(dz) || 1 };
 }
 
+// Suelo debajo, aunque esté muy abajo (hasta 96 bloques): la altura de los pies.
+export function sueloBajo(dim, x, y, z) {
+  for (let h = Math.floor(y); h >= Math.floor(y) - 96; h--) {
+    const b = blockAt(dim, { x, y: h - 1, z });
+    if (b && !b.isAir && !reemplazable(b)) return h;
+  }
+  return Math.floor(y);
+}
+
 // Suelo (altura de los pies) cerca de "y": busca hacia abajo el primer bloque firme.
 export function sueloEn(dim, x, y, z) {
   for (let h = Math.floor(y) + 3; h >= Math.floor(y) - 8; h--) {
@@ -66,7 +75,7 @@ function escalon(dir) {
 function soporteYTecho(dim, acc, pos, techo = 3, soporte = true) {
   for (let h = 1; h <= 8 && soporte; h++) {
     const p = { x: pos.x, y: pos.y - h, z: pos.z };
-    if (!hueco(blockAt(dim, p))) break;
+    if (!hueco(blockAt(dim, p)) || protegido(p)) break;
     acc.push({ tipo: "poner", pos: p, bloque: "minecraft:cobblestone" });
   }
   for (let h = 1; h <= techo; h++) {
@@ -87,6 +96,8 @@ export function rampa(dim, jugador, desde) {
     const pos = { x: j.x - dir.x * (alto - k + 1), y: j.y - 1 - (alto - k), z: j.z - dir.z * (alto - k + 1) };
     const b = blockAt(dim, pos);
     if (b && !hueco(b) && !sePuedeQuitar(b, pos)) return undefined; // algo que no se puede tocar en el camino
+    // Nunca escaleras encima de la obra de un maestro, una casa o la escuela.
+    if (protegido(pos) || protegido({ x: pos.x, y: pos.y - 1, z: pos.z })) return undefined;
   }
   for (let k = 1; k <= alto; k++) {
     const pos = { x: j.x - dir.x * (alto - k + 1), y: j.y - 1 - (alto - k), z: j.z - dir.z * (alto - k + 1) };
@@ -112,6 +123,7 @@ export function caracol(dim, jugador, desde) {
   const acc = [];
   for (let h = 0; h < alto; h++) {
     const p = { x: c.x, y: base + h, z: c.z };
+    if (protegido(p)) return undefined; // no en la obra de un maestro ni en una casa
     const b = blockAt(dim, p);
     if (hueco(b)) acc.push({ tipo: "poner", pos: p, bloque: "minecraft:cobblestone" });
   }
@@ -119,6 +131,7 @@ export function caracol(dim, jugador, desde) {
     const [ox, oz] = VUELTA[k % VUELTA.length];
     const [nx, nz] = VUELTA[(k + 1) % VUELTA.length];
     const pos = { x: c.x + ox, y: base + k, z: c.z + oz };
+    if (protegido(pos)) return undefined;
     const b = blockAt(dim, pos);
     if (b && !hueco(b)) {
       soporteYTecho(dim, acc, pos, 2, false); // ya hay un escalón firme: solo libra el techo
@@ -142,7 +155,7 @@ export function puente(dim, jugador, desde) {
   for (let k = 1; k <= largo; k++) {
     for (const l of [0, 1]) {
       const pos = { x: a.x + dir.x * k + lado.x * l, y, z: a.z + dir.z * k + lado.z * l };
-      if (hueco(blockAt(dim, pos))) acc.push({ tipo: "poner", pos, bloque: "minecraft:spruce_planks" });
+      if (hueco(blockAt(dim, pos)) && !protegido(pos)) acc.push({ tipo: "poner", pos, bloque: "minecraft:spruce_planks" });
     }
   }
   return acc.length ? { nombre: "puente", acciones: acc } : undefined;
@@ -183,7 +196,7 @@ export function bajada(dim, jugador, desde) {
       if (!libre(b) && sePuedeQuitar(b, pos)) acc.push({ tipo: "quitar", pos });
     }
     const piso1 = { x, y: y - 1, z };
-    if (hueco(blockAt(dim, piso1))) acc.push({ tipo: "poner", pos: piso1, bloque: "minecraft:cobblestone" });
+    if (hueco(blockAt(dim, piso1)) && !protegido(piso1)) acc.push({ tipo: "poner", pos: piso1, bloque: "minecraft:cobblestone" });
   }
   return acc.length ? { nombre: "bajada", acciones: acc } : undefined;
 }

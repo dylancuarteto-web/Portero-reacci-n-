@@ -45,12 +45,28 @@ function partes(dim, b) {
   return esPuerta(arriba) ? [base, arriba] : [base];
 }
 
-// Abre la puerta o el portón si está cerrado. Devuelve true si lo abrió.
+// La otra hoja de una puerta doble (la puerta de al lado, mirando hacia el mismo lado).
+function otraHoja(dim, base) {
+  if (!esPuerta(base)) return [];
+  const dir = estado(base, "minecraft:cardinal_direction") ?? estado(base, "direction");
+  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const n = blockAt(dim, { x: base.location.x + dx, y: base.location.y, z: base.location.z + dz });
+    if (!esPuerta(n) || estado(n, "upper_block_bit")) continue;
+    const dn = estado(n, "minecraft:cardinal_direction") ?? estado(n, "direction");
+    if (dn !== dir) continue;
+    return partes(dim, n);
+  }
+  return [];
+}
+
+// Abre la puerta o el portón si está cerrado. Devuelve true si lo abrió. En una puerta
+// doble abre las dos hojas a la vez (antes abría solo una: quedaba una abierta y otra
+// cerrada, el paso de un bloque y los maestros se trababan).
 export function abrirPaso(dim, b) {
   const lista = partes(dim, b);
   if (!lista.length || estado(lista[0], "open_bit") === true) return false;
   let cambio = false;
-  for (const p of lista) cambio = poner(p, true) || cambio;
+  for (const p of [...lista, ...otraHoja(dim, lista[0])]) cambio = poner(p, true) || cambio;
   if (!cambio) return false;
   const pos = { ...lista[0].location };
   soundAt(dim, { x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 }, "random.door_open");
@@ -78,7 +94,7 @@ system.runInterval(() => {
     abiertas.delete(k);
     const lista = partes(a.dim, blockAt(a.dim, a.pos));
     let cambio = false;
-    for (const p of lista) cambio = poner(p, false) || cambio;
+    for (const p of [...lista, ...(lista.length ? otraHoja(a.dim, lista[0]) : [])]) cambio = poner(p, false) || cambio;
     if (cambio) soundAt(a.dim, { x: a.pos.x + 0.5, y: a.pos.y + 0.5, z: a.pos.z + 0.5 }, "random.door_close");
   }
 }, 10);

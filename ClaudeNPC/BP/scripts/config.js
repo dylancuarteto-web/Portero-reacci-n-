@@ -245,7 +245,8 @@ export const MULTI_CFG = {
   lejosSeguro: 16, // bloques: lo lleva así de lejos de ti para repararlo
   estudio: 200, // ticks estudiando cómo repararlo (menos con más IQ)
   carga: 80, // ticks en cargarse del 0 al 100 %
-  plataformaMax: 1400, // ticks como mucho con la plataforma voladora (armarla, llevar y volver)
+  plataformaMax: 2400, // ticks como mucho con la plataforma voladora (si no están peleando contigo)
+  esperaPlataforma: 1200, // ticks que la plataforma espera en el suelo a que suba algún Claude
 };
 
 // Claude Golden (jefe hostil): a qué distancia te ve, cada cuánto usa un poder
@@ -269,6 +270,7 @@ export const MAESTRO_CFG = {
   puntos: 0.5,
   bono: { x: 2, duracion: 6000 },
   maxAlumnos: 16,
+  recreo: 2400, // ticks (120 s): después de una clase, nadie los vuelve a llamar (y ningún maestro cercano empieza otra)
 };
 
 // Variantes de Claude Maestro: el normal (IQ 280) y genios inspirados en científicos

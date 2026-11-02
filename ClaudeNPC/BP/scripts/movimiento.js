@@ -194,13 +194,14 @@ function rutaPorPuertas(npc, destino) {
     const b = estructuraEn(destino);
     if (mismaEstructura(a, b)) return ruta;
     const enHueco = (p) => Math.hypot(npc.location.x - (p.pos.x + 0.5), npc.location.z - (p.pos.z + 0.5)) < 1.1;
+    // "cruce": de ese punto al siguiente pasa por la puerta (lo hace con un paso guiado).
     if (a) {
       const p = puertaDe(npc.dimension, a);
-      if (p) ruta.push(...(enHueco(p) ? [p.fuera] : [p.dentro, p.fuera]));
+      if (p) ruta.push(...(enHueco(p) ? [{ ...p.fuera }] : [{ ...p.dentro }, { ...p.fuera, cruce: p.pos }]));
     }
     if (b) {
       const p = puertaDe(npc.dimension, b);
-      if (p) ruta.push(...(enHueco(p) && !a ? [p.dentro] : [p.fuera, p.dentro]));
+      if (p) ruta.push(...(enHueco(p) && !a ? [{ ...p.dentro }] : [{ ...p.fuera }, { ...p.dentro, cruce: p.pos }]));
     }
   } catch {
     // Sin registro de obras.
@@ -357,6 +358,17 @@ system.runInterval(() => {
       if (d.d < (final ? 0.3 : 0.5)) {
         if (!final) {
           m.ruta.shift();
+          // Cruza la puerta con un paso guiado (abre las dos hojas): así no se traba en el
+          // marco ni en la hoja abierta, como les pasaba a los maestros.
+          const sig = m.ruta[0];
+          if (sig?.cruce) {
+            abrirPaso(npc.dimension, blockAt(npc.dimension, sig.cruce));
+            const largo = Math.hypot(sig.x - npc.location.x, sig.z - npc.location.z);
+            deslizar(npc, { x: sig.x, y: sig.y, z: sig.z }, Math.max(6, Math.round(largo * 4)), { x: 0, y: yawHacia(npc.location, sig) });
+            m.ruta.shift();
+            m.control = { x: sig.x, y: sig.y, z: sig.z };
+            m.revision = now() + 12;
+          }
           continue;
         }
         motores.delete(id);

@@ -9,9 +9,11 @@ import { abrirPaso, esPorton, esPuerta } from "../puertas.js";
 import { esNatural, estorbaEnLaObra } from "../obras/terreno.js";
 import { animate, avisar, blockAt, distancia, now, particleAt, reemplazable, sound, soundAt } from "../util.js";
 import {
-  bajada, caracol, hayHueco, hayPared, puente, quitable, rampa, sePuedeQuitar, sueloEn, tunel,
+  bajada, caracol, hayHueco, hayPared, puente, quitable, rampa, sePuedeQuitar, sueloBajo, sueloEn, tunel,
 } from "./combinaciones.js";
+import { protegido } from "../estructuras.js";
 import { planLiberar } from "./liberar.js";
+import { tomarPendientes } from "./restaurar.js";
 import { empezarPlataforma, planPlataforma, techoSobre, terminar as terminarPlataforma, tickPlataforma } from "./plataforma.js";
 
 // Robot multi: robot constructor de apoyo (distinto del robot de pelea). Vuela con
@@ -261,15 +263,21 @@ function volar(r, meta, rapidez = MULTI_CFG.rapidez) {
 }
 
 // Baja suave hasta el suelo (al descansar o al apagarse).
+// Baja suave hasta el suelo con los propulsores encendidos (como un despegue al revés). Busca
+// el suelo de verdad aunque esté muy abajo (antes, si lo apagabas en lo alto, se quedaba
+// flotando).
 function aterrizar(r, rapidez) {
   const l = r.e.location;
-  const y = sueloEn(r.e.dimension, Math.floor(l.x), l.y, Math.floor(l.z));
+  const y = sueloBajo(r.e.dimension, Math.floor(l.x), l.y + 0.5, Math.floor(l.z));
   if (l.y - y > 0.15) {
+    poner(r, "volando", true);
+    const paso = Math.min(rapidez * (l.y - y > 6 ? 1.6 : 1), l.y - y);
     try {
-      r.e.teleport({ x: l.x, y: Math.max(y, l.y - rapidez), z: l.z }, { keepVelocity: false });
+      r.e.teleport({ x: l.x, y: l.y - paso, z: l.z }, { keepVelocity: false });
     } catch {
       // Sin teletransporte.
     }
+    if (r.tic % 6 === 0) particleAt(r.e.dimension, PARTICLES.polvo, { x: l.x, y: y + 0.1, z: l.z });
   } else poner(r, "volando", false);
 }
 
@@ -386,6 +394,9 @@ function hacer(r, a) {
     if (r.tic % 3 === 0) animate(r.e, ANIM.multiTaladrar);
   } else {
     if (!(b.isAir || b.isLiquid || reemplazable(b))) return;
+    // Nunca escaleras ni bloques sobre la obra de un maestro, una casa o la escuela (salvo
+    // el terreno de su propia obra o reponer un bloque que alguien rompió).
+    if (!a.suObra && !a.restaurar && protegido(a.pos)) return;
     try {
       if (typeof a.bloque === "string") b.setType(a.bloque);
       else b.setPermutation(a.bloque);
@@ -422,8 +433,15 @@ function trabajar(r) {
     const lado = mismoLado(r, centro); // dentro del aula se trabaja desde dentro
     if (!lado || !alcanza(r, a.pos)) {
       a.vuelo = (a.vuelo ?? 0) + 1;
-      if (a.vuelo > (conPuerta(r) ? 160 : 60)) {
-        r.cola.shift(); // no llega: lo deja
+      if (a.vuelo > (conPuerta(r) ? 160 : r.tarea?.tipo === "terreno" ? 100 : 60)) {
+        r.cola.shift();
+        // No llegó: lo reintenta al final (hasta dos veces) en vez de dejarlo sin romper.
+        if ((a.reintentos ?? 0) < 2) {
+          a.reintentos = (a.reintentos ?? 0) + 1;
+          a.vuelo = 0;
+          a.puesto = undefined;
+          r.cola.push(a);
+        }
         continue;
       }
       if (!lado) {
@@ -479,6 +497,29 @@ function buscarAtascados(r) {
 
 // --- Tareas ----------------------------------------------------------------------------------
 
+// Mesas y bloques de trabajo que ponen los Claudes: en la obra de un maestro estorban.
+const UTILES = /(crafting_table|furnace|smoker|smithing_table|fletching_table|cartography_table|loom|stonecutter_block|stonecutter|grindstone|composter)$/;
+
+// Repone los bloques que alguien rompió de la obra de un maestro (con el mismo bloque).
+function buscarReparaciones(r) {
+  const lista = tomarPendientes(r.e.dimension.id, r.e.location, 64);
+  if (!lista.length) return false;
+  const acciones = lista.map((x) => ({ tipo: "poner", pos: x.pos, bloque: x.perm, restaurar: true }));
+  r.cola = [...acciones, ...r.cola];
+  r.aviso = "reparando la obra del maestro";
+  avisar(r.e.dimension, r.e.location, `§bRobot multi:§r ¡rompieron la obra del maestro! La reparo (${acciones.length}).`, 32);
+  return true;
+}
+
+function tareaRestaurar(r) {
+  if (r.cola.length) {
+    r.texto = "reparando la obra del maestro";
+    trabajar(r);
+    return;
+  }
+  descansar(r);
+}
+
 // Maestros: localiza el terreno (recorre el borde escaneando), lo aplana y luego vigila.
 function tareaTerreno(r) {
   const t = r.tarea;
@@ -522,6 +563,24 @@ function tareaTerreno(r) {
     trabajar(r);
     return;
   }
+  // Repaso: ¿quedó algo del terreno sin hacer? (hasta dos repasos)
+  if ((t.repasos ?? 0) < 2) {
+    t.repasos = (t.repasos ?? 0) + 1;
+    const dim = r.e.dimension;
+    const faltan = t.plan.filter((p) => {
+      const b = blockAt(dim, p.pos);
+      if (!b || t.salvo?.(p.pos)) return false;
+      if (p.tipo === "quitar") return !b.isAir && quitable(b, p.pos, true);
+      return b.isAir || b.isLiquid || reemplazable(b);
+    }).map((p) => ({ tipo: p.tipo === "quitar" ? "quitar" : "poner", pos: p.pos, bloque: p.bloque, suObra: true }));
+    if (faltan.length) {
+      r.cola = faltan;
+      t.total = faltan.length;
+      r.texto = `repasando el terreno (${faltan.length})`;
+      avisar(dim, r.e.location, `§bRobot multi:§r repaso el terreno: quedaron ${faltan.length} bloques.`, 32);
+      return;
+    }
+  }
   // Terminó: avisa al maestro y pasa a vigilar la obra.
   t.listo = true;
   r.tarea = { tipo: "vigilar", maestroId: t.maestroId, interior: t.interior, area: t.area, y: t.y, esperado: t.esperado, sigue: t.sigue,
@@ -562,7 +621,7 @@ function tareaVigilar(r) {
     for (let z = a.z0; z <= a.z1 && sobrantes.length < 24; z++) {
       if (Math.abs(x - mx) <= 1 && Math.abs(z - mz) <= 1) continue;
       const adentro = !!t.interior && x >= t.interior.x0 && x <= t.interior.x1 && z >= t.interior.z0 && z <= t.interior.z1;
-      for (let h = 1; h <= 5; h++) {
+      for (let h = 1; h <= 8; h++) {
         const pos = { x, y: t.y + h, z };
         const k = clave(pos);
         if (t.salvo?.(pos)) continue;
@@ -574,7 +633,7 @@ function tareaVigilar(r) {
         }
         // Dentro del aula: cualquier cosa que no sea del plano. Fuera (y en la fachada): lo
         // que debía picar y no picó, y montañitas de tierra, piedra o árboles.
-        const sobra = (adentro && t.todoAdentro) || t.romper?.has(k) || esNatural(b);
+        const sobra = (adentro && t.todoAdentro) || t.romper?.has(k) || esNatural(b) || UTILES.test(b.typeId);
         if (sobra && quitable(b, pos, true)) sobrantes.push({ tipo: "quitar", pos, suObra: true });
       }
     }
@@ -903,10 +962,14 @@ system.runInterval(() => {
       }
       if (r.reposo) {
         aterrizar(r, 0.3);
-        // En reposo también ayuda: si ve a un Claude atascado cerca, se despierta y lo libera.
+        // En reposo también ayuda: si ve a un Claude atascado cerca, se despierta y lo libera;
+        // si rompieron la obra de un maestro, la repara.
         if (r.tic % 40 === 0 && buscarAtascados(r)) {
           r.reposo = false;
           r.tarea = { tipo: "liberar" };
+        } else if (r.tic % 40 === 20 && r.bateria > 5 && buscarReparaciones(r)) {
+          r.reposo = false;
+          r.tarea = { tipo: "restaurar" };
         }
         if (r.tic % 20 === 0) nombrar(r);
         continue;
@@ -919,10 +982,12 @@ system.runInterval(() => {
       }
       // Mientras trabaja, mira cada 2 s si hay Claudes atascados cerca (salvo aplanando).
       if (tipo !== "terreno" && !r.plataforma && r.tic % 40 === 0) buscarAtascados(r);
+      if ((tipo === "vigilar" || tipo === "restaurar") && r.tic % 40 === 20) buscarReparaciones(r);
       if (tipo === "terreno") tareaTerreno(r);
       else if (tipo === "vigilar") tareaVigilar(r);
       else if (tipo === "ayudar") tareaAyudar(r);
       else if (tipo === "liberar") tareaLiberar(r);
+      else if (tipo === "restaurar") tareaRestaurar(r);
       else descansar(r);
       if (r.aviso && r.tic % 20 === 0) {
         r.texto = r.aviso;

@@ -2,6 +2,7 @@ import { system } from "@minecraft/server";
 import { ANIM, CRAFTEO, PARTICLES } from "./config.js";
 import { sostener } from "./equipo.js";
 import { aprender } from "./iq.js";
+import { protegido } from "./estructuras.js";
 import { animate, blockAt, burst, mirarA, now, particleAt, sound } from "./util.js";
 
 const CARDINALES = [{ x: 1, z: 0 }, { x: -1, z: 0 }, { x: 0, z: 1 }, { x: 0, z: -1 }];
@@ -11,7 +12,7 @@ function lugarMesa(npc) {
     const p = { x: npc.location.x + d.x * 1.3, y: npc.location.y, z: npc.location.z + d.z * 1.3 };
     const b = blockAt(npc.dimension, p);
     const suelo = blockAt(npc.dimension, { x: p.x, y: p.y - 1, z: p.z });
-    if (b?.isAir && suelo && !suelo.isAir && !suelo.isLiquid) return b;
+    if (b?.isAir && suelo && !suelo.isAir && !suelo.isLiquid && !protegido(b.location)) return b;
   }
   return undefined;
 }
