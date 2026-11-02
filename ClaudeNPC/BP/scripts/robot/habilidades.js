@@ -57,6 +57,7 @@ function anillo(dim, c, radio, id, puntos = 12) {
 export function saltoAplastante(r, jugador) {
   const e = r.e;
   const dim = e.dimension;
+  r.quietoHasta = now() + 46; // no camina mientras se agacha y salta
   const v = jugador.getVelocity();
   const destino = { x: jugador.location.x + v.x * 18, y: jugador.location.y, z: jugador.location.z + v.z * 18 };
   animate(e, ANIM.robotAgacharse);

@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:plataforma",
+      "materials": {
+        "default": "entity_emissive_alpha"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/plataforma"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.plataforma"
+      },
+      "animations": {
+        "ctrl_propulsores": "controller.animation.claudenpc.plataforma.propulsores"
+      },
+      "particle_effects": {
+        "llama": "claudenpc:llama_misil",
+        "humo": "claudenpc:humo_misil"
+      },
+      "scripts": {
+        "animate": [
+          "ctrl_propulsores"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.default"
+      ]
+    }
+  }
+}

@@ -10,6 +10,7 @@ export const ECO = "claudenpc:eco";
 export const REFLEJO = "claudenpc:reflejo";
 export const PUNO = "claudenpc:puno";
 export const MULTI = "claudenpc:robot_multi";
+export const PLATAFORMA = "claudenpc:plataforma";
 export const AURA = "claudenpc:aura";
 export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
@@ -244,6 +245,7 @@ export const MULTI_CFG = {
   lejosSeguro: 16, // bloques: lo lleva así de lejos de ti para repararlo
   estudio: 200, // ticks estudiando cómo repararlo (menos con más IQ)
   carga: 80, // ticks en cargarse del 0 al 100 %
+  plataformaMax: 1400, // ticks como mucho con la plataforma voladora (armarla, llevar y volver)
 };
 
 // Claude Golden (jefe hostil): a qué distancia te ve, cada cuánto usa un poder

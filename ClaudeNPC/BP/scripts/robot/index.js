@@ -300,13 +300,14 @@ function romperDelante(r, dir, golpe = true) {
 function embestida(r, j) {
   const e = r.e;
   const dim = e.dimension;
-  const desde = { ...e.location };
-  const dx = j.location.x - desde.x;
-  const dz = j.location.z - desde.z;
-  const d = Math.hypot(dx, dz) || 1;
-  const dir = { x: dx / d, z: dz / d };
-  const largo = Math.min(16, d - 2.5);
-  if (largo < 4) return 0;
+  const d0 = Math.hypot(j.location.x - e.location.x, j.location.z - e.location.z);
+  if (Math.min(16, d0 - 2.5) < 4) return 0;
+  // Mientras se agacha y se lanza no camina (antes seguía caminando y, al lanzarse, volvía
+  // al punto donde se había agachado: parecía que retrocedía).
+  r.quietoHasta = now() + 26;
+  let desde = { ...e.location };
+  let dir = { x: (j.location.x - desde.x) / (d0 || 1), z: (j.location.z - desde.z) / (d0 || 1) };
+  let largo = Math.min(16, d0 - 2.5);
   animate(e, ANIM.robotAgacharse);
   sound(e, "mob.irongolem.throw", 0.6, 1);
   for (const n of r.pilotos) {
@@ -326,6 +327,15 @@ function embestida(r, j) {
         return;
       }
       if (t === 10) {
+        // Se lanza desde donde está ahora, hacia donde estás ahora.
+        desde = { ...e.location };
+        if (j.isValid) {
+          const dx = j.location.x - desde.x;
+          const dz = j.location.z - desde.z;
+          const d = Math.hypot(dx, dz) || 1;
+          dir = { x: dx / d, z: dz / d };
+          largo = Math.max(2, Math.min(16, d - 2.5));
+        }
         animate(e, ANIM.robotGolpe);
         soundAt(dim, e.location, "firework.launch", 0.5, 1);
         soundAt(dim, e.location, "random.explode", 1.6, 0.4);
@@ -463,7 +473,7 @@ system.runInterval(() => {
         }
       }
       if (MODIFICA_MUNDO && r.tic % 4 === 0) abrirCamino(r, j);
-      moverse(r, j);
+      if (now() >= (r.quietoHasta ?? 0)) moverse(r, j); // no camina mientras salta o embiste
       // Sobrecarga de IQ al perder un tercio de la vida (y otro tercio).
       const v = vida(e);
       if ((r.sobrecargas ?? 0) === 0 && v < 0.67) {

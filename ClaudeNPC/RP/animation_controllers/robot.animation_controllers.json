@@ -110,6 +110,51 @@
         }
       }
     },
+    "controller.animation.claudenpc.plataforma.propulsores": {
+      "initial_state": "suelo",
+      "states": {
+        "suelo": {
+          "transitions": [
+            {
+              "vuela": "query.property('claudenpc:volando')"
+            }
+          ]
+        },
+        "vuela": {
+          "particle_effects": [
+            {
+              "effect": "llama",
+              "locator": "propulsor_1"
+            },
+            {
+              "effect": "llama",
+              "locator": "propulsor_2"
+            },
+            {
+              "effect": "llama",
+              "locator": "propulsor_3"
+            },
+            {
+              "effect": "llama",
+              "locator": "propulsor_4"
+            },
+            {
+              "effect": "humo",
+              "locator": "propulsor_1"
+            },
+            {
+              "effect": "humo",
+              "locator": "propulsor_4"
+            }
+          ],
+          "transitions": [
+            {
+              "suelo": "!query.property('claudenpc:volando')"
+            }
+          ]
+        }
+      }
+    },
     "controller.animation.claudenpc.puno.fuego": {
       "initial_state": "vuela",
       "states": {

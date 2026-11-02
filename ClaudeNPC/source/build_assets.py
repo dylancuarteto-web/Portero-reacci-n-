@@ -1508,6 +1508,80 @@ def multi_geometry():
         "bones": bones}]}
 
 
+# Plataforma voladora del Robot multi (3 x 3 bloques, textura 64x64): tablones con borde
+# de hierro y el emblema en el centro, barandas bajas y cuatro propulsores debajo.
+REG_PLAT = {"tablas": (0, 0, 32, 32), "borde": (32, 0, 32, 4), "abajo": (32, 4, 16, 16), "metal": (48, 4, 8, 8),
+            "propulsor": (56, 4, 8, 8)}
+
+
+def caras_p(**por_cara):
+    resto = por_cara.get("resto")
+    uv = {}
+    for face in FACES:
+        u, v, w, h = REG_PLAT[por_cara.get(face, resto)]
+        uv[face] = {"uv": [u, v], "uv_size": [w, h]}
+    return uv
+
+
+def plataforma_geometry():
+    cubos = [{"origin": [-24, 0, -24], "size": [48, 3, 48], "uv": caras_p(up="tablas", down="abajo", resto="borde")}]
+    for x, z in ((-24, -24), (21, -24), (-24, 21), (21, 21)):
+        cubos.append({"origin": [x, 3, z], "size": [3, 6, 3], "uv": caras_p(resto="metal")})
+    cubos += [
+        {"origin": [-24, 8, -24], "size": [48, 1.5, 1.5], "uv": caras_p(resto="metal")},
+        {"origin": [-24, 8, 22.5], "size": [48, 1.5, 1.5], "uv": caras_p(resto="metal")},
+        {"origin": [-24, 8, -24], "size": [1.5, 1.5, 48], "uv": caras_p(resto="metal")},
+        {"origin": [22.5, 8, -24], "size": [1.5, 1.5, 48], "uv": caras_p(resto="metal")},
+    ]
+    locators = {}
+    for i, (x, z) in enumerate(((-20, -20), (14, -20), (-20, 14), (14, 14)), 1):
+        cubos.append({"origin": [x, -4, z], "size": [6, 4, 6], "uv": caras_p(down="propulsor", resto="metal")})
+        locators[f"propulsor_{i}"] = [x + 3, -4.5, z + 3]
+    return {"format_version": "1.16.0", "minecraft:geometry": [{
+        "description": {"identifier": "geometry.claudenpc.plataforma", "texture_width": 64, "texture_height": 64,
+                        "visible_bounds_width": 4, "visible_bounds_height": 2, "visible_bounds_offset": [0, 0.3, 0]},
+        "bones": [{"name": "base", "pivot": [0, 0, 0], "cubes": cubos, "locators": locators}]}]}
+
+
+def plataforma_texture():
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    px = img.load()
+    u, v, w, h = REG_PLAT["tablas"]
+    for y in range(h):
+        for x in range(w):
+            if x < 2 or y < 2 or x > w - 3 or y > h - 3:
+                c = (176, 182, 192) if (x + y) % 4 else (130, 136, 146)  # borde de hierro con remaches
+            else:
+                tabla = (y - 2) // 5
+                base = (166, 112, 66) if tabla % 2 else (150, 100, 58)
+                c = tuple(max(0, k - 28) for k in base) if (y - 2) % 5 == 4 or (x + tabla * 7) % 13 == 0 else base
+            px[u + x, v + y] = c + (255,)
+    # Emblema en el centro: cuadrado naranja con la estrella crema.
+    for y in range(12, 20):
+        for x in range(12, 20):
+            px[u + x, v + y] = NARANJA + (255,)
+    for dx, dy in ((0, -3), (0, -2), (0, -1), (0, 0), (0, 1), (0, 2), (-3, 0), (-2, 0), (-1, 0), (1, 0), (2, 0)):
+        px[u + 16 + dx, v + 16 + dy] = CREMA + (255,)
+    u, v, w, h = REG_PLAT["borde"]
+    for y in range(h):
+        for x in range(w):
+            px[u + x, v + y] = ((240, 196, 40) if ((x + y) // 2) % 2 else (34, 34, 38)) + (255,)
+    u, v, w, h = REG_PLAT["abajo"]
+    for y in range(h):
+        for x in range(w):
+            px[u + x, v + y] = ((70, 74, 82) if (x % 5 and y % 5) else (110, 116, 126)) + (255,)
+    u, v, w, h = REG_PLAT["metal"]
+    for y in range(h):
+        for x in range(w):
+            px[u + x, v + y] = ((196, 202, 210) if x == 0 or y == 0 else (150, 156, 166)) + (255,)
+    u, v, w, h = REG_PLAT["propulsor"]
+    for y in range(h):
+        for x in range(w):
+            r = math.hypot(x - (w - 1) / 2, y - (h - 1) / 2)
+            px[u + x, v + y] = (255, 236, 200, 0) if r < 1.6 else (255, 140, 50, 0) if r < 2.8 else (52, 54, 60, 255)
+    return img
+
+
 def puno_geometry():
     """Antebrazo izquierdo del robot que sale volando (mira hacia -z)."""
     return {"format_version": "1.16.0", "minecraft:geometry": [{
@@ -1921,6 +1995,15 @@ def client_entities():
                                 "ctrl_jets"]},
         "render_controllers": ["controller.render.claudenpc_multi"],
         "spawn_egg": {"base_color": "#969CA6", "overlay_color": "#D97757"}}}})
+    write_json(RP / "entity/plataforma.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:plataforma",
+        "materials": {"default": "entity_emissive_alpha"},
+        "textures": {"default": "textures/entity/claudenpc/plataforma"},
+        "geometry": {"default": "geometry.claudenpc.plataforma"},
+        "animations": {"ctrl_propulsores": "controller.animation.claudenpc.plataforma.propulsores"},
+        "particle_effects": {"llama": "claudenpc:llama_misil", "humo": "claudenpc:humo_misil"},
+        "scripts": {"animate": ["ctrl_propulsores"]},
+        "render_controllers": ["controller.render.default"]}}})
     write_json(RP / "entity/puno.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
         "identifier": "claudenpc:puno",
         "materials": {"default": "entity_emissive_alpha"},
@@ -1955,6 +2038,11 @@ def client_entities():
             "vuela": {"particle_effects": [{"effect": "llama", "locator": "jet_der"}, {"effect": "llama", "locator": "jet_izq"},
                                            {"effect": "humo", "locator": "jet_der"}],
                       "transitions": [{"suelo": "!query.property('claudenpc:volando')"}]}}},
+        "controller.animation.claudenpc.plataforma.propulsores": {"initial_state": "suelo", "states": {
+            "suelo": {"transitions": [{"vuela": "query.property('claudenpc:volando')"}]},
+            "vuela": {"particle_effects": [{"effect": "llama", "locator": f"propulsor_{i}"} for i in range(1, 5)]
+                      + [{"effect": "humo", "locator": "propulsor_1"}, {"effect": "humo", "locator": "propulsor_4"}],
+                      "transitions": [{"suelo": "!query.property('claudenpc:volando')"}]}}},
         "controller.animation.claudenpc.puno.fuego": {"initial_state": "vuela", "states": {"vuela": {
             "particle_effects": [{"effect": "llama", "locator": "fuego"}, {"effect": "humo", "locator": "fuego"}]}}},
         "controller.animation.claudenpc.misil.humo": {"initial_state": "vuela", "states": {"vuela": {
@@ -1984,6 +2072,8 @@ def main():
     robot_texture(2).save(tex / "robot_genio.png")
     write_json(RP / "models/entity/puno.geo.json", puno_geometry())
     write_json(RP / "models/entity/robot_multi.geo.json", multi_geometry())
+    write_json(RP / "models/entity/plataforma.geo.json", plataforma_geometry())
+    plataforma_texture().save(tex / "plataforma.png")
     misil_texture().save(tex / "misil.png")
     eco_skin().save(tex / "eco.png")
     reflejo_skin().save(tex / "reflejo.png")

@@ -14,3 +14,4 @@ action.interact.claudenpc.habilidades=Habilidades
 entity.claudenpc:reflejo.name=Reflejo de Claude
 entity.claudenpc:puno.name=Puño cohete
 entity.claudenpc:robot_multi.name=Robot multi
+entity.claudenpc:plataforma.name=Plataforma voladora

@@ -12,6 +12,7 @@ import {
   bajada, caracol, hayHueco, hayPared, puente, quitable, rampa, sePuedeQuitar, sueloEn, tunel,
 } from "./combinaciones.js";
 import { planLiberar } from "./liberar.js";
+import { empezarPlataforma, planPlataforma, techoSobre, terminar as terminarPlataforma, tickPlataforma } from "./plataforma.js";
 
 // Robot multi: robot constructor de apoyo (distinto del robot de pelea). Vuela con
 // propulsores, pica con el taladro y coloca con la pinza. Lleva su batería encima del
@@ -98,6 +99,7 @@ export function crearMulti(dim, pos, tarea) {
 // Trabajo terminado: aterriza y descansa (no se rompe). Se puede volver a usar.
 export function descansar(r, motivo) {
   if (r.apagado) return;
+  if (r.plataforma) terminarPlataforma(r);
   r.cola = [];
   r.tarea = undefined;
   r.reposo = true;
@@ -111,6 +113,7 @@ export function descansar(r, motivo) {
 // Sin batería: se apaga y se queda quieto en el suelo hasta que un Claude lo recargue.
 export function sinBateria(r, motivo = "¡batería agotada!") {
   if (r.apagado) return;
+  if (r.plataforma) terminarPlataforma(r);
   r.bateria = 0;
   r.cola = [];
   r.tareaPrevia = r.tarea?.tipo === "ayudar" || r.tarea?.tipo === "vigilar" || r.tarea?.tipo === "terreno" ? r.tarea : undefined;
@@ -445,7 +448,7 @@ function trabajar(r) {
 // Busca un Claude atascado cerca y pone delante de su trabajo lo que hace falta para
 // liberarlo. true si encontró a alguno.
 function buscarAtascados(r) {
-  if (r.cola.some((a) => a.liberar) || r.bateria < 8) return false;
+  if (r.plataforma || r.cola.some((a) => a.liberar) || r.bateria < 8) return false;
   const dim = r.e.dimension;
   let lista = [];
   try {
@@ -456,7 +459,7 @@ function buscarAtascados(r) {
   r.liberados ??= new Map();
   for (const n of lista) {
     const s = estados.get(n.id);
-    if (!s || s.fusion || s.robot || s.clase || s.multiObra || s.reparacion || s.bote) continue;
+    if (!s || s.fusion || s.robot || s.clase || s.multiObra || s.reparacion || s.bote || s.plataforma) continue;
     if (now() < (r.liberados.get(n.id) ?? 0)) continue;
     const enPelea = s.objetivo?.isValid && now() <= (s.combateHasta ?? 0);
     const plan = planLiberar(dim, n, enPelea ? s.objetivo.location : undefined);
@@ -593,6 +596,10 @@ function tareaAyudar(r) {
     return;
   }
   t.solo = 0;
+  if (r.plataforma) {
+    tickPlataforma(r, { trabajar, volar });
+    return;
+  }
   if (r.cola.length) {
     r.texto = r.cola.some((a) => a.liberar) ? "liberando a un Claude" : r.texto;
     trabajar(r);
@@ -618,19 +625,20 @@ function tareaAyudar(r) {
     descansar(r, "la pelea terminó.");
     return;
   }
-  const plan = elegir(dim, claudes, j);
+  const plan = elegir(dim, claudes, j, t);
   if (!plan || !plan.acciones.length) {
     r.texto = "buscando cómo ayudar";
     return;
   }
   r.cola = plan.acciones;
+  if (plan.plataforma) empezarPlataforma(r, plan);
   r.texto = `haciendo: ${plan.nombre}`;
   avisar(dim, r.e.location, `§bRobot multi:§r ¡${plan.nombre}!`, 32);
   sound(r.e, "random.orb", 1.8, 0.6);
 }
 
 // Mira la situación y elige la combinación de construcción.
-function elegir(dim, claudes, j) {
+function elegir(dim, claudes, j, t = {}) {
   if (!claudes.length) return undefined;
   // 1. Un Claude atascado o encerrado: lo libera (le quita el bloque que no puede escalar,
   //    le abre la salida o lo saca del pozo con el rayo tractor).
@@ -644,8 +652,19 @@ function elegir(dim, claudes, j) {
   const c = claudes.reduce((a, n) => ({ x: a.x + n.location.x / claudes.length, y: Math.min(a.y, n.location.y), z: a.z + n.location.z / claudes.length }),
     { x: 0, y: Infinity, z: 0 });
   const dy = j.location.y - c.y;
-  // 2. Estás arriba: rampa (o caracol si la rampa no cabe).
-  if (dy >= 2.5) return rampa(dim, j, c) ?? caracol(dim, j, c);
+  // 2. Estás arriba. Con techo (o si la rampa ya no bastó, o estás muy alto): plataforma
+  //    voladora con 3 Claudes. Si no, rampa (o caracol si la rampa no cabe).
+  if (dy >= 2.5) {
+    if ((techoSobre(dim, j) || (t.rampas ?? 0) >= 2 || dy >= 10) && now() >= (t.plataformaEn ?? 0)) {
+      const p = planPlataforma(dim, claudes, j);
+      if (p) {
+        t.plataformaEn = now() + 600; // después de una, espera un rato antes de armar otra
+        return p;
+      }
+    }
+    t.rampas = (t.rampas ?? 0) + 1;
+    return rampa(dim, j, c) ?? caracol(dim, j, c) ?? (now() >= (t.plataformaEn ?? 0) ? planPlataforma(dim, claudes, j) : undefined);
+  }
   // 3. Estás abajo: escalera excavada.
   if (dy <= -3) return bajada(dim, j, c);
   // 4. Hay un hueco o agua en medio: puente. 5. Hay una pared: túnel.
@@ -793,7 +812,8 @@ function revisar() {
     const porJugador = new Map();
     for (const n of lista) {
       const s = estados.get(n.id);
-      if (!s?.objetivo?.isValid || now() > (s.combateHasta ?? 0) || s.multiObra || s.robot || s.robotObra || s.fusion || s.clase || s.reparacion) continue;
+      if (!s?.objetivo?.isValid || now() > (s.combateHasta ?? 0) || s.multiObra || s.robot || s.robotObra || s.fusion || s.clase || s.reparacion
+        || s.plataforma) continue;
       const g = porJugador.get(s.objetivo.id) ?? { jugador: s.objetivo, peleando: [], sinAlcance: 0 };
       g.peleando.push(n);
       if ((s.sinAlcanceDesde && now() - s.sinAlcanceDesde > MULTI_CFG.sinAlcance) || (s.atascadoDesde && now() - s.atascadoDesde > MULTI_CFG.sinAlcance)) g.sinAlcance++;
@@ -898,7 +918,7 @@ system.runInterval(() => {
         continue;
       }
       // Mientras trabaja, mira cada 2 s si hay Claudes atascados cerca (salvo aplanando).
-      if (tipo !== "terreno" && r.tic % 40 === 0) buscarAtascados(r);
+      if (tipo !== "terreno" && !r.plataforma && r.tic % 40 === 0) buscarAtascados(r);
       if (tipo === "terreno") tareaTerreno(r);
       else if (tipo === "vigilar") tareaVigilar(r);
       else if (tipo === "ayudar") tareaAyudar(r);

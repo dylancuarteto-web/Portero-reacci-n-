@@ -19,6 +19,7 @@ import { revisarRobot } from "./robot/construccion.js";
 import { tickPiloto } from "./robot/index.js";
 import { tickArmador } from "./multi/index.js";
 import { tickReparador } from "./multi/reparar.js";
+import { tickPasajero } from "./multi/plataforma.js";
 import { caminarA, caminando, deslizar, destinoActual, salidaDePozo, saltando, seAtasco, velocidad } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
@@ -67,7 +68,7 @@ function quierePelear(npc, s, jugador) {
 // Dos Claudes en el mismo sitio se empujan y "tiemblan" (se veía en el video: dos encimados
 // a lo lejos). Si otro Claude está casi encima, uno de los dos se aparta un paso.
 function separarse(npc, s) {
-  if (s.obra || s.sentado || s.casa || s.bote || (s.robotObra && s.robotObra.fase !== "reunion") || saltando(npc) || !npc.isOnGround
+  if (s.obra || s.sentado || s.casa || s.bote || s.plataforma || (s.robotObra && s.robotObra.fase !== "reunion") || saltando(npc) || !npc.isOnGround
     || now() < (s.cd.separar ?? 0)) return;
   let otros = [];
   try {
@@ -136,6 +137,12 @@ function cerebro(npc) {
   if (s.reparacion) {
     // Reparando un Robot multi apagado (multi/reparar.js): lo lleva, estudia y lo recarga.
     tickReparador(npc, s);
+    pausarRutina(npc, s);
+    return;
+  }
+  if (s.plataforma) {
+    // Viajando sentado en la plataforma voladora del Robot multi (multi/plataforma.js).
+    tickPasajero(npc, s);
     pausarRutina(npc, s);
     return;
   }

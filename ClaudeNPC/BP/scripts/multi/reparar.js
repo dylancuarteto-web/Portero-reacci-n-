@@ -36,7 +36,7 @@ function firme(b) {
 
 // ¿Este Claude puede dejar lo que hace para reparar el robot?
 function disponible(s) {
-  return !!s && !s.fusion && !s.robot && !s.robotObra && !s.multiObra && !s.clase && !s.reparacion && !s.reunion && !s.bote
+  return !!s && !s.fusion && !s.robot && !s.robotObra && !s.multiObra && !s.clase && !s.reparacion && !s.plataforma && !s.reunion && !s.bote
     && !s.casa && !s.obra && !s.mina && !s.sentado;
 }
 

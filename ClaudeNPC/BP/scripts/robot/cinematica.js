@@ -119,10 +119,26 @@ function barra(o, texto) {
   }
 }
 
+// Donde esperan, sin estorbar a la cámara, los jugadores que estaban lejos.
+function palco(o) {
+  return { x: o.c.x + 0.5, y: o.c.y + 18, z: o.c.z + 0.5 };
+}
+
 export function empezarCinematica(o, jugadores) {
-  o.cine = { t: 0, jugadores: jugadores.filter((p) => p.isValid), yunque: undefined };
+  o.cine = { t: 0, jugadores: jugadores.filter((p) => p.isValid), yunque: undefined, viajeros: new Map() };
   for (const p of o.cine.jugadores) {
     enCinematica.add(p.id);
+    // Lejos (o en otra dimensión): la cámara no podría mostrar el sitio (el mundo no está
+    // cargado ahí). Lo lleva un momento al sitio y al terminar lo devuelve.
+    try {
+      const lejos = p.dimension.id !== o.dim.id || Math.hypot(p.location.x - o.c.x, p.location.z - o.c.z) > 40;
+      if (lejos) {
+        o.cine.viajeros.set(p.id, { p, pos: { ...p.location }, rot: p.getRotation(), dim: p.dimension });
+        p.teleport(palco(o), { dimension: o.dim, keepVelocity: false });
+      }
+    } catch {
+      // No se pudo llevar.
+    }
     try {
       p.onScreenDisplay.setHudVisibility(HudVisibility.Hide);
       p.inputPermissions.setPermissionCategory(InputPermissionCategory.Movement, false);
@@ -154,6 +170,15 @@ export function empezarCinematica(o, jugadores) {
 }
 
 export function soltarJugadores(o) {
+  // Los que estaban lejos vuelven a donde estaban.
+  for (const v of o.cine?.viajeros?.values() ?? []) {
+    try {
+      if (v.p.isValid) v.p.teleport(v.pos, { dimension: v.dim, rotation: v.rot, keepVelocity: false });
+    } catch {
+      // El jugador salió.
+    }
+  }
+  o.cine?.viajeros?.clear();
   for (const p of o.cine?.jugadores ?? []) {
     enCinematica.delete(p.id);
     try {
@@ -212,6 +237,14 @@ function ponerPieza(o, k) {
 export function tickCinematica(o, vivos, alTransformar) {
   const ci = o.cine;
   const t = ++ci.t;
+  // Los que vinieron de lejos esperan quietos en el palco (sin caerse).
+  for (const v of ci.viajeros?.values() ?? []) {
+    try {
+      if (v.p.isValid) v.p.teleport(palco(o), { dimension: o.dim, keepVelocity: false });
+    } catch {
+      // El jugador salió.
+    }
+  }
   const vivo = (k) => o.grupo[k]?.isValid ? o.grupo[k] : undefined;
 
   // --- Piezas detrás de cámara: holograma y materialización ---

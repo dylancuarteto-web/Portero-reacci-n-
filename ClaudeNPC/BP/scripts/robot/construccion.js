@@ -282,9 +282,11 @@ function empezarConstruccion(o) {
     const s = estados.get(n.id);
     if (s) ponerHaciendo(n, s, "§bconstruyendo el robot");
   }
+  // La ven todos los jugadores, estén donde estén (los que están lejos se llevan un
+  // momento al sitio y al terminar vuelven a donde estaban).
   let jugadores = [];
   try {
-    jugadores = o.dim.getPlayers({ location: o.c, maxDistance: 48 });
+    jugadores = world.getPlayers();
   } catch {
     jugadores = [];
   }
