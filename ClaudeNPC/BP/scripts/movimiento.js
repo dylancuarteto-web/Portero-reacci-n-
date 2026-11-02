@@ -149,6 +149,43 @@ system.runInterval(() => {
 const motores = new Map();
 const atascos = new Map();
 const pozos = new Map();
+// Destino al que acaba de rendirse: durante un rato no vuelve a empujar contra lo mismo
+// (antes se quedaba "temblando" contra la pared hasta que lo golpeabas).
+const fallos = new Map();
+// Último borde peligroso (caída de más de 3 o lava) donde se detuvo.
+const bordes = new Map();
+
+function rendirse(id, m) {
+  motores.delete(id);
+  atascos.set(id, now());
+  fallos.set(id, { destino: { ...m.destino }, hasta: now() + 90 });
+}
+
+// ¿Delante hay una caída de más de 3 bloques o lava? (no se tira: avisa del borde)
+function caidaDelante(npc, d) {
+  const x = npc.location.x + d.x * 0.75;
+  const z = npc.location.z + d.z * 0.75;
+  const y = Math.floor(npc.location.y);
+  for (let h = 1; h <= 4; h++) {
+    const b = blockAt(npc.dimension, { x, y: y - h, z });
+    if (!b) return false;
+    if (b.typeId.includes("lava")) return true;
+    if (!b.isAir && !reemplazable(b)) return false; // hay suelo (o agua) antes de 4
+    if (b.isLiquid) return false;
+  }
+  return true;
+}
+
+// ¿Se detuvo hace poco en un borde (hueco o lava delante)?
+export function enBorde(npc) {
+  return now() - (bordes.get(npc.id) ?? -1000) < 40;
+}
+
+// Adónde quería ir cuando se rindió hace poco (para que el Robot multi le abra paso).
+export function destinoFallido(npc) {
+  const f = fallos.get(npc.id);
+  return f && now() < f.hasta ? f.destino : undefined;
+}
 
 function rutaPorPuertas(npc, destino) {
   const ruta = [];
@@ -172,19 +209,35 @@ function rutaPorPuertas(npc, destino) {
 }
 
 export function caminarA(npc, destino, rapidez = 0.2) {
+  const f = fallos.get(npc.id);
+  if (f && now() < f.hasta && Math.hypot(f.destino.x - destino.x, f.destino.z - destino.z) < 2.5) return false;
   const previo = motores.get(npc.id);
   // Si ya va al mismo sitio con un rodeo calculado (o buscándolo), solo actualiza la meta.
   if (previo && (previo.rodeo || previo.buscando)
     && Math.hypot(previo.destino.x - destino.x, previo.destino.z - destino.z) < 1.2) {
     previo.destino = { ...destino };
     previo.rapidez = rapidez;
-    return;
+    return true;
   }
   motores.set(npc.id, {
     npc, destino: { ...destino }, rapidez, desde: now(), control: { ...npc.location }, revision: now(),
-    ruta: rutaPorPuertas(npc, destino), busquedas: 0, extra: 0, tic: 0,
+    ruta: rutaPorPuertas(npc, destino), busquedas: 0, extra: 0, tic: 0, fallosSalto: 0,
   });
   atascos.delete(npc.id);
+  return true;
+}
+
+// Sube al bloque "celda" (un escalón de un bloque) con un salto guiado.
+export function subirA(npc, celda) {
+  const techo = blockAt(npc.dimension, { x: npc.location.x, y: npc.location.y + 2.2, z: npc.location.z });
+  const bajo = !libre(techo);
+  saltoGuiado(npc, { x: celda.x + 0.5, y: celda.y + 1, z: celda.z + 0.5 }, { ticks: bajo ? 6 : 7, alto: bajo ? 0.04 : 0.22, retraso: 0.3 });
+}
+
+// Paso guiado y suave hasta "destino" (sin saltar): para avanzar sobre un puente recién
+// puesto o esquivar, sin depender de la física (que a veces lo frena en el borde).
+export function deslizar(npc, destino, ticks = 5, mirar) {
+  saltoGuiado(npc, destino, { ticks, alto: 0, retraso: 0, mirar });
 }
 
 // ¿Su última caminata terminó porque algo le cerraba el paso?
@@ -269,8 +322,7 @@ function buscarRodeo(id, m) {
     m.buscando = false;
     if (motores.get(id) !== m || !m.npc.isValid) return;
     if (!camino?.puntos.length) {
-      motores.delete(id);
-      atascos.set(id, now());
+      rendirse(id, m);
       const sube = meta.y - m.npc.location.y;
       if (!camino && sube > 1.5 && sube < 40 && bajoTierra(m.npc)) pozos.set(id, { y: meta.y, t: now() });
       return;
@@ -322,17 +374,23 @@ system.runInterval(() => {
         const cabeza = delante(npc, d, 1.3, 0.6);
         if (pie && cabeza && !libre(pie) && !libre(cabeza) && !pie.isLiquid && buscarRodeo(id, m)) continue;
       }
-      // Si en 1,5 s casi no avanzó, algo le cierra el paso: busca otro camino o se rinde.
-      if (now() - m.revision >= 30) {
+      // Si en 1,2 s casi no avanzó, algo le cierra el paso: busca otro camino o se rinde.
+      if (now() - m.revision >= 24) {
         const avance = Math.hypot(npc.location.x - m.control.x, npc.location.z - m.control.z);
         m.control = { ...npc.location };
         m.revision = now();
         if (avance < 0.4) {
           if (m.busquedas < 2 && buscarRodeo(id, m)) continue;
-          motores.delete(id);
-          atascos.set(id, now());
+          rendirse(id, m);
           continue;
         }
+      }
+      // Borde peligroso delante (caída de más de 3 o lava): se detiene en vez de tirarse.
+      if (!enAgua && npc.isOnGround && m.tic % 2 === 0 && caidaDelante(npc, d)) {
+        bordes.set(id, now());
+        rendirse(id, m);
+        impulse(npc, { x: -v.x, y: 0, z: -v.z });
+        continue;
       }
       const quiero = Math.min(m.rapidez, d.d * 0.45);
       // En el suelo la fricción frena mucho: se compensa como lo haría la entrada de
@@ -349,10 +407,25 @@ system.runInterval(() => {
         }
       }
       impulse(npc, { x: d.x * quiero * k - v.x * freno, y: vy, z: d.z * quiero * k - v.z * freno });
-      npc.setRotation({ x: 0, y: yawHacia(npc.location, meta) });
+      // Giro suave (como mucho 35° por tick) y nunca encima de la meta: así no "tiembla"
+      // girando de un lado a otro.
+      if (d.d > 0.6) {
+        const actual = npc.getRotation().y;
+        let dy = yawHacia(npc.location, meta) - actual;
+        dy = ((dy + 540) % 360) - 180;
+        npc.setRotation({ x: 0, y: actual + Math.max(-35, Math.min(35, dy)) });
+      }
       if (!enAgua && npc.isOnGround && now() >= (m.saltoHasta ?? 0)) {
         const pie = delante(npc, d, 0.3);
         if (escalon(pie) && libre(delante(npc, d, 1.3)) && libre(delante(npc, d, 2.3))) {
+          // Si los dos últimos saltos no lo subieron, ese escalón no se puede: rodea o se rinde.
+          if (m.ultimoSalto && npc.location.y < m.ultimoSalto.y + 0.5) m.fallosSalto++;
+          if (m.fallosSalto >= 2) {
+            if (m.busquedas < 2 && buscarRodeo(id, m)) continue;
+            rendirse(id, m);
+            continue;
+          }
+          m.ultimoSalto = { y: npc.location.y };
           m.saltoHasta = now() + 12;
           escalar(npc, d);
           m.control = { ...npc.location }; // el salto cuenta como avance

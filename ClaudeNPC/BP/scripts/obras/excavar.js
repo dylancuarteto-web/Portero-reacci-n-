@@ -116,10 +116,17 @@ function eje(npc, objetivo) {
 }
 
 // Qué hay justo delante (hacia el jugador) a la altura de los pies y de la cabeza.
+// "escalon": un solo bloque a los pies con hueco encima (se sube de un salto, no se pica);
 // "jugador": un bloque que puso un jugador; "natural": otra cosa sólida; undefined: libre.
 export function muroDelante(npc, jugador) {
   const p = piso(npc.location);
   const e = eje(npc, jugador.location);
+  const en = (h) => blockAt(npc.dimension, { x: p.x + e.x, y: p.y + h, z: p.z + e.z });
+  const pie = en(0);
+  if (estorba(pie) && !estorba(en(1)) && !estorba(en(2)) && !/(fence|_wall|_pane|iron_bars|cactus|campfire|magma)$/.test(pie.typeId)
+    && !estorba(blockAt(npc.dimension, { x: p.x, y: p.y + 2, z: p.z }))) {
+    return "escalon";
+  }
   let natural = false;
   for (const h of [0, 1]) {
     const pos = { x: p.x + e.x, y: p.y + h, z: p.z + e.z };
@@ -129,6 +136,13 @@ export function muroDelante(npc, jugador) {
     natural = true;
   }
   return natural ? "natural" : undefined;
+}
+
+// La celda del escalón delante (hacia el jugador), para subirlo con un salto guiado.
+export function celdaDelante(npc, jugador) {
+  const p = piso(npc.location);
+  const e = eje(npc, jugador.location);
+  return { x: p.x + e.x, y: p.y, z: p.z + e.z };
 }
 
 export function iniciarExcavar(npc, state, objetivo) {

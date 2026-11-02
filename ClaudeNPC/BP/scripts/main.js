@@ -1,11 +1,13 @@
-import { EntityDamageCause, GameMode, Player, system, world } from "@minecraft/server";
-import { COMBATE, DIMENSIONES, MODIFICA_MUNDO, NPC } from "./config.js";
+import { EntityDamageCause, EquipmentSlot, GameMode, Player, system, world } from "@minecraft/server";
+import { ARMADURA_IQ, COMBATE, DIMENSIONES, DUELO, MODIFICA_MUNDO, NPC } from "./config.js";
 import { pausarRutina, tickRutina } from "./actividades/index.js";
 import { rumboBote, tickAgua, tickBote } from "./bote.js";
 import { tickAlumno } from "./clase.js";
 import { animarGolpe, tickCombate } from "./combate.js";
 import { registrarComandos } from "./comandos.js";
-import { bloqueaProyectil, efectoBloqueo } from "./escudo.js";
+import { paradaCuerpo } from "./duelo.js";
+import { vestir } from "./equipo.js";
+import { bajarEscudo, bloqueaProyectil, efectoBloqueo } from "./escudo.js";
 import { estados, obtenerEstado } from "./estado.js";
 import { nivelHab } from "./habilidades.js";
 import { contraataque } from "./habilidades/reflejos.js";
@@ -16,6 +18,7 @@ import "./maestro.js";
 import { revisarRobot } from "./robot/construccion.js";
 import { tickPiloto } from "./robot/index.js";
 import { tickArmador } from "./multi/index.js";
+import { tickReparador } from "./multi/reparar.js";
 import { caminarA, caminando, destinoActual, salidaDePozo, seAtasco, velocidad } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
@@ -57,11 +60,36 @@ function cerebro(npc) {
   }
   if (s.fusion) return;
   if (s.robot) return tickPiloto(npc, s);
+  // Fuera de la pelea: se cura solo y se pone la armadura que le toca por su IQ (cuero,
+  // cota, hierro, diamante, netherita). Al morir no la suelta.
+  if (now() > (s.combateHasta ?? 0) + 200) {
+    if (cada(s, "regen", 40)) {
+      try {
+        const h = npc.getComponent("minecraft:health");
+        if (h && h.currentValue < h.effectiveMax) h.setCurrentValue(Math.min(h.effectiveMax, h.currentValue + 2));
+      } catch {
+        // Sin vida.
+      }
+    }
+    if (cada(s, "armadura", 200)) {
+      const nivelIQ = Math.max(0, ARMADURA_IQ.filter((iq) => (s.iq ?? 0) >= iq).length - 1);
+      if (nivelIQ > (s.nivelArmadura ?? 0)) {
+        s.nivelArmadura = nivelIQ;
+        vestir(npc, nivelIQ);
+      }
+    }
+  }
   vigilarCaida(npc, s);
   if (s.clase) return tickAlumno(npc, s);
   if (s.multiObra) {
     // Armando un Robot multi con otro Claude (multi/index.js): deja la pelea un momento.
     tickArmador(npc, s);
+    pausarRutina(npc, s);
+    return;
+  }
+  if (s.reparacion) {
+    // Reparando un Robot multi apagado (multi/reparar.js): lo lleva, estudia y lo recarga.
+    tickReparador(npc, s);
     pausarRutina(npc, s);
     return;
   }
@@ -229,6 +257,30 @@ world.beforeEvents.entityHurt.subscribe((event) => {
     return;
   }
   const npc = event.hurtEntity;
+  const quien = event.damageSource.damagingEntity;
+  // Ningún golpe tuyo le quita más de DUELO.maxGolpe (una maza desde lo alto no lo mata de uno).
+  if (quien instanceof Player && event.damage > DUELO.maxGolpe) event.damage = DUELO.maxGolpe;
+  // Escudo arriba y el golpe le llega por delante: lo para (con un hacha se lo rompes).
+  if (cause === EntityDamageCause.entityAttack && quien instanceof Player && s.escudoArriba && deFrente(npc, quien)) {
+    let hacha = false;
+    try {
+      hacha = /_axe$/.test(quien.getComponent("minecraft:equippable")?.getEquipment(EquipmentSlot.Mainhand)?.typeId ?? "");
+    } catch {
+      hacha = false;
+    }
+    if (hacha) {
+      system.run(() => {
+        if (!npc.isValid) return;
+        bajarEscudo(npc, s, 100);
+        npc.dimension.playSound("random.break", npc.location, { pitch: 0.8, volume: 1 });
+      });
+    } else {
+      event.cancel = true;
+      s.memoria.bloqueos = (s.memoria.bloqueos ?? 0) + 1;
+      system.run(() => paradaCuerpo(npc, s, quien));
+      return;
+    }
+  }
   if (bloqueaProyectil(npc, s, event.damageSource)) {
     event.cancel = true;
     const origen = event.damageSource.damagingEntity;
@@ -246,3 +298,58 @@ world.beforeEvents.entityHurt.subscribe((event) => {
 }, { entityFilter: { type: NPC } });
 
 world.afterEvents.entityRemove.subscribe(({ removedEntityId }) => estados.delete(removedEntityId));
+
+// ¿El golpe le llega por delante? (mira hacia el atacante)
+function deFrente(npc, atacante) {
+  try {
+    const v = npc.getViewDirection();
+    const dx = atacante.location.x - npc.location.x;
+    const dz = atacante.location.z - npc.location.z;
+    const d = Math.hypot(dx, dz) || 1;
+    const h = Math.hypot(v.x, v.z) || 1;
+    return (v.x * dx + v.z * dz) / (d * h) > 0.3;
+  } catch {
+    return false;
+  }
+}
+
+// --- Al morir no sueltan nada --------------------------------------------------------------
+// Si no, matar a un Claude daba espadas de netherita, la maza o armaduras buenísimas en un
+// momento. Se quitan los objetos que aparecen donde murió (ese tick y los dos siguientes).
+const muertes = [];
+
+function limpiarBotin(dim, pos) {
+  try {
+    for (const it of dim.getEntities({ type: "minecraft:item", location: pos, maxDistance: 3 })) it.remove();
+  } catch {
+    // Chunk descargado.
+  }
+}
+
+world.afterEvents.entityDie.subscribe(({ deadEntity }) => {
+  let dim;
+  let pos;
+  try {
+    dim = deadEntity.dimension;
+    pos = { ...deadEntity.location };
+  } catch {
+    return;
+  }
+  muertes.push({ dim, pos, t: now() });
+  limpiarBotin(dim, pos);
+  system.run(() => limpiarBotin(dim, pos));
+  system.runTimeout(() => limpiarBotin(dim, pos), 3);
+}, { entityTypes: [NPC] });
+
+world.afterEvents.entitySpawn.subscribe(({ entity }) => {
+  if (!muertes.length) return;
+  while (muertes.length && now() - muertes[0].t > 6) muertes.shift();
+  try {
+    if (entity.typeId !== "minecraft:item") return;
+    const l = entity.location;
+    const cerca = muertes.some((m) => m.dim.id === entity.dimension.id && Math.hypot(m.pos.x - l.x, m.pos.y - l.y, m.pos.z - l.z) < 3);
+    if (cerca) entity.remove();
+  } catch {
+    // Ya no está.
+  }
+});

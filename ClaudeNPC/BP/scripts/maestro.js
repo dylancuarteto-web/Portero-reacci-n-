@@ -11,7 +11,7 @@ import { LECCIONES, LECCIONES_GENIOS } from "./lecciones.js";
 import { caminarA, caminando, detener, velocidad } from "./movimiento.js";
 import { candidatosAlrededor, frenteHacia, sitioPlano } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
-import { encargarTerreno, multis, progresoTerreno } from "./multi/index.js";
+import { encargarTerreno, multis, progresoTerreno, robotLibreCerca } from "./multi/index.js";
 import { ejecutarPlano, escribirLetrero } from "./obras/plano.js";
 import { bloquesDe, planTerreno, rectangulo } from "./obras/terreno.js";
 import { AULA, planAula } from "./planes/aula_plano.js";
@@ -593,9 +593,10 @@ function encargar(m, terreno, datos) {
 
 function armarMulti(e, m) {
   const tm = m.terrenoMulti;
-  // Si ya tiene un robot encendido (el del aula), no arma otro: le da el nuevo trabajo.
+  // Si ya tiene un robot encendido (el del aula) o hay uno libre cerca, no arma otro: le
+  // da el nuevo trabajo.
   const viejo = multis.get(m.multiId ?? "");
-  if (viejo?.e?.isValid && !viejo.apagado) tm.armado = 12;
+  if ((viejo?.e?.isValid && !viejo.apagado) || (tm.armado === 0 && robotLibreCerca(e.dimension, e.location, 64))) tm.armado = 12;
   tm.armado++;
   nombre(e, "armando un robot multi");
   velocidad(e, 0);

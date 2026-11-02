@@ -20,7 +20,7 @@
           "type": "int",
           "range": [
             0,
-            3
+            4
           ],
           "default": 0,
           "client_sync": true
@@ -94,8 +94,8 @@
         "height": 1.8
       },
       "minecraft:health": {
-        "value": 80,
-        "max": 80
+        "value": 100,
+        "max": 100
       },
       "minecraft:attack": {
         "damage": 5
@@ -107,10 +107,13 @@
         "can_path_over_water": true,
         "avoid_damage_blocks": true,
         "can_open_doors": true,
-        "can_pass_doors": true
+        "can_pass_doors": true,
+        "can_jump": true
       },
       "minecraft:movement.basic": {},
-      "minecraft:jump.static": {},
+      "minecraft:jump.static": {
+        "jump_power": 0.42
+      },
       "minecraft:can_climb": {},
       "minecraft:physics": {},
       "minecraft:pushable": {
@@ -169,6 +172,35 @@
       "minecraft:follow_range": {
         "value": 48,
         "max": 64
+      },
+      "minecraft:equipment": {
+        "table": "loot_tables/entities/claudenpc_sin_equipo.json",
+        "slot_drop_chance": [
+          {
+            "slot": "slot.weapon.mainhand",
+            "drop_chance": 0.0
+          },
+          {
+            "slot": "slot.weapon.offhand",
+            "drop_chance": 0.0
+          },
+          {
+            "slot": "slot.armor.head",
+            "drop_chance": 0.0
+          },
+          {
+            "slot": "slot.armor.chest",
+            "drop_chance": 0.0
+          },
+          {
+            "slot": "slot.armor.legs",
+            "drop_chance": 0.0
+          },
+          {
+            "slot": "slot.armor.feet",
+            "drop_chance": 0.0
+          }
+        ]
       }
     },
     "events": {

@@ -10,6 +10,22 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes; `/claudenpc:robot` (con trucos) hace que los Claudes más cercanos (hasta 5, con cualquier IQ) construyan el robot ya.
 5. **Toca a un Claude** (botón "Habilidades" en el celular) para ver qué sabe: cada tema con sus estrellas, la última variante que aprendió y si lo perfecciona o solo lo estudia.
 
+## Novedades de la v7.5
+
+| Antes | Ahora |
+|---|---|
+| Se quedaban "temblando" o retorciéndose hasta que les pegabas | Había dos causas. Al perseguirte, el paso propio del Claude peleaba contra la IA del juego; ese paso ya no se usa en la pelea: te persigue la IA del juego, que ya no te pierde el rastro. Y cuando no podían llegar a un sitio (su casa de noche, por ejemplo) empujaban la pared sin parar; ahora, si se rinden, no vuelven a intentarlo enseguida. Además giran suave, la torre no se recentra más de dos veces y, si un salto no los sube, rodean o se rinden. |
+| No subían un bloque | Si tienen delante un escalón de un bloque (natural o puesto por ti), **lo suben de un salto**. Antes, si lo habías puesto tú, lo tomaban por una pared y se ponían a picarlo. |
+| No sabían hacer puentes | El puente se rehízo: ven el hueco aunque esté a varios bloques, **caminan hasta el borde** y avanzan bloque a bloque con pasos guiados (antes dependían de la física y se quedaban en el borde). Funciona sobre huecos, **agua y lava**; nunca se tiran al hueco. Al caminar ya no se lanzan por caídas de más de 3 bloques ni a la lava: se detienen en el borde y hacen el puente. |
+| Al morir soltaban espadas, la maza y armaduras | **No sueltan nada** al morir. |
+| Morían muy rápido | Tienen **100 de vida** (antes 80), se ponen **armadura según su IQ** (cuero, cota, hierro, diamante, netherita), se curan fuera de la pelea y ningún golpe tuyo les quita más de 24 (una maza desde lo alto ya no los mata de un golpe). |
+| Peleaban siempre igual de cerca | **Combate más versátil**: **bloquean con el escudo** cuando los vas a golpear (si paran el golpe te empujan y a veces contraatacan; con un hacha les rompes el escudo), **esquivan** de lado o hacia atrás, hacen **embestidas**, **saltos críticos**, **combos** de dos golpes y, con poca vida, se apartan y **comen una manzana dorada**. Con más IQ lo hacen más a menudo. |
+| Robot multi: se atascaba | Si no puede avanzar ni subir, **rompe lo que lo atasca** (nunca casas, aulas ni lo ya construido de la obra). |
+| Robot multi: no ayudaba a los Claudes atascados | Si ve a un Claude atascado cerca (aunque esté en reposo), **lo libera**: le quita el bloque en el que quedó metido (o la telaraña), le abre una salida con un escalón si está encerrado, le quita la pared que no puede escalar o, si cayó a un pozo hondo, **lo saca con un rayo tractor**. |
+| Robot multi: sin batería se desarmaba | **Ya no se rompe**: sin batería (o si lo golpeas hasta el final) se **apaga y queda en reposo**. Un Claude va a buscarlo, **lo lleva a un lugar seguro** (lejos de ti o junto a su casa), se hace **una silla y una mesa**, se sienta a **estudiar cómo repararlo** (con un libro, ideas y glifos), saca una **batería 3D**, se la mete y el robot **se carga** (la barra se llena, chispas y sonidos). Después recoge sus muebles y el robot vuelve a lo que hacía, o descansa. Al terminar un trabajo descansa y **se vuelve a usar** (los maestros y los Claudes lo despiertan en vez de armar otro). Guarda su batería al cerrar el mundo. |
+
+![Batería 3D](source/vista_bateria.png)
+
 ## Novedades de la v7.4: Robot multi
 
 | Antes | Ahora |
@@ -27,7 +43,7 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 
 Son robots distintos: el **Robot de los Claudes** (IQ 500) es el de pelea, con misiles, láser y metralla, y lo pilotan cinco Claudes. El **Robot multi** no tiene armas: vuela con propulsores, pica con el taladro, coloca bloques con la pinza y escanea con el visor.
 
-- **Batería arriba del nombre**: `[||||||||||] 100%` en verde, amarilla bajo 50 % y roja bajo 20 %. Gasta por cada bloque (mucho más en la pelea que aplanando) y por el tiempo encendido. Sin batería se apaga ("¡batería agotada!") y se desarma.
+- **Batería arriba del nombre**: `[||||||||||] 100%` en verde, amarilla bajo 50 % y roja bajo 20 %. Gasta por cada bloque (mucho más en la pelea que aplanando) y por el tiempo trabajando (en reposo no gasta). Sin batería se apaga ("¡batería agotada!") y un Claude lo recarga con una batería 3D (v7.5).
 - **Para los maestros**: lo arma el maestro → localiza el terreno → aplana → vigila la obra hasta que el maestro termina. Si el robot se rompe antes de terminar, el maestro aplana lo que falte él mismo.
 - **En la pelea**: si algún Claude lleva 5 s sin poder alcanzarte (estás arriba o está atascado) y hay al menos dos peleando, **dos Claudes dejan de atacarte** y lo arman con martillo y llave inglesa (bloques de hierro y cobre que se vuelven el robot). Combinaciones:
 
@@ -39,7 +55,7 @@ Son robots distintos: el **Robot de los Claudes** (IQ 500) es el de pelea, con m
 | Hay un hueco, agua o lava en medio | **Puente** de tablas de dos de ancho |
 | Hay una pared o una montaña en medio | **Túnel** de 2 × 2 |
 
-- Respeta las casas y aulas de los Claudes, no rompe su propia rampa al volver a pensar y se apaga solo cuando la pelea termina. Como mucho hay 3 a la vez y en la misma pelea se arma uno cada 2 minutos.
+- Respeta las casas y aulas de los Claudes, no rompe su propia rampa al volver a pensar y descansa cuando la pelea termina. Como mucho hay 3 trabajando a la vez (8 en el mundo) y en la misma pelea se arma uno cada 2 minutos; si ya hay uno cerca descansando, lo despiertan.
 
 ![Robot multi](source/vista_multi.png)
 
@@ -235,7 +251,7 @@ Encima del nombre lleva su **IQ** (de 70 a **1000**). Sube cuando te ve construi
 
 Se mueve como un jugador (camina, corre, salta al correr y te rodea con pasos laterales suaves, sin tirones), cambia de arma de vez en cuando (casi siempre una espada) y elige entre alternativas según la situación, lo que aprendió de ti, su personalidad y sus habilidades: torre, puente, bote, arco con puntería predictiva, perla de ender, elytra + maza (en dúo de viento con otro Claude), salto al vacío con water drop, cavar, salto con maza, trampas, torretas y cañones de redstone, reflejos, pociones y abrirse paso rompiendo tu pared. Una habilidad aprendida en clase desbloquea su táctica aunque el Claude tenga poco IQ, y cuanto más nivel tiene, más la usa.
 
-Para caminar abren puertas y portones, salen de casas y aulas por la puerta, rodean paredes buscando por dónde pasar y suben escalones con un salto que siempre llega. Una vez que pelean, te siguen hasta 48 bloques y, si no logran acercarse, corren directo hacia ti. Si no pueden alcanzarte, dos de ellos arman un **Robot multi** que les construye el camino.
+Para caminar abren puertas y portones, salen de casas y aulas por la puerta, rodean paredes buscando por dónde pasar y suben escalones con un salto que siempre llega. Una vez que pelean, te siguen hasta 48 bloques, suben escalones de un bloque de un salto y hacen puentes sobre huecos, agua y lava. De cerca bloquean con el escudo, esquivan, embisten, hacen saltos críticos y combos, y se curan con manzanas doradas. Si no pueden alcanzarte, dos de ellos arman un **Robot multi** que les construye el camino.
 
 ## Fusión y Claude Golden
 
@@ -264,7 +280,7 @@ Para que no toquen bloques de tu mundo: `BP/scripts/config.js` → `MODIFICA_MUN
 
 ## Estado
 
-Validado con las herramientas del kit (0 errores, 0 advertencias) y con los tipos oficiales de `@minecraft/server` 2.11.0 y `@minecraft/server-ui` 2.3.0. La búsqueda de camino se probó fuera del juego con mapas de prueba (salir de una casa por la puerta, rodear un muro, subir una escalera y detectar un pozo sin salida). El Robot multi se probó con una simulación del mundo: aplanar un aula sobre un cerro con árbol, pozo de agua, una pared de piedra y un cofre (no quedó ningún bloque sobrando y el cofre se respetó), vigilar la obra (entra por la puerta, rompe desde dentro y no toca el andamio ni lo construido) y la pelea (rampa hasta un pilar de 6, puente sobre un foso de lava y túnel por una pared). Los planos de la escuela y la universidad se revisaron con una vista 3D generada desde el mismo código (`source/vista_universidad.png`, `source/vista_escuela.png`), igual que el aula y las casas (`source/vista_aula.png`); los modelos con `source/vista_previa.png`. **No probado en el juego.** Puntos a revisar: que el Robot multi vuele fluido y pase por la puerta doble, que los Claudes usen la rampa que les hace, que el salto guiado y la torre se vean fluidos, que las puertas se abran y cierren bien, dónde quedan sentados los cinco Claudes sobre el robot, cuánto rompe el robot al avanzar, el cañón de TNT y la bobina de Tesla, los reflejos (copias de luz) y el dúo de viento con elytras.
+Validado con las herramientas del kit (0 errores, 0 advertencias) y con los tipos oficiales de `@minecraft/server` 2.11.0 y `@minecraft/server-ui` 2.3.0. La búsqueda de camino se probó fuera del juego con mapas de prueba (salir de una casa por la puerta, rodear un muro, subir una escalera y detectar un pozo sin salida). El Robot multi se probó con una simulación del mundo: aplanar un aula sobre un cerro con árbol, pozo de agua, una pared de piedra y un cofre (no quedó ningún bloque sobrando y el cofre se respetó), vigilar la obra (entra por la puerta, rompe desde dentro y no toca el andamio ni lo construido) y la pelea (rampa hasta un pilar de 6, puente sobre un foso de lava y túnel por una pared). En la v7.5 también: el puente de los Claudes (sobre un hueco de 5 y sobre lava, sin caerse), subir un escalón de un bloque, liberar a tres Claudes (pozo de 2, pozo de 5 con el rayo tractor y telaraña), la reparación completa del robot (lo lleva a 25 bloques del jugador, pone y recoge la silla y la mesa, lo carga al 100 %) y el duelo cuerpo a cuerpo (bloqueos, esquivas, embestidas, críticos y curarse). Los planos de la escuela y la universidad se revisaron con una vista 3D generada desde el mismo código (`source/vista_universidad.png`, `source/vista_escuela.png`), igual que el aula y las casas (`source/vista_aula.png`); los modelos con `source/vista_previa.png`. **No probado en el juego.** Puntos a revisar: que ya no tiemblen, que el bloqueo con escudo y las esquivas se vean bien, que el Claude que repara lleve el robot sobre la cabeza sin trabarse, que el Robot multi vuele fluido y pase por la puerta doble, que los Claudes usen la rampa que les hace, que el salto guiado y la torre se vean fluidos, que las puertas se abran y cierren bien, dónde quedan sentados los cinco Claudes sobre el robot, cuánto rompe el robot al avanzar, el cañón de TNT y la bobina de Tesla, los reflejos (copias de luz) y el dúo de viento con elytras.
 
 ## Regenerar arte
 

@@ -45,13 +45,16 @@ export function tickTorre(npc, state) {
     state.ocupadoHasta = now() + 16;
     return false;
   }
-  // Se centra en el bloque con un paso corto antes de saltar.
+  // Se centra en el bloque con un paso corto antes de saltar (dos intentos como mucho:
+  // si otro Claude lo empuja, salta desde donde está en vez de temblar recentrándose).
   const cx = p.x + 0.5;
   const cz = p.z + 0.5;
-  if (Math.hypot(cx - npc.location.x, cz - npc.location.z) > 0.12) {
+  if (Math.hypot(cx - npc.location.x, cz - npc.location.z) > 0.12 && (o.centrados ?? 0) < 2) {
+    o.centrados = (o.centrados ?? 0) + 1;
     saltoGuiado(npc, { x: cx, y: npc.location.y, z: cz }, { ticks: 3, alto: 0, retraso: 0 });
     return false;
   }
+  o.centrados = 0;
   if (!o.equipado) {
     sostener(npc, o.bloque);
     o.equipado = true;

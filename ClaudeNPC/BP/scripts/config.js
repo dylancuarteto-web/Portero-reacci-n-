@@ -16,7 +16,7 @@ export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraf
 // Propiedades de entidad (las ve el paquete de recursos para las posturas).
 export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia", variante: "claudenpc:variante",
   alarma: "claudenpc:alarma", herramienta: "claudenpc:herramienta", fase: "claudenpc:fase", corriendo: "claudenpc:corriendo",
-  sinPuno: "claudenpc:sin_puno", volando: "claudenpc:volando", apagado: "claudenpc:apagado" };
+  sinPuno: "claudenpc:sin_puno", volando: "claudenpc:volando", apagado: "claudenpc:apagado", cargando: "claudenpc:cargando" };
 
 // Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
 export const EVENTO = {
@@ -146,12 +146,21 @@ export const ANIM = {
 // tridente. La maza, el arco y el escudo los usan las tácticas (el escudo solo
 // sirve para cubrirse de flechas, nunca para golpear).
 export const ARMAS = [
-  { id: "minecraft:diamond_sword", tipo: "espada", peso: 5 },
-  { id: "minecraft:netherite_sword", tipo: "espada", peso: 4 },
-  { id: "minecraft:iron_sword", tipo: "espada", peso: 2 },
-  { id: "minecraft:diamond_axe", tipo: "hacha", peso: 1.2 },
-  { id: "minecraft:trident", tipo: "tridente", peso: 0.8 },
+  { id: "minecraft:diamond_sword", tipo: "espada", peso: 5, dano: 7 },
+  { id: "minecraft:netherite_sword", tipo: "espada", peso: 4, dano: 8 },
+  { id: "minecraft:iron_sword", tipo: "espada", peso: 2, dano: 6 },
+  { id: "minecraft:diamond_axe", tipo: "hacha", peso: 1.2, dano: 9 },
+  { id: "minecraft:trident", tipo: "tridente", peso: 0.8, dano: 8 },
 ];
+
+// Pelea de cerca (duelo.js): a qué distancia empieza, cada cuánto elige un movimiento
+// (ticks, se acorta con el IQ), alcance de sus golpes, cuánto dura el bloqueo con escudo,
+// con cuánta vida se cura (fracción), cuánto cura la manzana y cada cuánto, y el daño
+// máximo que le hace un solo golpe tuyo (así una maza desde lo alto no lo mata de un golpe).
+export const DUELO = { desde: 5.5, cada: [24, 38], alcance: 3.1, bloqueo: 18, curarCon: 0.35, cura: 16, curarCada: 900, maxGolpe: 24 };
+
+// Armadura según el IQ (cuero, cota, hierro, diamante, netherita). No la sueltan al morir.
+export const ARMADURA_IQ = [0, 100, 180, 300, 500];
 
 export const COMBATE = {
   radio: 32,              // a qué distancia mira si hay jugadores
@@ -224,7 +233,14 @@ export const MULTI_CFG = {
   rapidez: 0.42, // bloques por paso volando (un paso cada 2 ticks)
   sinAlcance: 100, // ticks sin poder alcanzarte antes de armarlo
   descanso: 2400, // ticks antes de armar otro en la misma pelea
-  maximo: 3, // robots multi a la vez
+  maximo: 3, // robots multi trabajando a la vez
+  total: 8, // robots multi en el mundo como mucho (los que descansan se vuelven a usar)
+  reuso: 25, // % de batería mínima para despertar a uno que descansa
+  ayudaRadio: 24, // bloques: libera a los Claudes atascados a esta distancia
+  reparaRadio: 40, // bloques: un Claude a esta distancia viene a repararlo
+  lejosSeguro: 16, // bloques: lo lleva así de lejos de ti para repararlo
+  estudio: 200, // ticks estudiando cómo repararlo (menos con más IQ)
+  carga: 80, // ticks en cargarse del 0 al 100 %
 };
 
 // Claude Golden (jefe hostil): a qué distancia te ve, cada cuánto usa un poder

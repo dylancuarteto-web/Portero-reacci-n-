@@ -1,5 +1,5 @@
 import { system, world } from "@minecraft/server";
-import { ANIM, ARMAS, COMBATE, EXCAVAR, MODIFICA_MUNDO, NPC, VELOCIDAD } from "./config.js";
+import { ANIM, ARMAS, COMBATE, EXCAVAR, MODIFICA_MUNDO, NPC } from "./config.js";
 import { aguaDelante, subirABote } from "./bote.js";
 import { cavar, trampa } from "./construccion.js";
 import { armaInicial, sostener } from "./equipo.js";
@@ -10,9 +10,10 @@ import { usarPocion } from "./habilidades/quimica.js";
 import { usarRedstone } from "./habilidades/redstone.js";
 import { usarReflejo } from "./habilidades/reflejos.js";
 import { aprender, nivel } from "./iq.js";
-import { caminarA, detener, ritmo, seAtasco } from "./movimiento.js";
-import { iniciarExcavar, muroDelante } from "./obras/excavar.js";
-import { iniciarPuente } from "./obras/puente.js";
+import { duelo } from "./duelo.js";
+import { enBorde, ritmo, saltando, seAtasco, subirA } from "./movimiento.js";
+import { celdaDelante, iniciarExcavar, muroDelante } from "./obras/excavar.js";
+import { huecoHacia, iniciarPuente } from "./obras/puente.js";
 import { iniciarTorre } from "./obras/torre.js";
 import {
   arco, bloquePropio, elytraMartillo, hayBorde, martillazo, perla, saltarAlVacio,
@@ -28,8 +29,10 @@ const NODOS = [
   // El jugador sube para escapar: construir, disparar, volar o teletransportarse.
   // Construir es lo mejor: la torre gana a casi todo cuando estás arriba y cerca.
   { id: "torre", iq: 70, hab: "torres", cd: 18, si: (c) => c.alto > 1.8 && c.dist < 7 && MODIFICA_MUNDO, peso: (c) => 6 + (c.alto > 3 ? 3 : 0) },
-  // Hay un hueco o agua entre los dos: puente o bote.
-  { id: "puente", iq: 70, cd: 24, si: (c) => c.borde && c.dist > 2.5 && Math.abs(c.alto) < 4 && MODIFICA_MUNDO, peso: () => 5 },
+  // Hay un hueco, agua o lava entre los dos (aunque esté a unos bloques): puente. Es lo
+  // primero que intenta; el bote solo si es mucha agua.
+  { id: "puente", iq: 70, cd: 20, si: (c) => (c.borde || c.paro || (c.hueco && c.hueco.a <= 8)) && c.dist > 2.5 && Math.abs(c.alto) < 4 && MODIFICA_MUNDO,
+    peso: (c) => (c.hueco ? 9 : 5) },
   { id: "bote", iq: 70, cd: 200, si: (c) => c.agua && c.dist > 4 && MODIFICA_MUNDO, peso: () => 5 },
   { id: "arco", iq: 70, hab: "arco", cd: 50, si: (c) => c.dist > 9 || c.alto > 3, peso: (c) => 2.5 + (c.dist > 15 ? 2 : 0) + c.mem.torres * 0.3 },
   { id: "elytra", iq: 125, hab: "vuelo", cd: 500, si: (c) => (c.alto > 4 || c.dist > 16) && c.cielo, peso: (c) => 1.5 + c.mem.torres * 0.5 },
@@ -79,11 +82,15 @@ function cieloLibre(npc) {
 
 function contexto(npc, state, jugador) {
   const dist = Math.hypot(jugador.location.x - npc.location.x, jugador.location.z - npc.location.z);
+  const alto = jugador.location.y - npc.location.y;
   return {
     dist,
-    alto: jugador.location.y - npc.location.y,
+    alto,
     mem: state.memoria,
     borde: hayBorde(npc, jugador),
+    paro: enBorde(npc), // su paso se detuvo hace poco ante un hueco o lava
+    // Hueco entre los dos (a varios bloques): para ir al borde y hacer el puente.
+    hueco: dist > 2.5 && dist < 24 && Math.abs(alto) < 4 ? huecoHacia(npc, jugador.location) : undefined,
     agua: aguaDelante(npc, jugador.location),
     cielo: cieloLibre(npc),
   };
@@ -99,26 +106,11 @@ function atascado(state, c) {
   return now() - p.t > EXCAVAR.atascado && c.dist > 2.2 && Math.abs(c.alto) < 2.5;
 }
 
-// Va directo hacia ti: si la IA del juego no lo acerca (o perdió tu rastro), corre con su
-// propio paso (abre puertas, sube escalones y busca rodeos). De cerca pelea normal.
-function perseguir(npc, state, jugador, c) {
-  if (c.dist < 4.5) {
-    if (state.persigue) {
-      state.persigue = false;
-      detener(npc);
-    }
-    return;
-  }
-  const a = state.acerca;
-  if (!a || c.dist < a.d - 0.6 || c.dist > a.d + 4) {
-    state.acerca = { d: c.dist, t: now() };
-    if (!state.persigue && c.dist < 14) return; // la IA lo está acercando: la deja
-  } else if (!state.persigue && now() - a.t < 12 && c.dist < 14) return;
-  if (now() < (state.cd.perseguir ?? 0)) return;
-  state.cd.perseguir = now() + 8;
-  state.persigue = true;
-  const l = jugador.location;
-  caminarA(npc, { x: l.x, y: l.y, z: l.z }, VELOCIDAD.correr);
+// ¿Está pegado al escalón (a menos de un bloque de su cara)?
+function pegado(npc, celda) {
+  const dx = Math.max(celda.x - npc.location.x, 0, npc.location.x - (celda.x + 1));
+  const dz = Math.max(celda.z - npc.location.z, 0, npc.location.z - (celda.z + 1));
+  return Math.hypot(dx, dz) < 0.9;
 }
 
 export function tickCombate(npc, state, jugador) {
@@ -132,19 +124,32 @@ export function tickCombate(npc, state, jugador) {
   ritmo(npc, state, jugador, c.dist);
   if (state.escudoArriba) return; // cubriéndose: avanza despacio, sin otras tácticas
 
+  // Un escalón de un bloque delante (natural o puesto por ti): lo sube de un salto, como
+  // un jugador, en vez de quedarse abajo o picarlo.
+  const muro = muroDelante(npc, jugador);
+  if (muro === "escalon" && npc.isOnGround && !saltando(npc) && c.dist > 1.2 && c.alto > -0.6 && now() >= (state.cd.escalon ?? 0)) {
+    const celda = celdaDelante(npc, jugador);
+    if (pegado(npc, celda)) {
+      state.cd.escalon = now() + 10;
+      state.progreso = undefined;
+      subirA(npc, celda);
+      return;
+    }
+  }
+
   // Pared del jugador delante (o lleva rato atascado): la rompe con la herramienta adecuada.
   if (MODIFICA_MUNDO) {
-    const muro = muroDelante(npc, jugador);
-    const at = muro !== "jugador" && atascado(state, c);
+    const at = muro !== "jugador" && muro !== "escalon" && atascado(state, c);
     if (at || seAtasco(npc)) state.atascadoDesde ??= now();
     if (muro === "jugador" || (at && c.dist < 24)) {
       state.progreso = undefined;
-      state.persigue = false;
       iniciarExcavar(npc, state, jugador);
       return;
     }
   }
-  perseguir(npc, state, jugador, c);
+
+  // De cerca: bloquear, esquivar, embestir, crítico, combo o curarse.
+  if (duelo(npc, state, jugador, c)) return;
 
   // Reacción rápida: con IQ bajo piensa cada 0,7 s; con IQ máximo, cada 0,3 s.
   const n = nivel(state);

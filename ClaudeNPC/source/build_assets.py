@@ -88,6 +88,8 @@ REG = {
     # Herramientas de la cinemática del robot (solo en la piel de Claude, zona libre 48-64 x 48-64).
     "h_madera": (48, 48, 4, 4), "h_acero": (52, 48, 4, 4), "h_acero_osc": (56, 48, 4, 4), "h_rojo": (60, 48, 4, 4),
     "h_amarillo": (48, 52, 4, 4), "h_goma": (52, 52, 4, 4),
+    # Batería 3D que el Claude le mete al Robot multi.
+    "h_bat_verde": (56, 52, 4, 4), "h_bat_rayo": (60, 52, 4, 4), "h_bat_negro": (48, 56, 4, 4), "h_cobre": (52, 56, 4, 4),
 }
 FACES = ("north", "south", "east", "west", "up", "down")
 
@@ -160,6 +162,13 @@ def humanoide():
             {"origin": [-6.3, 9.6, -10.6], "size": [0.6, 4.8, 1.6], "uv": caras(resto="h_acero_osc")},
             {"origin": [-6.3, 9.6, -12], "size": [0.6, 1.2, 1.6], "uv": caras(resto="h_acero")},
             {"origin": [-6.3, 13.2, -12], "size": [0.6, 1.2, 1.6], "uv": caras(resto="h_acero")},
+        ]),
+        # Batería 3D (para recargar al Robot multi): cuerpo verde con un rayo, banda negra y
+        # borne de cobre arriba. La sostiene de pie delante del puño.
+        bone("herr_bateria", [-6, 12, 0], "rightArm", [
+            {"origin": [-7.5, 8.5, -4.5], "size": [3, 5, 3], "uv": caras(north="h_bat_rayo", up="h_bat_negro", down="h_bat_negro", resto="h_bat_verde")},
+            {"origin": [-7.6, 12.2, -4.6], "size": [3.2, 0.8, 3.2], "uv": caras(resto="h_bat_negro")},
+            {"origin": [-6.5, 13.5, -3.5], "size": [1, 0.8, 1], "uv": caras(resto="h_cobre")},
         ]),
         bone("leftArm", [5, 22, 0], "body", [box([4, 12, -2], [4, 12, 4], [32, 48])]),
         bone("leftItem", [6, 15, 1], "leftArm"),
@@ -453,6 +462,10 @@ def pintar_herramientas(px):
     zona("h_rojo", lambda x, y: (214, 58, 44) if y != 1 else (240, 120, 96))
     zona("h_amarillo", lambda x, y: (244, 200, 44) if (x + y) % 2 else (220, 170, 30))
     zona("h_goma", lambda x, y: (46, 46, 52) if (x + y) % 2 else (30, 30, 34))
+    zona("h_bat_verde", lambda x, y: (96, 196, 92) if x != 0 else (150, 226, 140))
+    zona("h_bat_rayo", lambda x, y: (250, 214, 50) if (x, y) in ((2, 0), (1, 1), (2, 1), (1, 2), (2, 2), (1, 3)) else (84, 180, 80))
+    zona("h_bat_negro", lambda x, y: (40, 42, 48) if (x + y) % 2 else (28, 30, 34))
+    zona("h_cobre", lambda x, y: (214, 128, 72) if (x + y) % 2 else (184, 104, 56))
 
 
 def golden_skin(alpha_cuerpo=205):
@@ -1275,6 +1288,8 @@ REG_ROBOT = {
     "rejilla": (56, 0, 8, 8), "peligro": (64, 0, 16, 4), "cristal": (64, 4, 8, 8), "cian": (72, 4, 4, 4),
     "brillo_naranja": (76, 4, 4, 4), "rojo": (80, 4, 4, 4), "emblema": (80, 8, 16, 16), "tubo": (96, 0, 8, 8),
     "lente": (104, 0, 8, 8), "canon": (112, 0, 8, 8),
+    # Celda de batería que el Claude le mete al Robot multi.
+    "bat_cuerpo": (96, 8, 8, 8), "bat_frente": (104, 8, 8, 8), "bat_tapa": (112, 8, 8, 8),
 }
 
 
@@ -1428,6 +1443,21 @@ def robot_texture(fase=0):
         for x in range(w):
             r = math.hypot(x - (w - 1) / 2, y - (h - 1) / 2)
             px[u + x, v + y] = ((14, 14, 16) if r < 1.8 else (70, 74, 82)) + (255,)
+    # Batería: cuerpo verde con banda negra, frente con un rayo amarillo que brilla y tapa con borne.
+    u, v, w, h = REG_ROBOT["bat_cuerpo"]
+    for y in range(h):
+        for x in range(w):
+            px[u + x, v + y] = ((36, 38, 44) if y in (1, 2) else (150, 226, 140) if x == 0 else (88, 190, 84)) + (255,)
+    u, v, w, h = REG_ROBOT["bat_frente"]
+    rayo = {(4, 1), (3, 2), (4, 2), (2, 3), (3, 3), (4, 3), (5, 3), (3, 4), (4, 4), (2, 5), (3, 5), (2, 6)}
+    for y in range(h):
+        for x in range(w):
+            px[u + x, v + y] = ((255, 226, 70, 0) if (x, y) in rayo else (88, 190, 84, 255))
+    u, v, w, h = REG_ROBOT["bat_tapa"]
+    for y in range(h):
+        for x in range(w):
+            centro = 2 < x < 5 and 2 < y < 5
+            px[u + x, v + y] = ((214, 128, 72) if centro else (40, 42, 48)) + (255,)
     return img
 
 
@@ -1451,6 +1481,10 @@ def multi_geometry():
         cubo([1, 15, 7.8], [3, 6, 0.4], resto="tubo")])
     torso["locators"] = {"jet_der": [-2.5, 13, 8], "jet_izq": [2.5, 13, 8]}
     bones.append(torso)
+    # Batería nueva encima de la mochila (se ve mientras se carga).
+    bones.append(bone("bateria", [0, 23, 6], "torso", [
+        cubo([-2, 23, 4.5], [4, 5, 3], north="bat_frente", south="bat_frente", up="bat_tapa", resto="bat_cuerpo"),
+        cubo([-0.75, 28, 5.25], [1.5, 0.8, 1.5], resto="bat_tapa")]))
     cabeza = bone("cabeza", [0, 25, 0], "torso", [
         cubo([-4.5, 25, -4.5], [9, 8, 9], north="metal", resto="metal"),
         cubo([-3.5, 27.5, -4.9], [7, 2.5, 0.4], resto="cian"),
@@ -1655,6 +1689,9 @@ def robot_animations():
         "animation.claudenpc.multi.escanear": {"animation_length": 2.0, "bones": {
             "cabeza": {"rotation": k((0, Z), (0.5, [20, -45, 0]), (1.0, [20, 45, 0]), (1.5, [20, -45, 0]), (2.0, Z))},
             "brazo_izq": {"rotation": k((0, Z), (0.3, [-60, 0, 0]), (1.7, [-60, 0, 0]), (2.0, Z))}}},
+        "animation.claudenpc.multi.cargando": {"loop": True, "bones": {
+            "bateria": {"scale": "1 + math.abs(math.sin(query.life_time * 360)) * 0.08"},
+            "cabeza": {"rotation": ["math.sin(query.life_time * 900) * 1.5", 0, 0]}}},
         "animation.claudenpc.multi.apagado": {"loop": "hold_on_last_frame", "animation_length": 1.0, "bones": {
             "cabeza": {"rotation": k((0, Z), (1.0, [35, 0, 0]))},
             "torso": {"rotation": k((0, Z), (1.0, [18, 0, 0]))},
@@ -1739,14 +1776,16 @@ def render_controllers():
         "controller.render.claudenpc": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}, {"emblema": "Material.glow"}],
-            "part_visibility": [{"*": True}, {"herr_martillo": False}, {"herr_destornillador": False}, {"herr_llave": False}]},
+            "part_visibility": [{"*": True}, {"herr_martillo": False}, {"herr_destornillador": False}, {"herr_llave": False},
+                                {"herr_bateria": False}]},
         "controller.render.claudenpc_npc": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}, {"emblema": "Material.glow"}],
             "part_visibility": [{"*": True},
                                 {"herr_martillo": "query.property('claudenpc:herramienta') == 1"},
                                 {"herr_destornillador": "query.property('claudenpc:herramienta') == 2"},
-                                {"herr_llave": "query.property('claudenpc:herramienta') == 3"}]},
+                                {"herr_llave": "query.property('claudenpc:herramienta') == 3"},
+                                {"herr_bateria": "query.property('claudenpc:herramienta') == 4"}]},
         "controller.render.claudenpc_golden": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES]},
@@ -1757,7 +1796,8 @@ def render_controllers():
             "part_visibility": [{"*": True}, {"antebrazo_izq": "!query.property('claudenpc:sin_puno')"},
                                 {"laser_izq": "!query.property('claudenpc:sin_puno')"}]},
         "controller.render.claudenpc_multi": {
-            "geometry": "Geometry.default", "textures": ["Texture.default"], "materials": [{"*": "Material.default"}]},
+            "geometry": "Geometry.default", "textures": ["Texture.default"], "materials": [{"*": "Material.default"}],
+            "part_visibility": [{"*": True}, {"bateria": "query.property('claudenpc:cargando')"}]},
         "controller.render.claudenpc_aura": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
             "materials": [{"*": "Material.default"}, {"brillo*": "Material.brillo"}]},
@@ -1872,12 +1912,13 @@ def client_entities():
         "materials": {"default": "entity_emissive_alpha"},
         "textures": {"default": "textures/entity/claudenpc/robot"},
         "geometry": {"default": "geometry.claudenpc.robot_multi"},
-        "animations": {n: f"animation.claudenpc.multi.{n}" for n in ("caminar", "reposo", "volar", "taladrar", "colocar", "escanear", "apagado")}
+        "animations": {n: f"animation.claudenpc.multi.{n}" for n in ("caminar", "reposo", "volar", "taladrar", "colocar", "escanear", "apagado", "cargando")}
                       | {"ctrl_jets": "controller.animation.claudenpc.multi.jets"},
         "particle_effects": {"llama": "claudenpc:llama_misil", "humo": "claudenpc:humo_misil"},
         "scripts": {"animate": [{"caminar": "!query.property('claudenpc:volando') && !query.property('claudenpc:apagado')"},
                                 {"volar": "query.property('claudenpc:volando')"}, {"reposo": "!query.property('claudenpc:apagado')"},
-                                {"apagado": "query.property('claudenpc:apagado')"}, "ctrl_jets"]},
+                                {"apagado": "query.property('claudenpc:apagado')"}, {"cargando": "query.property('claudenpc:cargando')"},
+                                "ctrl_jets"]},
         "render_controllers": ["controller.render.claudenpc_multi"],
         "spawn_egg": {"base_color": "#969CA6", "overlay_color": "#D97757"}}}})
     write_json(RP / "entity/puno.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {

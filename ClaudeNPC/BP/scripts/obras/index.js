@@ -16,7 +16,7 @@ export function tickObra(npc, state) {
   // Una vez por tick como mucho (las torres también las mueve el bucle rápido de abajo).
   if (o.tick === now()) return true;
   o.tick = now();
-  if (o.tipo === "torre") rapidas.set(npc.id, { npc, state });
+  if (o.tipo === "torre" || o.tipo === "puente") rapidas.set(npc.id, { npc, state });
   let fin;
   try {
     fin = OBRAS[o.tipo] ? OBRAS[o.tipo](npc, state) : true;
@@ -33,12 +33,13 @@ export function terminarObra(npc, state) {
   velocidad(npc, VELOCIDAD.caminar);
 }
 
-// Las torres van al ritmo de un jugador que hace "pillar up": se revisan cada tick (el
-// cerebro del Claude solo piensa cada 4), así suben unos 3 bloques por segundo.
+// Las torres y los puentes van al ritmo de un jugador: se revisan cada tick (el cerebro
+// del Claude solo piensa cada 4), así suben unos 3 bloques por segundo.
 const rapidas = new Map();
 system.runInterval(() => {
   for (const [id, x] of rapidas) {
-    if (!x.npc.isValid || x.state.obra?.tipo !== "torre") {
+    const tipo = x.state.obra?.tipo;
+    if (!x.npc.isValid || (tipo !== "torre" && tipo !== "puente")) {
       rapidas.delete(id);
       continue;
     }

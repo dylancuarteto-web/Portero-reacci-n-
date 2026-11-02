@@ -20,6 +20,7 @@
         "colocar": "animation.claudenpc.multi.colocar",
         "escanear": "animation.claudenpc.multi.escanear",
         "apagado": "animation.claudenpc.multi.apagado",
+        "cargando": "animation.claudenpc.multi.cargando",
         "ctrl_jets": "controller.animation.claudenpc.multi.jets"
       },
       "particle_effects": {
@@ -39,6 +40,9 @@
           },
           {
             "apagado": "query.property('claudenpc:apagado')"
+          },
+          {
+            "cargando": "query.property('claudenpc:cargando')"
           },
           "ctrl_jets"
         ]

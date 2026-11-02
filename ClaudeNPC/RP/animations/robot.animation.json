@@ -1921,6 +1921,21 @@
         }
       }
     },
+    "animation.claudenpc.multi.cargando": {
+      "loop": true,
+      "bones": {
+        "bateria": {
+          "scale": "1 + math.abs(math.sin(query.life_time * 360)) * 0.08"
+        },
+        "cabeza": {
+          "rotation": [
+            "math.sin(query.life_time * 900) * 1.5",
+            0,
+            0
+          ]
+        }
+      }
+    },
     "animation.claudenpc.multi.apagado": {
       "loop": "hold_on_last_frame",
       "animation_length": 1.0,

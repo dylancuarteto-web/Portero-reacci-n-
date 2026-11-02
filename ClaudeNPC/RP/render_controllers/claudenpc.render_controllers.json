@@ -26,6 +26,9 @@
         },
         {
           "herr_llave": false
+        },
+        {
+          "herr_bateria": false
         }
       ]
     },
@@ -54,6 +57,9 @@
         },
         {
           "herr_llave": "query.property('claudenpc:herramienta') == 3"
+        },
+        {
+          "herr_bateria": "query.property('claudenpc:herramienta') == 4"
         }
       ]
     },
@@ -128,6 +134,14 @@
       "materials": [
         {
           "*": "Material.default"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "bateria": "query.property('claudenpc:cargando')"
         }
       ]
     },

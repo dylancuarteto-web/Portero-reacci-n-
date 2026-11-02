@@ -1,7 +1,7 @@
 import { world } from "@minecraft/server";
 import { MODIFICA_MUNDO, VELOCIDAD } from "../config.js";
 import { ponerHaciendo } from "../iq.js";
-import { caminarA, caminando, detener, velocidad } from "../movimiento.js";
+import { caminarA, caminando, detener, seAtasco, velocidad } from "../movimiento.js";
 import { empezarCasa, tickCasa } from "../obras/casa.js";
 import { now, rand, sortear } from "../util.js";
 import { enSuperficie, minar } from "./minar.js";
@@ -87,14 +87,19 @@ export function tickRutina(npc, s) {
   s.cd.casaListo ??= now() + (s.pers?.casaEn ?? 2400);
 
   // De noche, a casa a descansar.
-  if (s.hogar && esDeNoche() && !s.mina && s.actividad?.id !== "descansar") {
+  if (s.hogar && esDeNoche() && !s.mina && s.actividad?.id !== "descansar" && now() >= (s.cd.sinCasa ?? 0)) {
     const d = Math.hypot(s.hogar.x - npc.location.x, s.hogar.z - npc.location.z);
     if (d < 64) {
       if (d > 1.5) {
         if (s.actividad) finalizar(npc, s, true);
         ponerHaciendo(npc, s, "volviendo a casa");
         velocidad(npc, 0);
-        if (!caminando(npc)) caminarA(npc, s.hogar, s.pers?.paso ?? 0.22);
+        // Si no puede llegar (algo le cierra el paso), esta noche no insiste: antes se
+        // quedaba empujando contra la pared, temblando.
+        if (!caminando(npc) && (seAtasco(npc) || !caminarA(npc, s.hogar, s.pers?.paso ?? 0.22))) {
+          s.cd.sinCasa = now() + 1200;
+          return;
+        }
         s.ocupadoHasta = now() + 20;
         return;
       }

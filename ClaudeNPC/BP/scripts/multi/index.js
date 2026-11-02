@@ -1,30 +1,37 @@
-import { ItemStack, system, world } from "@minecraft/server";
+import { system, world } from "@minecraft/server";
 import { ANIM, DIMENSIONES, MULTI, MULTI_CFG, NPC, PARTICLES, PROP } from "../config.js";
 import { estados } from "../estado.js";
 import { nivelHab } from "../habilidades.js";
 import { ponerHaciendo } from "../iq.js";
-import { seAtasco, detener, velocidad } from "../movimiento.js";
+import { detener, saltoGuiado, velocidad } from "../movimiento.js";
 import { hostil } from "../postura.js";
 import { abrirPaso, esPorton, esPuerta } from "../puertas.js";
 import { esNatural, estorbaEnLaObra } from "../obras/terreno.js";
 import { animate, avisar, blockAt, distancia, now, particleAt, reemplazable, sound, soundAt } from "../util.js";
 import {
-  bajada, caracol, desatascar, hayHueco, hayPared, puente, quitable, rampa, sueloEn, tunel,
+  bajada, caracol, hayHueco, hayPared, puente, quitable, rampa, sePuedeQuitar, sueloEn, tunel,
 } from "./combinaciones.js";
+import { planLiberar } from "./liberar.js";
 
 // Robot multi: robot constructor de apoyo (distinto del robot de pelea). Vuela con
 // propulsores, pica con el taladro y coloca con la pinza. Lleva su batería encima del
-// nombre: cada bloque y cada segundo encendido la gastan; sin batería se apaga.
+// nombre: cada bloque y cada segundo trabajando la gastan.
 //   Pelea: si los Claudes no pueden alcanzarte, dos de ellos te olvidan un momento y lo
 //   arman (los demás siguen peleando). El robot mira la situación y elige una
-//   combinación: desatascar, rampa, caracol, puente, túnel o bajada.
-//   Maestros: el maestro lo arma; el robot localiza el terreno (recorre el borde
-//   escaneando), lo aplana rompiendo todo lo que estorba y después vigila la obra: si
-//   queda algo (un bloque suelto, una montañita), abre la puerta y lo rompe.
+//   combinación: liberar a un Claude, rampa, caracol, puente, túnel o bajada.
+//   Maestros: el maestro lo arma; el robot localiza el terreno, lo aplana y vigila la obra.
+//   Siempre: si ve a un Claude atascado cerca, lo libera; si él mismo se atasca, rompe lo
+//   que le cierra el paso. Nunca se rompe: sin batería (o si lo golpeas hasta el final) se
+//   queda apagado en reposo, y un Claude lo lleva a un lugar seguro y lo recarga
+//   (multi/reparar.js). Al terminar un trabajo descansa y se puede volver a usar.
 
 export const multis = new Map(); // id → estado
 const obras = new Map(); // armados en curso (id → obra)
 const descansoPorJugador = new Map();
+const DP_BATERIA = "claudenpc:bateria";
+
+const clave = (p) => `${p.x},${p.y},${p.z}`;
+const piso = (l) => ({ x: Math.floor(l.x), y: Math.floor(l.y), z: Math.floor(l.z) });
 
 function barra(bat) {
   const n = Math.max(0, Math.min(10, Math.ceil(bat / 10)));
@@ -32,8 +39,9 @@ function barra(bat) {
   return `${c}[${"|".repeat(n)}§8${"|".repeat(10 - n)}${c}] ${Math.max(0, Math.ceil(bat))}%`;
 }
 
-function nombrar(r) {
-  const que = r.apagado ? "§capagado" : r.texto ?? "";
+export function nombrar(r) {
+  const que = r.cargando ? `§e¡cargando! ${Math.floor(r.bateria)}%` : r.apagado ? `§capagado: ${r.texto || "sin batería"}`
+    : r.reposo ? `§7en reposo${r.texto ? ` (${r.texto})` : ""}` : r.texto ?? "";
   try {
     r.e.nameTag = `${barra(r.bateria)}\n§b§lRobot multi${que ? `\n§r§7${que}` : ""}`;
   } catch {
@@ -41,18 +49,33 @@ function nombrar(r) {
   }
 }
 
-function poner(r, prop, v) {
+const PROPIEDADES = { volando: PROP.volando, apagado: PROP.apagado, cargando: PROP.cargando };
+
+export function poner(r, prop, v) {
   try {
     if (r[prop] !== v) {
       r[prop] = v;
-      r.e.setProperty(prop === "volando" ? PROP.volando : PROP.apagado, v);
+      r.e.setProperty(PROPIEDADES[prop], v);
     }
   } catch {
     // Sin propiedad.
   }
 }
 
-// --- Crear y apagar ----------------------------------------------------------------------
+// Guarda la batería en el robot (así no la pierde al cerrar el mundo).
+export function guardar(r) {
+  try {
+    r.e.setDynamicProperty(DP_BATERIA, Math.round(r.bateria * 10) / 10);
+  } catch {
+    // Sin propiedades.
+  }
+}
+
+// --- Crear, descansar, apagar y encender ---------------------------------------------------
+
+function estadoNuevo(e, bateria, tarea) {
+  return { e, bateria, tarea, cola: [], tic: 0, texto: "", volando: false, apagado: false, reposo: !tarea, cargando: false };
+}
 
 export function crearMulti(dim, pos, tarea) {
   let e;
@@ -61,8 +84,9 @@ export function crearMulti(dim, pos, tarea) {
   } catch {
     return undefined;
   }
-  const r = { e, bateria: 100, tarea, cola: [], tic: 0, texto: "", volando: false, apagado: false, hasta: 0 };
+  const r = estadoNuevo(e, 100, tarea);
   multis.set(e.id, r);
+  guardar(r);
   nombrar(r);
   particleAt(dim, PARTICLES.fusionDestello, { x: pos.x, y: pos.y + 1.2, z: pos.z });
   particleAt(dim, PARTICLES.onda, { x: pos.x, y: pos.y + 0.1, z: pos.z });
@@ -71,30 +95,75 @@ export function crearMulti(dim, pos, tarea) {
   return r;
 }
 
-function apagar(r, motivo) {
+// Trabajo terminado: aterriza y descansa (no se rompe). Se puede volver a usar.
+export function descansar(r, motivo) {
   if (r.apagado) return;
   r.cola = [];
-  r.hasta = now() + 80;
+  r.tarea = undefined;
+  r.reposo = true;
+  r.texto = "";
   poner(r, "volando", false);
-  poner(r, "apagado", true);
-  r.texto = motivo;
+  guardar(r);
   nombrar(r);
-  sound(r.e, "beacon.deactivate", 1, 1);
-  avisar(r.e.dimension, r.e.location, `§bRobot multi:§r ${motivo}`, 24);
+  if (motivo) avisar(r.e.dimension, r.e.location, `§bRobot multi:§r ${motivo} Me quedo en reposo.`, 24);
 }
 
-function desarmar(r) {
-  multis.delete(r.e.id);
+// Sin batería: se apaga y se queda quieto en el suelo hasta que un Claude lo recargue.
+export function sinBateria(r, motivo = "¡batería agotada!") {
+  if (r.apagado) return;
+  r.bateria = 0;
+  r.cola = [];
+  r.tareaPrevia = r.tarea?.tipo === "ayudar" || r.tarea?.tipo === "vigilar" || r.tarea?.tipo === "terreno" ? r.tarea : undefined;
+  r.tarea = undefined;
+  r.reposo = false;
+  r.texto = "";
+  poner(r, "volando", false);
+  poner(r, "apagado", true);
+  guardar(r);
+  nombrar(r);
+  sound(r.e, "beacon.deactivate", 1, 1);
+  avisar(r.e.dimension, r.e.location, `§bRobot multi:§r ${motivo} Me apago...`, 24);
+}
+
+// Recargado: se enciende y vuelve a lo que hacía (si sigue haciendo falta) o descansa.
+export function encender(r) {
+  poner(r, "apagado", false);
+  poner(r, "cargando", false);
   try {
-    const l = r.e.location;
-    particleAt(r.e.dimension, PARTICLES.construir, { x: l.x, y: l.y + 1, z: l.z });
-    particleAt(r.e.dimension, PARTICLES.chispaElectrica, { x: l.x, y: l.y + 1.2, z: l.z });
-    soundAt(r.e.dimension, l, "random.anvil_land", 1.4, 0.6);
-    r.e.dimension.spawnItem(new ItemStack("minecraft:iron_ingot", 2), l);
-    r.e.remove();
+    const h = r.e.getComponent("minecraft:health");
+    if (h) h.setCurrentValue(h.effectiveMax);
   } catch {
-    // Ya no está.
+    // Sin vida.
   }
+  const previa = r.tareaPrevia;
+  r.tareaPrevia = undefined;
+  // En la pelea solo vuelve si los Claudes siguen peleando contigo.
+  const peleando = (j) => !!j?.isValid && [...estados.values()].some((s) => s.objetivo?.id === j.id && now() <= (s.combateHasta ?? 0));
+  const sigue = previa && (previa.tipo === "ayudar" ? peleando(previa.jugador) : previa.sigue?.() ?? false);
+  if (sigue) {
+    r.tarea = previa.tipo === "terreno" ? { ...previa, localizado: false, esquina: 0 } : previa;
+    r.reposo = false;
+    r.texto = "¡de vuelta al trabajo!";
+  } else {
+    r.tarea = undefined;
+    r.reposo = true;
+    r.texto = "";
+  }
+  guardar(r);
+  nombrar(r);
+}
+
+// ¿Un robot encendido y libre (en reposo, con batería) cerca? Para no armar otro.
+export function robotLibreCerca(dim, pos, radio = 64) {
+  for (const r of multis.values()) {
+    if (!r.e.isValid || !r.reposo || r.apagado || r.cargadoPor || r.bateria < MULTI_CFG.reuso) continue;
+    if (r.e.dimension.id === dim.id && distancia(r.e.location, pos) < radio) return r;
+  }
+  return undefined;
+}
+
+function robotsCerca(dim, pos, radio) {
+  return [...multis.values()].filter((r) => r.e.isValid && r.e.dimension.id === dim.id && distancia(r.e.location, pos) < radio);
 }
 
 // --- Vuelo (lo mueve el script: no tiene gravedad) -----------------------------------------
@@ -112,7 +181,49 @@ function ocupado(dim, p) {
   return false;
 }
 
-// Un paso hacia "meta"; si algo le cierra el paso, sube por encima. true al llegar.
+function dentroRect(rect, p) {
+  return !!rect && p.x >= rect.x0 && p.x <= rect.x1 && p.z >= rect.z0 && p.z <= rect.z1;
+}
+
+// ¿Puede romper este bloque para abrirse paso? En la obra de su maestro, todo menos lo ya
+// construido (y lo de otras obras); fuera, lo que se puede romper (nunca casas ni aulas).
+function puedeRomper(r, b, pos) {
+  const t = r.tarea;
+  if ((t?.tipo === "terreno" || t?.tipo === "vigilar") && dentroRect(t.area, pos)) {
+    if (t.salvo?.(pos)) return false;
+    const quiere = t.esperado?.get(clave(pos));
+    if (quiere !== undefined && quiere === b.typeId) return false;
+    return quitable(b, pos, true);
+  }
+  return sePuedeQuitar(b, pos);
+}
+
+// Atascado (no puede avanzar ni subir): rompe lo que le cierra el paso.
+function abrirseCamino(r, sig) {
+  const dim = r.e.dimension;
+  let rotos = 0;
+  for (const h of [0.1, 1.0, 1.75, 2.4]) {
+    const pos = piso({ x: sig.x, y: sig.y + h, z: sig.z });
+    const b = blockAt(dim, pos);
+    if (!b || b.isAir || b.isLiquid || reemplazable(b) || esPuerta(b) || esPorton(b) || !puedeRomper(r, b, pos)) continue;
+    try {
+      b.setType("minecraft:air");
+      rotos++;
+      particleAt(dim, PARTICLES.polvo, { x: pos.x + 0.5, y: pos.y + 0.5, z: pos.z + 0.5 });
+    } catch {
+      // No se pudo.
+    }
+  }
+  if (!rotos) return false;
+  animate(r.e, ANIM.multiTaladrar);
+  soundAt(dim, sig, "dig.stone", 0.8, 0.8);
+  r.bateria -= (r.tarea?.tipo === "ayudar" ? MULTI_CFG.costoBloque : MULTI_CFG.costoObra) * rotos;
+  r.aviso = "rompiendo lo que me atascaba";
+  return true;
+}
+
+// Un paso hacia "meta"; si algo le cierra el paso, sube por encima; si tampoco puede
+// subir, al rato rompe lo que lo atasca. true al llegar.
 function volar(r, meta, rapidez = MULTI_CFG.rapidez) {
   const e = r.e;
   const p = e.location;
@@ -124,9 +235,18 @@ function volar(r, meta, rapidez = MULTI_CFG.rapidez) {
   const paso = Math.min(rapidez, d);
   let sig = { x: p.x + (dx / d) * paso, y: p.y + (dy / d) * paso, z: p.z + (dz / d) * paso };
   if (ocupado(e.dimension, sig)) {
-    sig = { x: p.x, y: p.y + paso, z: p.z };
-    if (ocupado(e.dimension, sig)) return false;
+    const arriba = { x: p.x, y: p.y + paso, z: p.z };
+    if (ocupado(e.dimension, arriba)) {
+      r.trabado = (r.trabado ?? 0) + 1;
+      if (r.trabado >= 3) {
+        r.trabado = 0;
+        abrirseCamino(r, sig) || abrirseCamino(r, arriba);
+      }
+      return false;
+    }
+    sig = arriba;
   }
+  r.trabado = 0;
   try {
     e.teleport(sig, { keepVelocity: false, facingLocation: { x: meta.x, y: sig.y + 1.6, z: meta.z } });
   } catch {
@@ -135,6 +255,19 @@ function volar(r, meta, rapidez = MULTI_CFG.rapidez) {
   const suelo = blockAt(e.dimension, { x: sig.x, y: sig.y - 0.6, z: sig.z });
   poner(r, "volando", !suelo || suelo.isAir || reemplazable(suelo));
   return false;
+}
+
+// Baja suave hasta el suelo (al descansar o al apagarse).
+function aterrizar(r, rapidez) {
+  const l = r.e.location;
+  const y = sueloEn(r.e.dimension, Math.floor(l.x), l.y, Math.floor(l.z));
+  if (l.y - y > 0.15) {
+    try {
+      r.e.teleport({ x: l.x, y: Math.max(y, l.y - rapidez), z: l.z }, { keepVelocity: false });
+    } catch {
+      // Sin teletransporte.
+    }
+  } else poner(r, "volando", false);
 }
 
 // Dónde ponerse para trabajar en "pos": al lado (del lado donde está) o encima.
@@ -186,7 +319,7 @@ function porLaPuerta(r, meta) {
   const [antes, despues] = yo ? [pu.dentro, pu.fuera] : [pu.fuera, pu.dentro];
   if (r.cruce?.despues !== despues) {
     r.cruce = { despues, etapa: 0, pasos: 0 };
-    if (!yo) r.texto = "abriendo la puerta del aula";
+    if (!yo) r.aviso = "abriendo la puerta del aula";
   }
   if (r.cruce.etapa === 0) {
     // Delante de la puerta (si algo no lo deja bajar del todo, cruza igual al rato).
@@ -202,9 +335,37 @@ function alcanza(r, pos) {
   return Math.hypot(l.x - (pos.x + 0.5), l.y + 1.2 - (pos.y + 0.5), l.z - (pos.z + 0.5)) <= MULTI_CFG.alcance;
 }
 
-// --- Acciones: picar y colocar ---------------------------------------------------------------
+// --- Acciones: picar, colocar y levantar ---------------------------------------------------
+
+function costo(r) {
+  return r.tarea?.tipo === "ayudar" ? MULTI_CFG.costoBloque : MULTI_CFG.costoObra;
+}
+
+// Rayo tractor: saca a un Claude de un pozo hasta el borde.
+function levantar(r, a) {
+  const n = a.claude;
+  if (!n?.isValid) return;
+  const dim = r.e.dimension;
+  saltoGuiado(n, a.destino, { ticks: 18, alto: 0.7, retraso: 0.5 });
+  animate(r.e, ANIM.multiEscanear);
+  sound(r.e, "beacon.power_select", 1.6, 1);
+  for (let t = 0; t < 18; t += 3) {
+    system.runTimeout(() => {
+      if (!r.e.isValid || !n.isValid) return;
+      const o = { x: r.e.location.x, y: r.e.location.y + 1.6, z: r.e.location.z };
+      const c = { x: n.location.x, y: n.location.y + 0.9, z: n.location.z };
+      for (let k = 0; k <= 6; k++) {
+        const f = k / 6;
+        particleAt(dim, PARTICLES.chispaElectrica, { x: o.x + (c.x - o.x) * f, y: o.y + (c.y - o.y) * f, z: o.z + (c.z - o.z) * f });
+      }
+    }, t);
+  }
+  avisar(dim, n.location, "§bRobot multi:§r ¡rayo tractor! Te saco del pozo.", 24);
+  r.bateria -= costo(r) * 4;
+}
 
 function hacer(r, a) {
+  if (a.tipo === "levantar") return levantar(r, a);
   const dim = r.e.dimension;
   const b = blockAt(dim, a.pos);
   if (!b) return;
@@ -232,7 +393,16 @@ function hacer(r, a) {
     }
     if (r.tic % 3 === 0) animate(r.e, ANIM.multiColocar);
   }
-  r.bateria -= r.tarea?.tipo === "ayudar" ? MULTI_CFG.costoBloque : MULTI_CFG.costoObra;
+  r.bateria -= costo(r);
+}
+
+// ¿Esa acción ya no hace falta?
+function sobra(r, a) {
+  if (a.tipo === "levantar") return !a.claude?.isValid || distancia(a.claude.location, a.destino) < 1.2;
+  const b = blockAt(r.e.dimension, a.pos);
+  if (!b || (a.suObra && r.tarea?.salvo?.(a.pos))) return true;
+  if (a.tipo === "quitar") return b.isAir || !quitable(b, a.pos, a.suObra);
+  return !(b.isAir || b.isLiquid || reemplazable(b));
 }
 
 // Trabaja la cola: vuela al sitio y hace hasta 3 acciones seguidas que tenga a su alcance.
@@ -240,13 +410,11 @@ function trabajar(r) {
   let hechas = 0;
   while (r.cola.length && hechas < 3) {
     const a = r.cola[0];
-    const b = blockAt(r.e.dimension, a.pos);
-    // Lo que ya está como debe (o es de otra obra), se salta.
-    if (!b || (a.suObra && r.tarea?.salvo?.(a.pos)) || (a.tipo === "quitar" && (b.isAir || !quitable(b, a.pos, a.suObra)))
-      || (a.tipo === "poner" && !(b.isAir || b.isLiquid || reemplazable(b)))) {
+    if (sobra(r, a)) {
       r.cola.shift();
       continue;
     }
+    if (a.tipo === "levantar") a.pos = piso(a.claude.location);
     const centro = { x: a.pos.x + 0.5, y: a.pos.y, z: a.pos.z + 0.5 };
     const lado = mismoLado(r, centro); // dentro del aula se trabaja desde dentro
     if (!lado || !alcanza(r, a.pos)) {
@@ -267,14 +435,43 @@ function trabajar(r) {
     r.cola.shift();
     hacer(r, a);
     hechas++;
+    if (a.tipo === "levantar") break;
   }
-  if (!r.cola.length && r.volando) {
-    // Sin trabajo en el aire: baja suave al suelo.
-    const l = r.e.location;
-    const y = sueloEn(r.e.dimension, Math.floor(l.x), l.y, Math.floor(l.z));
-    if (l.y - y > 0.3) volar(r, { x: l.x, y, z: l.z }, 0.3);
-    else poner(r, "volando", false);
+  if (!r.cola.length && r.volando) aterrizar(r, 0.3);
+}
+
+// --- Liberar Claudes atascados ---------------------------------------------------------------
+
+// Busca un Claude atascado cerca y pone delante de su trabajo lo que hace falta para
+// liberarlo. true si encontró a alguno.
+function buscarAtascados(r) {
+  if (r.cola.some((a) => a.liberar) || r.bateria < 8) return false;
+  const dim = r.e.dimension;
+  let lista = [];
+  try {
+    lista = dim.getEntities({ type: NPC, location: r.e.location, maxDistance: MULTI_CFG.ayudaRadio });
+  } catch {
+    lista = [];
   }
+  r.liberados ??= new Map();
+  for (const n of lista) {
+    const s = estados.get(n.id);
+    if (!s || s.fusion || s.robot || s.clase || s.multiObra || s.reparacion || s.bote) continue;
+    if (now() < (r.liberados.get(n.id) ?? 0)) continue;
+    const enPelea = s.objetivo?.isValid && now() <= (s.combateHasta ?? 0);
+    const plan = planLiberar(dim, n, enPelea ? s.objetivo.location : undefined);
+    if (!plan) continue;
+    r.liberados.set(n.id, now() + 160);
+    const acciones = plan.acciones.map((x) => ({ ...x, liberar: true }));
+    if (plan.levantar) acciones.push({ tipo: "levantar", pos: piso(n.location), claude: n, destino: plan.levantar, liberar: true });
+    if (!acciones.length) continue;
+    r.cola = [...acciones, ...r.cola];
+    r.aviso = "¡liberando a un Claude!";
+    avisar(dim, n.location, `§bRobot multi:§r ¡aguanta, Claude! Te libero (${plan.motivo}).`, 24);
+    sound(r.e, "random.orb", 1.6, 0.6);
+    return true;
+  }
+  return false;
 }
 
 // --- Tareas ----------------------------------------------------------------------------------
@@ -283,7 +480,7 @@ function trabajar(r) {
 function tareaTerreno(r) {
   const t = r.tarea;
   if (t.sigue && !t.sigue()) {
-    apagar(r, "la obra se canceló");
+    descansar(r, "la obra se canceló.");
     return;
   }
   if (!t.localizado) {
@@ -334,10 +531,10 @@ function tareaTerreno(r) {
 function tareaVigilar(r) {
   const t = r.tarea;
   if (!t.sigue?.()) {
-    apagar(r, "¡trabajo terminado!");
+    descansar(r, "¡trabajo terminado!");
     return;
   }
-  r.texto = "vigilando la obra";
+  r.texto = r.cola.some((a) => a.liberar) ? "liberando a un Claude" : "vigilando la obra";
   if (r.cola.length) {
     trabajar(r);
     return;
@@ -364,7 +561,7 @@ function tareaVigilar(r) {
       const adentro = !!t.interior && x >= t.interior.x0 && x <= t.interior.x1 && z >= t.interior.z0 && z <= t.interior.z1;
       for (let h = 1; h <= 5; h++) {
         const pos = { x, y: t.y + h, z };
-        const k = `${x},${pos.y},${z}`;
+        const k = clave(pos);
         if (t.salvo?.(pos)) continue;
         const b = blockAt(dim, pos);
         if (!b || b.isAir || reemplazable(b) || b.isLiquid) continue;
@@ -392,11 +589,12 @@ function tareaAyudar(r) {
   const j = t.jugador;
   if (!j?.isValid || distancia(j.location, r.e.location) > 96) {
     t.solo = (t.solo ?? 0) + 2;
-    if (t.solo > 600) apagar(r, "ya no hay a quién alcanzar");
+    if (t.solo > 600) descansar(r, "ya no hay a quién alcanzar.");
     return;
   }
   t.solo = 0;
   if (r.cola.length) {
+    r.texto = r.cola.some((a) => a.liberar) ? "liberando a un Claude" : r.texto;
     trabajar(r);
     return;
   }
@@ -414,10 +612,10 @@ function tareaAyudar(r) {
   } catch {
     claudes = [];
   }
-  // Si ya nadie pelea contigo, el robot se apaga al rato.
+  // Si ya nadie pelea contigo, el robot descansa al rato.
   t.sinClaudes = claudes.length ? 0 : (t.sinClaudes ?? 0) + 1;
-  if (t.sinClaudes > 40) {
-    apagar(r, "la pelea terminó");
+  if (t.sinClaudes > 16) {
+    descansar(r, "la pelea terminó.");
     return;
   }
   const plan = elegir(dim, claudes, j);
@@ -434,16 +632,15 @@ function tareaAyudar(r) {
 // Mira la situación y elige la combinación de construcción.
 function elegir(dim, claudes, j) {
   if (!claudes.length) return undefined;
-  // 1. Un Claude atascado: le quita el bloque que no puede escalar.
-  const desat = [];
+  // 1. Un Claude atascado o encerrado: lo libera (le quita el bloque que no puede escalar,
+  //    le abre la salida o lo saca del pozo con el rayo tractor).
   for (const n of claudes) {
-    const s = estados.get(n.id);
-    if (!s) continue;
-    if (seAtasco(n) || (s.atascadoDesde && now() - s.atascadoDesde > 30) || (s.sinAlcanceDesde && now() - s.sinAlcanceDesde > 40)) {
-      desat.push(...desatascar(dim, n, j.location));
-    }
+    const plan = planLiberar(dim, n, j.location);
+    if (!plan) continue;
+    const acciones = plan.acciones.map((x) => ({ ...x, liberar: true }));
+    if (plan.levantar) acciones.push({ tipo: "levantar", pos: piso(n.location), claude: n, destino: plan.levantar, liberar: true });
+    if (acciones.length) return { nombre: "liberar a un Claude", acciones };
   }
-  if (desat.length) return { nombre: "desatascar a los Claudes", acciones: desat };
   const c = claudes.reduce((a, n) => ({ x: a.x + n.location.x / claudes.length, y: Math.min(a.y, n.location.y), z: a.z + n.location.z / claudes.length }),
     { x: 0, y: Infinity, z: 0 });
   const dy = j.location.y - c.y;
@@ -455,6 +652,16 @@ function elegir(dim, claudes, j) {
   if (hayHueco(dim, c, j)) return puente(dim, j, c);
   if (hayPared(dim, c, j)) return tunel(dim, j, c);
   return undefined;
+}
+
+// Libera Claudes cuando está en reposo (se despierta un momento y vuelve a descansar).
+function tareaLiberar(r) {
+  if (r.cola.length) {
+    r.texto = "liberando a un Claude";
+    trabajar(r);
+    return;
+  }
+  descansar(r);
 }
 
 // --- Armado por dos Claudes en la pelea --------------------------------------------------
@@ -570,7 +777,9 @@ function terminarArmado(o, exito) {
   }
 }
 
-// Cada 2 s: ¿hay Claudes que no te pueden alcanzar? Dos de ellos arman un Robot multi.
+// Cada 2 s: ¿hay Claudes que no te pueden alcanzar? Si hay un Robot multi libre cerca, lo
+// despiertan; si no, dos de ellos arman uno (si no hay ya uno cerca, aunque esté apagado:
+// a ese lo repara un Claude).
 function revisar() {
   for (const id of DIMENSIONES) {
     let dim;
@@ -584,7 +793,7 @@ function revisar() {
     const porJugador = new Map();
     for (const n of lista) {
       const s = estados.get(n.id);
-      if (!s?.objetivo?.isValid || now() > (s.combateHasta ?? 0) || s.multiObra || s.robot || s.robotObra || s.fusion || s.clase) continue;
+      if (!s?.objetivo?.isValid || now() > (s.combateHasta ?? 0) || s.multiObra || s.robot || s.robotObra || s.fusion || s.clase || s.reparacion) continue;
       const g = porJugador.get(s.objetivo.id) ?? { jugador: s.objetivo, peleando: [], sinAlcance: 0 };
       g.peleando.push(n);
       if ((s.sinAlcanceDesde && now() - s.sinAlcanceDesde > MULTI_CFG.sinAlcance) || (s.atascadoDesde && now() - s.atascadoDesde > MULTI_CFG.sinAlcance)) g.sinAlcance++;
@@ -593,9 +802,21 @@ function revisar() {
     for (const [jid, g] of porJugador) {
       if (g.peleando.length < 2 || g.sinAlcance < 1) continue;
       if (now() < (descansoPorJugador.get(jid) ?? 0)) continue;
-      if ([...multis.values()].length >= MULTI_CFG.maximo) continue;
-      if ([...multis.values()].some((r) => r.e.isValid && r.e.dimension.id === id && distancia(r.e.location, g.jugador.location) < 48)) continue;
       if ([...obras.values()].some((o) => o.jugador.id === g.jugador.id)) continue;
+      // Uno que ya está ayudando en esta pelea: no hace falta otro.
+      if ([...multis.values()].some((r) => r.e.isValid && r.tarea?.tipo === "ayudar" && r.tarea.jugador?.id === jid)) continue;
+      const libre = robotLibreCerca(dim, g.jugador.location, 64);
+      if (libre) {
+        libre.reposo = false;
+        libre.tarea = { tipo: "ayudar", jugador: g.jugador };
+        libre.texto = "¡a ayudar!";
+        descansoPorJugador.set(jid, now() + 400);
+        avisar(dim, g.jugador.location, "§bRobot multi:§r ¡despierto! Voy a ayudar a los Claudes.", 48);
+        continue;
+      }
+      const activos = [...multis.values()].filter((r) => r.e.isValid && !r.reposo && !r.apagado).length;
+      if (activos >= MULTI_CFG.maximo || multis.size >= MULTI_CFG.total) continue;
+      if (robotsCerca(dim, g.jugador.location, 40).length) continue; // hay uno cerca (quizá apagado)
       descansoPorJugador.set(jid, now() + MULTI_CFG.descanso);
       empezarArmado(dim, g.jugador, g.peleando);
     }
@@ -608,20 +829,22 @@ export function tickArmador(npc, s) {
   velocidad(npc, 0);
 }
 
-// Para los maestros: arma (o reutiliza) un Robot multi que aplana el terreno y vigila la obra.
-// "sigue()" dice si la obra sigue en marcha. Devuelve el robot.
+// Para los maestros: usa el robot del maestro (o uno libre cerca) o arma uno nuevo, que
+// aplana el terreno y vigila la obra. "sigue()" dice si la obra sigue en marcha.
 export function encargarTerreno(dim, junto, datos) {
   const tarea = { tipo: "terreno", ...datos };
-  for (const r of multis.values()) {
-    if (r.e.isValid && !r.apagado && r.tarea?.maestroId === datos.maestroId) {
-      r.tarea = tarea;
-      r.cola = [];
-      r.cruce = undefined;
-      avisar(dim, r.e.location, "§bRobot multi:§r ¡nuevo trabajo! Voy a localizar el terreno.", 32);
-      return r;
-    }
+  let r = [...multis.values()].find((x) => x.e.isValid && !x.apagado && x.tarea?.maestroId === datos.maestroId)
+    ?? robotLibreCerca(dim, junto, 64);
+  if (r) {
+    r.tarea = tarea;
+    r.reposo = false;
+    r.cola = [];
+    r.cruce = undefined;
+    avisar(dim, r.e.location, "§bRobot multi:§r ¡nuevo trabajo! Voy a localizar el terreno.", 32);
+    return r;
   }
-  return crearMulti(dim, junto, tarea);
+  r = crearMulti(dim, junto, tarea);
+  return r;
 }
 
 export function progresoTerreno(r) {
@@ -652,22 +875,41 @@ system.runInterval(() => {
     }
     try {
       r.tic += 2;
+      if (r.cargadoPor || r.cargando) continue; // lo lleva o lo recarga un Claude (reparar.js)
       if (r.apagado) {
-        if (now() >= r.hasta) desarmar(r);
+        aterrizar(r, 0.5);
+        if (r.tic % 20 === 0) nombrar(r);
         continue;
       }
-      r.bateria -= (r.tarea?.tipo === "ayudar" || !r.tarea ? MULTI_CFG.gastoTick : MULTI_CFG.gastoObra) * 2;
-      if (r.bateria <= 0) {
-        r.bateria = 0;
-        apagar(r, "¡batería agotada!");
+      if (r.reposo) {
+        aterrizar(r, 0.3);
+        // En reposo también ayuda: si ve a un Claude atascado cerca, se despierta y lo libera.
+        if (r.tic % 40 === 0 && buscarAtascados(r)) {
+          r.reposo = false;
+          r.tarea = { tipo: "liberar" };
+        }
+        if (r.tic % 20 === 0) nombrar(r);
         continue;
       }
       const tipo = r.tarea?.tipo;
+      r.bateria -= (tipo === "ayudar" || tipo === "liberar" ? MULTI_CFG.gastoTick : MULTI_CFG.gastoObra) * 2;
+      if (r.bateria <= 0) {
+        sinBateria(r);
+        continue;
+      }
+      // Mientras trabaja, mira cada 2 s si hay Claudes atascados cerca (salvo aplanando).
+      if (tipo !== "terreno" && r.tic % 40 === 0) buscarAtascados(r);
       if (tipo === "terreno") tareaTerreno(r);
       else if (tipo === "vigilar") tareaVigilar(r);
       else if (tipo === "ayudar") tareaAyudar(r);
-      else if (r.tic > 200) apagar(r, "sin tarea");
+      else if (tipo === "liberar") tareaLiberar(r);
+      else descansar(r);
+      if (r.aviso && r.tic % 20 === 0) {
+        r.texto = r.aviso;
+        r.aviso = undefined;
+      }
       if (r.tic % 20 === 0) nombrar(r);
+      if (r.tic % 100 === 0) guardar(r);
     } catch {
       // Descargado.
     }
@@ -676,14 +918,28 @@ system.runInterval(() => {
 
 system.runInterval(revisar, 40);
 
-// Al recargar el mundo, un robot multi sin tarea se apaga solo.
+// Al recargar el mundo: recupera los robots con su batería; los que estaban apagados
+// siguen apagados (un Claude los recargará) y los demás quedan en reposo.
 system.runInterval(() => {
   for (const id of DIMENSIONES) {
     try {
       for (const e of world.getDimension(id).getEntities({ type: MULTI })) {
         if (multis.has(e.id)) continue;
-        const r = { e, bateria: 30, tarea: undefined, cola: [], tic: 0, texto: "", volando: false, apagado: false, hasta: 0 };
+        let bateria = 50;
+        let apagado = false;
+        try {
+          const b = e.getDynamicProperty(DP_BATERIA);
+          if (typeof b === "number") bateria = b;
+          apagado = e.getProperty(PROP.apagado) === true;
+        } catch {
+          // Sin datos.
+        }
+        const r = estadoNuevo(e, apagado ? 0 : Math.max(5, bateria), undefined);
+        r.apagado = apagado || bateria <= 0;
+        r.reposo = !r.apagado;
+        if (r.apagado) poner(r, "apagado", true);
         multis.set(e.id, r);
+        nombrar(r);
       }
     } catch {
       // Dimensión sin cargar.
@@ -691,3 +947,25 @@ system.runInterval(() => {
   }
 }, 200);
 
+// Nunca se rompe: si un golpe lo dejaría sin vida, se apaga (y un Claude lo reparará).
+world.beforeEvents.entityHurt.subscribe((event) => {
+  const e = event.hurtEntity;
+  let vida = 1;
+  try {
+    vida = e.getComponent("minecraft:health")?.currentValue ?? 1;
+  } catch {
+    vida = 1;
+  }
+  if (event.damage < vida - 1) return;
+  event.cancel = true;
+  system.run(() => {
+    if (!e.isValid) return;
+    try {
+      e.getComponent("minecraft:health")?.setCurrentValue(1);
+    } catch {
+      // Sin vida.
+    }
+    const r = multis.get(e.id);
+    if (r) sinBateria(r, "¡me dejaste sin energía!");
+  });
+}, { entityFilter: { type: MULTI } });
