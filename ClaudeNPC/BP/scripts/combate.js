@@ -10,9 +10,9 @@ import { usarPocion } from "./habilidades/quimica.js";
 import { usarRedstone } from "./habilidades/redstone.js";
 import { usarReflejo } from "./habilidades/reflejos.js";
 import { aprender, nivel } from "./iq.js";
-import { duelo } from "./duelo.js";
-import { enBorde, ritmo, saltando, seAtasco, subirA } from "./movimiento.js";
-import { celdaDelante, iniciarExcavar, muroDelante } from "./obras/excavar.js";
+import { duelo, golpeBasico } from "./duelo.js";
+import { deslizar, enBorde, ritmo, saltando, seAtasco, subirA } from "./movimiento.js";
+import { celdaDelante, estorba, iniciarExcavar, muroDelante } from "./obras/excavar.js";
 import { huecoHacia, iniciarPuente } from "./obras/puente.js";
 import { iniciarTorre } from "./obras/torre.js";
 import {
@@ -96,14 +96,48 @@ function contexto(npc, state, jugador) {
   };
 }
 
-// ¿Avanza hacia el jugador? Si lleva un rato sin acercarse, está atascado.
+// ¿Avanza hacia el jugador? Si lleva un rato sin acercarse, está atascado (si avanza, ya
+// no lo está: así el Robot multi no intenta "liberar" a quien ya camina).
 function atascado(state, c) {
   const p = state.progreso;
   if (!p || c.dist < p.d - 0.7 || c.dist > p.d + 3) {
+    if (p && c.dist < p.d - 0.7) state.atascadoDesde = undefined;
     state.progreso = { d: c.dist, t: now() };
     return false;
   }
   return now() - p.t > EXCAVAR.atascado && c.dist > 2.2 && Math.abs(c.alto) < 2.5;
+}
+
+// ¿Hay algo que picar en los próximos 2 bloques hacia el jugador (a los pies o a la cabeza)?
+// En campo abierto no: antes se ponía a "excavar" igual, caminando bloque a bloque por el
+// mismo eje que los demás, y terminaban dos Claudes encimados temblando.
+function hayQuePicar(npc, jugador) {
+  const dx = jugador.location.x - npc.location.x;
+  const dz = jugador.location.z - npc.location.z;
+  const e = Math.abs(dx) >= Math.abs(dz) ? { x: Math.sign(dx) || 1, z: 0 } : { x: 0, z: Math.sign(dz) || 1 };
+  const x = Math.floor(npc.location.x);
+  const y = Math.floor(npc.location.y);
+  const z = Math.floor(npc.location.z);
+  for (const k of [1, 2]) {
+    for (const h of [0, 1]) {
+      const b = npc.dimension.getBlock({ x: x + e.x * k, y: y + h, z: z + e.z * k });
+      if (estorba(b) && !(h === 0 && !estorba(npc.dimension.getBlock({ x: x + e.x * k, y: y + 1, z: z + e.z * k })))) return true;
+    }
+  }
+  return false;
+}
+
+// Sin pared delante pero sin avanzar: un paso guiado hacia el jugador (si hay sitio).
+function pasoHacia(npc, jugador) {
+  const l = npc.location;
+  const dx = jugador.location.x - l.x;
+  const dz = jugador.location.z - l.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const destino = { x: l.x + (dx / d) * 1.3, y: l.y, z: l.z + (dz / d) * 1.3 };
+  const en = (h) => npc.dimension.getBlock({ x: Math.floor(destino.x), y: Math.floor(destino.y) + h, z: Math.floor(destino.z) });
+  if (estorba(en(0)) || estorba(en(1)) || !estorba(en(-1))) return false;
+  deslizar(npc, destino, 6);
+  return true;
 }
 
 // ¿Está pegado al escalón (a menos de un bloque de su cara)?
@@ -137,15 +171,25 @@ export function tickCombate(npc, state, jugador) {
     }
   }
 
-  // Pared del jugador delante (o lleva rato atascado): la rompe con la herramienta adecuada.
-  if (MODIFICA_MUNDO) {
-    const at = muro !== "jugador" && muro !== "escalon" && atascado(state, c);
-    if (at || seAtasco(npc)) state.atascadoDesde ??= now();
-    if (muro === "jugador" || (at && c.dist < 24)) {
-      state.progreso = undefined;
-      iniciarExcavar(npc, state, jugador);
-      return;
-    }
+  // Pared del jugador delante (o lleva rato atascado ante una pared): la rompe con la
+  // herramienta adecuada. En campo abierto no excava: da un paso hacia ti.
+  const at = muro !== "jugador" && muro !== "escalon" && atascado(state, c);
+  if (at || seAtasco(npc)) state.atascadoDesde ??= now();
+  if (MODIFICA_MUNDO && (muro === "jugador" || (at && c.dist < 24 && hayQuePicar(npc, jugador)))) {
+    state.progreso = undefined;
+    iniciarExcavar(npc, state, jugador);
+    return;
+  }
+  if (at && now() >= (state.cd.paso ?? 0) && Math.abs(c.alto) < 1.5 && pasoHacia(npc, jugador)) {
+    state.cd.paso = now() + 20;
+    state.progreso = undefined;
+    return;
+  }
+
+  // A tu lado, si la IA del juego no está golpeando (no te tiene de objetivo), golpea él.
+  if (c.dist < 2.4 && Math.abs(c.alto) < 1.5 && now() - (state.golpeIA ?? -1000) > 40 && now() >= (state.cd.golpe ?? 0)) {
+    state.cd.golpe = now() + 16;
+    if (golpeBasico(npc, state, jugador)) return;
   }
 
   // De cerca: bloquear, esquivar, embestir, crítico, combo o curarse.
@@ -198,5 +242,7 @@ export function animarGolpe(npc) {
 // Cada golpe cuerpo a cuerpo del Claude (la IA del juego decide cuándo) se anima.
 world.afterEvents.entityHitEntity.subscribe(({ damagingEntity }) => {
   if (damagingEntity?.typeId !== NPC) return;
+  const s = estados.get(damagingEntity.id);
+  if (s) s.golpeIA = now(); // la IA del juego sí está golpeando
   system.run(() => damagingEntity.isValid && animarGolpe(damagingEntity));
 });

@@ -48,6 +48,12 @@ function golpe(npc, s, jugador, mult = 1, empuje = 0.4) {
   return golpear(npc, jugador, danoArma(s) * mult, empuje, 0.28);
 }
 
+// Golpe normal de respaldo: si la IA del juego no está golpeando (por ejemplo, porque no
+// te tiene como objetivo), el Claude te pega igual cuando estás a su alcance.
+export function golpeBasico(npc, s, jugador) {
+  return golpe(npc, s, jugador, 1, 0.4);
+}
+
 // ¿Lo estás mirando (a punto de golpearlo)?
 function teMira(jugador, npc) {
   try {

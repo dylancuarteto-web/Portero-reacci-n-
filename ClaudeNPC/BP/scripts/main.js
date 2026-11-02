@@ -19,7 +19,7 @@ import { revisarRobot } from "./robot/construccion.js";
 import { tickPiloto } from "./robot/index.js";
 import { tickArmador } from "./multi/index.js";
 import { tickReparador } from "./multi/reparar.js";
-import { caminarA, caminando, destinoActual, salidaDePozo, seAtasco, velocidad } from "./movimiento.js";
+import { caminarA, caminando, deslizar, destinoActual, salidaDePozo, saltando, seAtasco, velocidad } from "./movimiento.js";
 import { cargarHogar } from "./obras/casa.js";
 import { tickObra } from "./obras/index.js";
 import { iniciarTorre } from "./obras/torre.js";
@@ -41,15 +41,61 @@ function npcsCerca(location, dimension, radio = 24) {
   }
 }
 
+let pvp = { valor: true, hasta: -1 };
+function pvpActivo() {
+  if (now() < pvp.hasta) return pvp.valor;
+  try {
+    pvp = { valor: world.gameRules.pvp !== false, hasta: now() + 100 };
+  } catch {
+    pvp = { valor: true, hasta: now() + 100 };
+  }
+  return pvp.valor;
+}
+
 // ¿Pelea con este jugador? Cada Claude tiene su propio radio; si lo atacaron, pelea igual.
 function quierePelear(npc, s, jugador) {
   if (!jugador) return false;
   const d = Math.hypot(jugador.location.x - npc.location.x, jugador.location.z - npc.location.z);
   if (now() < (s.provocadoHasta ?? 0)) return true;
+  if (COMBATE.respetarPvP && !pvpActivo()) return false;
   if (!s.hostil && s.mina && jugador.location.y - npc.location.y > 6) return false; // está minando y no lo ve
   const radio = s.pers?.radio ?? 20;
   // Una vez que pelea, no te suelta aunque te alejes (te sigue hasta COMBATE.persigue).
   return d <= radio || (s.hostil && d <= Math.max(radio + 16, COMBATE.persigue));
+}
+
+// Dos Claudes en el mismo sitio se empujan y "tiemblan" (se veía en el video: dos encimados
+// a lo lejos). Si otro Claude está casi encima, uno de los dos se aparta un paso.
+function separarse(npc, s) {
+  if (s.obra || s.sentado || s.casa || s.bote || (s.robotObra && s.robotObra.fase !== "reunion") || saltando(npc) || !npc.isOnGround
+    || now() < (s.cd.separar ?? 0)) return;
+  let otros = [];
+  try {
+    otros = npc.dimension.getEntities({ type: NPC, location: npc.location, maxDistance: 0.8 });
+  } catch {
+    return;
+  }
+  const otro = otros.find((o) => o.id !== npc.id);
+  if (!otro || npc.id < otro.id) return; // se aparta solo uno de los dos (siempre el mismo)
+  s.cd.separar = now() + 14;
+  const l = npc.location;
+  const dx = l.x - otro.location.x;
+  const dz = l.z - otro.location.z;
+  const d = Math.hypot(dx, dz);
+  const ang = Math.random() * Math.PI * 2;
+  const ux = d > 0.05 ? dx / d : Math.cos(ang);
+  const uz = d > 0.05 ? dz / d : Math.sin(ang);
+  // Prueba hacia afuera y luego a los lados, a donde haya sitio para pararse.
+  for (const [ax, az] of [[ux, uz], [-uz, ux], [uz, -ux]]) {
+    const destino = { x: l.x + ax * 0.95, y: l.y, z: l.z + az * 0.95 };
+    const pie = npc.dimension.getBlock({ x: Math.floor(destino.x), y: Math.floor(destino.y), z: Math.floor(destino.z) });
+    const cabeza = npc.dimension.getBlock({ x: Math.floor(destino.x), y: Math.floor(destino.y) + 1, z: Math.floor(destino.z) });
+    const suelo = npc.dimension.getBlock({ x: Math.floor(destino.x), y: Math.floor(destino.y) - 1, z: Math.floor(destino.z) });
+    if (pie?.isAir && cabeza?.isAir && suelo && !suelo.isAir && !suelo.isLiquid) {
+      deslizar(npc, destino, 4);
+      return;
+    }
+  }
 }
 
 function cerebro(npc) {
@@ -92,6 +138,11 @@ function cerebro(npc) {
     tickReparador(npc, s);
     pausarRutina(npc, s);
     return;
+  }
+  try {
+    separarse(npc, s);
+  } catch {
+    // Sin bloques cargados.
   }
   if (s.robotObra && s.robotObra.fase !== "reunion") {
     // Construyendo el robot: el turno lo maneja robot/construccion.js.

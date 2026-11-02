@@ -48,11 +48,6 @@
                     "test": "is_family",
                     "subject": "other",
                     "value": "player"
-                  },
-                  {
-                    "test": "is_game_rule",
-                    "domain": "pvp",
-                    "value": true
                   }
                 ]
               },

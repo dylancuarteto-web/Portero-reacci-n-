@@ -165,6 +165,9 @@ export const ARMADURA_IQ = [0, 100, 180, 300, 500];
 export const COMBATE = {
   radio: 32,              // a qué distancia mira si hay jugadores
   persigue: 48,           // ya peleando, te sigue hasta esta distancia
+  // false: te atacan aunque el PvP ("fuego amigo") esté desactivado en el mundo (son mobs,
+  // no jugadores). true: con el PvP desactivado no pelean contigo salvo que los golpees.
+  respetarPvP: false,
   cambioArma: [90, 170],
 };
 

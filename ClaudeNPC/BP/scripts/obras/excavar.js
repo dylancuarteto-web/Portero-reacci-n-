@@ -229,7 +229,11 @@ export function tickExcavar(npc, state) {
     picar(npc, state, b, o);
     return false;
   }
-  // Libre: avanza al bloque siguiente (saltando si sube).
+  // Libre: si acaba de abrir el paso, entra en el hueco; si no rompió nada nuevo, ya no
+  // hay pared: termina (la pelea sigue normal). Antes seguía caminando bloque a bloque por
+  // el eje y varios Claudes terminaban encimados.
+  if (o.rotos === (o.rotosAlEntrar ?? 0)) return true;
+  o.rotosAlEntrar = o.rotos;
   caminarA(npc, centro({ x: sig.x, y: p.y, z: sig.z }), state.pers?.paso ?? 0.2);
   o.pasos++;
   state.ocupadoHasta = now() + 6;

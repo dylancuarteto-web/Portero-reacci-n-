@@ -1,7 +1,7 @@
 import { estados } from "../estado.js";
 import { destinoFallido, seAtasco } from "../movimiento.js";
 import { blockAt, now, reemplazable } from "../util.js";
-import { desatascar, sePuedeQuitar, tunel } from "./combinaciones.js";
+import { desatascar, sePuedeQuitar } from "./combinaciones.js";
 
 // El Robot multi libera a un Claude atascado:
 //   - metido en un bloque, una telaraña, nieve polvo o un arbusto de bayas: lo quita;
@@ -51,14 +51,14 @@ export function planLiberar(dim, claude, hacia) {
   const meta = hacia ?? destinoFallido(claude);
   const orden = [...DIRS].sort((a, b) => (meta ? (b.x * (meta.x - p.x) + b.z * (meta.z - p.z)) - (a.x * (meta.x - p.x) + a.z * (meta.z - p.z)) : 0));
   if (orden.some((d) => salida(dim, p, d))) {
-    // Tiene salida, pero si se rindió contra una pared camino de algún sitio, le abre paso.
+    // Tiene salida, pero si se rindió contra una pared justo delante (camino de algún sitio),
+    // le quita la parte de arriba. Sin pared delante no hace nada (antes abría túneles sin
+    // motivo y repetía "¡liberar a un Claude!").
     const s = estados.get(claude.id);
     const rindio = seAtasco(claude) || (s?.atascadoDesde && now() - s.atascadoDesde > 30);
     if (!rindio || !meta) return undefined;
     const pared = desatascar(dim, claude, meta);
-    if (pared.length) return { motivo: "no podía pasar", acciones: pared };
-    const t = tunel(dim, { location: meta }, claude.location);
-    return t ? { motivo: "no podía pasar", acciones: t.acciones.slice(0, 8) } : undefined;
+    return pared.length ? { motivo: "no podía pasar", acciones: pared } : undefined;
   }
 
   // 3. Encerrado: abre la salida más útil.
