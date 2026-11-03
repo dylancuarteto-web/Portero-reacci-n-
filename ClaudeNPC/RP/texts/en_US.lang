@@ -23,3 +23,5 @@ entity.claudenpc:rayo.name=Lightning
 entity.claudenpc:marioneta.name=Puppet Strings
 entity.claudenpc:ilusion_jugador.name=Illusion
 entity.claudenpc:fondo.name=Backdrop
+entity.claudenpc:orbe_azul.name=Blue Orb
+entity.claudenpc:orbe_definitiva.name=Ultimate Orb

@@ -4,27 +4,7 @@
     "description": {
       "identifier": "claudenpc:orbe",
       "is_spawnable": false,
-      "is_summonable": true,
-      "properties": {
-        "claudenpc:tipo": {
-          "type": "int",
-          "range": [
-            0,
-            2
-          ],
-          "default": 0,
-          "client_sync": true
-        },
-        "claudenpc:tam": {
-          "type": "float",
-          "range": [
-            0.0,
-            4.0
-          ],
-          "default": 1.0,
-          "client_sync": true
-        }
-      }
+      "is_summonable": true
     },
     "components": {
       "minecraft:type_family": {
@@ -78,24 +58,6 @@
       },
       "minecraft:movement": {
         "value": 0
-      }
-    },
-    "events": {
-      "claudenpc:amarilla": {
-        "set_property": {
-          "claudenpc:tipo": 0
-        }
-      },
-      "claudenpc:azul": {
-        "set_property": {
-          "claudenpc:tipo": 1
-        }
-      },
-      "claudenpc:definitiva": {
-        "set_property": {
-          "claudenpc:tipo": 2,
-          "claudenpc:tam": 0.3
-        }
       }
     }
   }

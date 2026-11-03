@@ -4,18 +4,7 @@
     "description": {
       "identifier": "claudenpc:signo",
       "is_spawnable": false,
-      "is_summonable": true,
-      "properties": {
-        "claudenpc:tipo": {
-          "type": "int",
-          "range": [
-            0,
-            1
-          ],
-          "default": 0,
-          "client_sync": true
-        }
-      }
+      "is_summonable": true
     },
     "components": {
       "minecraft:type_family": {
@@ -63,15 +52,31 @@
         "value": 0
       }
     },
-    "events": {
+    "component_groups": {
       "claudenpc:amarillo": {
-        "set_property": {
-          "claudenpc:tipo": 0
+        "minecraft:variant": {
+          "value": 0
         }
       },
       "claudenpc:azul": {
-        "set_property": {
-          "claudenpc:tipo": 1
+        "minecraft:variant": {
+          "value": 1
+        }
+      }
+    },
+    "events": {
+      "claudenpc:amarillo": {
+        "add": {
+          "component_groups": [
+            "claudenpc:amarillo"
+          ]
+        }
+      },
+      "claudenpc:azul": {
+        "add": {
+          "component_groups": [
+            "claudenpc:azul"
+          ]
         }
       }
     }

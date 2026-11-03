@@ -430,7 +430,8 @@ def rayo_textura(color):
 # =============================================================================
 
 def marioneta_geo():
-    uv_ojo = {f: {"uv": [16, 0], "uv_size": [2, 1]} for f in FACES}
+    """Corazón blanco 3D enredado con hilo amarillo. El script lo pone delante del pecho del mob
+    en cada tick (no depende del giro del mob); los ojos dorados son partículas en sus ojos."""
     uv_hilo = {f: {"uv": [18, 0], "uv_size": [1, 1]} for f in FACES}
     corazon = corazon_cubos(0, 0, (20, 0, 2, 2), y0=-CH / 2 * 0.42, escala=0.42)
     hilos = []
@@ -443,15 +444,10 @@ def marioneta_geo():
                           "pivot": [0, 0, 0], "rotation": [inc, ang + a, 0]})
     huesos = [
         {"name": "raiz", "pivot": [0, 0, 0]},
-        {"name": "cabeza", "parent": "raiz", "pivot": [0, 0, 0], "cubes": [
-            {"origin": [-3.2, -0.6, -4.45], "size": [2.2, 1.2, 0.3], "uv": uv_ojo},
-            {"origin": [1.0, -0.6, -4.45], "size": [2.2, 1.2, 0.3], "uv": uv_ojo}],
-         "locators": {"ojo_i": [2.1, 0, -4.6], "ojo_d": [-2.1, 0, -4.6]}},
-        {"name": "pecho", "parent": "raiz", "pivot": [0, 0, 0]},
-        {"name": "corazon", "parent": "pecho", "pivot": [0, 0, 0], "cubes": corazon, "locators": {"corazon": [0, 0, 0]}},
-        {"name": "hilos", "parent": "pecho", "pivot": [0, 0, 0], "cubes": hilos},
+        {"name": "corazon", "parent": "raiz", "pivot": [0, 0, 0], "cubes": corazon, "locators": {"corazon": [0, 0, 0]}},
+        {"name": "hilos", "parent": "raiz", "pivot": [0, 0, 0], "cubes": hilos},
     ]
-    return geo("geometry.claudenpc.marioneta", huesos, 32, 16, bounds=(3, 4, 1.5))
+    return geo("geometry.claudenpc.marioneta", huesos, 32, 16, bounds=(1.5, 1.5, 0))
 
 
 def marioneta_textura():
@@ -584,6 +580,27 @@ def hoja_glifos():
         ic.putpixel((0, 20), (255, 255, 255, 12))
         ic.putpixel((31, 20), (255, 255, 255, 12))
         hoja.alpha_composite(ic, (i * 32, 0))
+    # U+E90B tramo lleno, U+E90C tramo vacío, U+E90D y U+E90E puntas de la barra de vida.
+    for i, tipo in ((11, "lleno"), (12, "vacio"), (13, "izq"), (14, "der")):
+        ic = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+        d = ImageDraw.Draw(ic)
+        if tipo == "lleno":
+            for y in range(10, 23):
+                t = (y - 10) / 12
+                col = (255, clamp(236 - 70 * t), clamp(150 - 120 * t), 255)
+                d.line([(0, y), (31, y)], fill=col)
+            d.line([(0, 10), (31, 10)], fill=(170, 110, 20, 255))
+            d.line([(0, 22), (31, 22)], fill=(150, 90, 16, 255))
+            d.line([(0, 12), (31, 12)], fill=(255, 250, 220, 255))
+        elif tipo == "vacio":
+            d.rectangle([0, 10, 31, 22], fill=(48, 36, 22, 220))
+            d.line([(0, 10), (31, 10)], fill=(170, 110, 20, 255))
+            d.line([(0, 22), (31, 22)], fill=(150, 90, 16, 255))
+        else:
+            caja = [18, 6, 31, 26] if tipo == "izq" else [0, 6, 13, 26]
+            d.rounded_rectangle(caja, radius=5, fill=(255, 205, 70, 255), outline=(170, 110, 20, 255), width=2)
+            d.polygon([(25, 2), (28, 9), (22, 9)] if tipo == "izq" else [(6, 2), (9, 9), (3, 9)], fill=(255, 230, 120, 255))
+        hoja.alpha_composite(ic, (i * 32, 0))
     for i, lleno in ((9, True), (10, False)):
         ic = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
         d = ImageDraw.Draw(ic)
@@ -637,16 +654,18 @@ def particulas():
     efecto("destello_corte", "estrella", {**inst(5), "minecraft:emitter_shape_sphere": {"radius": 0.2, "direction": "outwards"},
                                           **unavez(), **vida(0.25), **vel(4), **mov(linear_drag_coefficient=8)},
            {"0.0": "#FFFFFFFF", "1.0": "#00FFE6A0"}, sube(0.5, 0.1))
-    # Hilo amarillo entre la mano de Golden y el corazón de una marioneta (una sola tira).
-    efecto("hilo", "cuadro", {**inst(1), **unavez(0.0),
-                              "minecraft:emitter_shape_point": {"direction": ["variable.dir.x", "variable.dir.y", "variable.dir.z"]},
-                              **vida(0.17), **vel(0.06), **mov()},
-           {"0.0": "#FFFFF08C", "1.0": "#CCFFC832"}, ["variable.largo * 0.5", 0.035], facing="lookat_direction")
+    # Hilo 3D de las marionetas: cuentas de luz muy juntas (se ven redondas desde cualquier lado)
+    # que el script dibuja en una curva ondulante desde la mano de Golden hasta cada corazón.
+    efecto("hilo_punto", "brillo", {**inst(1), **unavez(0.0), **punto, **vida(0.14), **vel(0), **mov()},
+           {"0.0": "#FFFFF5B4", "0.5": "#FFFFD24B", "1.0": "#00FFB41E"}, [0.075, 0.075])
+    # Ojos dorados de las marionetas (los pone el script en los ojos del mob en cada tick).
+    efecto("ojo_dorado", "brillo", {**inst(1), **unavez(0.0), **punto, **vida(0.1), **vel(0), **mov()},
+           {"0.0": "#FFFFF0A0", "1.0": "#CCFFC832"}, [0.07, 0.07])
     # Corazón dorado: brillo grande que late y destellos.
     efecto("brillo_corazon", "brillo", {**pegado, **fijo(12, 8), **bucle, **punto, **vida(0.35), **vel(0), **mov()},
            {"0.0": "#AAFFE070", "1.0": "#00FFB020"}, ["1.3 + math.sin(variable.particle_age * 900) * 0.15"] * 2)
-    efecto("brillo_corazon_fuerte", "brillo", {**pegado, **fijo(16, 10), **bucle, **punto, **vida(0.3), **vel(0), **mov()},
-           {"0.0": "#FFFFF4C0", "1.0": "#00FFC040"}, ["3.2 + math.sin(variable.particle_age * 900) * 0.4"] * 2)
+    efecto("destello_corazon", "brillo", {**inst(3), **unavez(), **punto, **vida(1.2), **vel(0), **mov()},
+           {"0.0": "#FFFFFFFF", "0.3": "#FFFFF0A0", "1.0": "#00FFC040"}, sube(4.5, 1.2))
     efecto("rayos_corazon", "estrella", {**pegado, **fijo(18, 30), **bucle,
                                          "minecraft:emitter_shape_sphere": {"radius": 0.6, "surface_only": True, "direction": "outwards"},
                                          **vida(0.6), **vel(0.6), **mov(linear_drag_coefficient=1.5)},
@@ -696,11 +715,14 @@ def particulas():
     efecto("fragmento_dorado", "cuadro", {**inst(8), **unavez(), "minecraft:emitter_shape_box": {"half_dimensions": [0.5, 0.5, 0.5], "direction": "outwards"},
                                           **vida(1.0), **vel(3), **mov(linear_acceleration=[0, -14, 0])},
            {"0.0": "#FFFFE070", "1.0": "#FFC88C1E"}, [0.09, 0.09], "particles_alpha")
+    # Motas doradas que flotan en la arena (ambiente).
+    efecto("motas_doradas", "chispa", {**inst(10), **unavez(), "minecraft:emitter_shape_box": {"half_dimensions": [6, 3, 6]},
+                                       **vida("2 + variable.particle_random_1 * 2"), **vel(0.1),
+                                       **mov(linear_acceleration=[0, 0.12, 0])},
+           {"0.0": "#00FFE6A0", "0.3": "#CCFFE070", "1.0": "#00FFC850"}, [0.05, 0.05])
     efecto("curacion_dorada", "estrella", {**inst(30), **unavez(), "minecraft:emitter_shape_disc": {"radius": 1.2, "plane_normal": "y"},
                                            **vida(1.2), **vel(0.3), **mov(linear_acceleration=[0, 3, 0])},
            {"0.0": "#FFFFFFFF", "1.0": "#00FFD25A"}, baja(0.2))
-    efecto("ojos_marioneta", "brillo", {**pegado, **fijo(8, 4), **bucle, **punto, **vida(0.25), **vel(0), **mov()},
-           {"0.0": "#AAFFDC50", "1.0": "#00FFB020"}, [0.12, 0.12])
     efecto("chasquido_destello", "estrella", {**inst(3), **unavez(), **punto, **vida(0.3), **vel(0), **mov()},
            {"0.0": "#FFFFFFFF", "1.0": "#00FFD25A"}, sube(0.2, 0.9))
     efecto("plumas_doradas", "estrella", {**inst(16), **unavez(), "minecraft:emitter_shape_sphere": {"radius": 1.2, "direction": "outwards"},
@@ -714,6 +736,14 @@ def particulas():
 # =============================================================================
 # Niebla gris de la pausa del tiempo
 # =============================================================================
+
+def niebla_dorada():
+    oro = "#D8B24C"
+    capa = {"fog_start": 12.0, "fog_end": 58.0, "fog_color": oro, "render_distance_type": "fixed"}
+    write_json(RP / "fogs/claudenpc_dorada.json", {"format_version": "1.16.100", "minecraft:fog_settings": {
+        "description": {"identifier": "claudenpc:dorada"},
+        "distance": {"air": capa, "weather": capa, "water": {**capa, "fog_end": 30.0}}}})
+
 
 def niebla_pausa():
     gris = "#6F747B"
@@ -732,15 +762,18 @@ def animaciones_objetos():
         "animation.claudenpc.corazon.girar": {"loop": True, "bones": {"corazon": {
             "rotation": [0, "query.life_time * 110", "math.sin(query.life_time * 80) * 6"],
             "position": [0, "math.sin(query.life_time * 120) * 0.8", 0],
-            "scale": "query.property('claudenpc:tam') * math.min(1, query.life_time * 3) * (1 + math.pow(math.sin(query.life_time * 420), 16) * 0.12)"}}},
+            "scale": "math.min(1, query.life_time * 3) * (1 + math.pow(math.sin(query.life_time * 420), 16) * 0.12)"}}},
         "animation.claudenpc.orbe.giro": {"loop": True, "bones": {
-            "raiz": {"scale": "query.property('claudenpc:tam') * math.min(1, query.life_time * 6)"},
+            "raiz": {"scale": "math.min(1, query.life_time * 6)"},
             "amarilla": {"rotation": ["query.life_time * 400", "query.life_time * 300", 0]},
             "azul": {"rotation": ["query.life_time * -300", "query.life_time * 420", 0]},
             "def_nucleo": {"scale": "1 + math.sin(query.life_time * 1400) * 0.06"},
             "def_azul": {"rotation": [0, "query.life_time * 160", "query.life_time * 40"]},
             "def_amarilla": {"rotation": ["query.life_time * -50", "query.life_time * -220", 0]},
             "def_anillo": {"rotation": [0, "query.life_time * 300", 0], "scale": "1 + math.sin(query.life_time * 600) * 0.08"}}},
+        # La definitiva crece mientras la carga (3,3 s) y después queda grande.
+        "animation.claudenpc.orbe.crecer": {"loop": True, "bones": {
+            "definitiva": {"scale": "0.3 + 2.1 * math.min(1, query.life_time / 3.3)"}}},
         "animation.claudenpc.reloj.tic": {"loop": True, "bones": {
             "reloj": {"rotation": [0, "query.life_time * 45", 0], "position": [0, "math.sin(query.life_time * 100) * 0.8", 0]},
             "minutero_f": {"rotation": [0, 0, "-math.floor(query.life_time * 2) * 30"]},
@@ -761,12 +794,10 @@ def animaciones_objetos():
         "animation.claudenpc.rayo.destello": {"animation_length": 0.6, "bones": {
             "rayo": {"scale": {"0.0": [1.4, 1, 1.4], "0.05": [0.0, 1, 0.0], "0.1": [1.2, 1, 1.2], "0.25": [1.0, 1, 1.0],
                                "0.45": [0.5, 1, 0.5], "0.6": [0.0, 1, 0.0]}},
-            "rayo_0": {"scale": "query.property('claudenpc:variante') == 0 ? 1 : 0"},
-            "rayo_1": {"scale": "query.property('claudenpc:variante') == 1 ? 1 : 0"},
-            "rayo_2": {"scale": "query.property('claudenpc:variante') == 2 ? 1 : 0"}}},
+            "rayo_0": {"scale": "query.mark_variant == 0 ? 1 : 0"},
+            "rayo_1": {"scale": "query.mark_variant == 1 ? 1 : 0"},
+            "rayo_2": {"scale": "query.mark_variant == 2 ? 1 : 0"}}},
         "animation.claudenpc.marioneta.seguir": {"loop": True, "bones": {
-            "cabeza": {"position": [0, "query.property('claudenpc:ojos') * 16", 0]},
-            "pecho": {"position": [0, "query.property('claudenpc:pecho') * 16", "-query.property('claudenpc:frente') * 16"]},
             "corazon": {"rotation": [0, "query.life_time * 90", 0],
                         "scale": "1 + math.pow(math.sin(query.life_time * 300), 12) * 0.25"},
             "hilos": {"rotation": ["math.sin(query.life_time * 70) * 10", "query.life_time * -60", 0]}}},
@@ -774,31 +805,22 @@ def animaciones_objetos():
             "root": {"scale": "math.min(1, query.life_time * 4)"}}},
     }})
     write_json(RP / "animation_controllers/golden_objetos.animation_controllers.json", {"format_version": "1.10.0", "animation_controllers": {
-        "controller.animation.claudenpc.corazon.brillo": {"initial_state": "apagado", "states": {
-            "apagado": {"transitions": [{"normal": "query.property('claudenpc:brillo') == 1"}, {"fuerte": "query.property('claudenpc:brillo') == 2"}]},
-            "normal": {"particle_effects": [{"effect": "brillo", "locator": "centro"}, {"effect": "rayos", "locator": "centro"}],
-                       "transitions": [{"apagado": "query.property('claudenpc:brillo') == 0"}, {"fuerte": "query.property('claudenpc:brillo') == 2"}]},
-            "fuerte": {"particle_effects": [{"effect": "fuerte", "locator": "centro"}, {"effect": "rayos", "locator": "centro"}],
-                       "transitions": [{"apagado": "query.property('claudenpc:brillo') == 0"}, {"normal": "query.property('claudenpc:brillo') == 1"}]}}},
-        "controller.animation.claudenpc.orbe.efectos": {"initial_state": "inicio", "states": {
-            "inicio": {"transitions": [{"amarilla": "query.property('claudenpc:tipo') == 0"}, {"azul": "query.property('claudenpc:tipo') == 1"},
-                                       {"definitiva": "query.property('claudenpc:tipo') == 2"}]},
-            "amarilla": {"particle_effects": [{"effect": "estela_am", "locator": "centro"}],
-                         "transitions": [{"inicio": "query.property('claudenpc:tipo') != 0"}]},
-            "azul": {"particle_effects": [{"effect": "estela_az", "locator": "centro"}],
-                     "transitions": [{"inicio": "query.property('claudenpc:tipo') != 1"}]},
-            "definitiva": {"particle_effects": [{"effect": "sonico", "locator": "centro"}, {"effect": "chispas", "locator": "centro"},
-                                                {"effect": "estela_am", "locator": "centro"}],
-                           "transitions": [{"inicio": "query.property('claudenpc:tipo') != 2"}]}}},
+        "controller.animation.claudenpc.corazon.brillo": {"initial_state": "brilla", "states": {"brilla": {
+            "particle_effects": [{"effect": "brillo", "locator": "centro"}, {"effect": "rayos", "locator": "centro"}]}}},
+        "controller.animation.claudenpc.orbe.amarilla": {"initial_state": "vuela", "states": {"vuela": {
+            "particle_effects": [{"effect": "estela_am", "locator": "centro"}]}}},
+        "controller.animation.claudenpc.orbe.azul": {"initial_state": "vuela", "states": {"vuela": {
+            "particle_effects": [{"effect": "estela_az", "locator": "centro"}]}}},
+        "controller.animation.claudenpc.orbe.definitiva": {"initial_state": "vuela", "states": {"vuela": {
+            "particle_effects": [{"effect": "sonico", "locator": "centro"}, {"effect": "chispas", "locator": "centro"},
+                                 {"effect": "estela_am", "locator": "centro"}]}}},
         "controller.animation.claudenpc.reloj.estado": {"initial_state": "tic", "states": {
-            "tic": {"animations": ["tic"], "transitions": [{"alarma": "query.property('claudenpc:estado') == 1"}, {"apagado": "query.property('claudenpc:estado') == 2"}],
+            "tic": {"animations": ["tic"], "transitions": [{"alarma": "query.mark_variant == 1"}, {"apagado": "query.mark_variant == 2"}],
                     "blend_transition": 0.2},
-            "alarma": {"animations": ["tic", "alarma"], "transitions": [{"tic": "query.property('claudenpc:estado') == 0"}, {"apagado": "query.property('claudenpc:estado') == 2"}],
+            "alarma": {"animations": ["tic", "alarma"], "transitions": [{"tic": "query.mark_variant == 0"}, {"apagado": "query.mark_variant == 2"}],
                        "blend_transition": 0.2},
             "apagado": {"animations": ["apagado"], "particle_effects": [{"effect": "humo", "locator": "arriba"}],
-                        "transitions": [{"tic": "query.property('claudenpc:estado') == 0"}], "blend_transition": 0.4}}},
-        "controller.animation.claudenpc.marioneta.ojos": {"initial_state": "brillan", "states": {"brillan": {
-            "particle_effects": [{"effect": "ojo", "locator": "ojo_i"}, {"effect": "ojo", "locator": "ojo_d"}]}}},
+                        "transitions": [{"tic": "query.mark_variant == 0"}], "blend_transition": 0.4}}},
     }})
 
 
@@ -823,15 +845,19 @@ def entidades_cliente():
     cliente("claudenpc:corazon_dorado", "corazon_dorado", {"default": "entity_emissive_alpha"},
             {"default": "textures/entity/claudenpc/corazon_dorado"}, "geometry.claudenpc.corazon_dorado",
             {"girar": "animation.claudenpc.corazon.girar", "ctrl_brillo": "controller.animation.claudenpc.corazon.brillo"},
-            particulas={"brillo": "claudenpc:brillo_corazon", "fuerte": "claudenpc:brillo_corazon_fuerte", "rayos": "claudenpc:rayos_corazon"})
+            particulas={"brillo": "claudenpc:brillo_corazon", "rayos": "claudenpc:rayos_corazon"})
     cliente("claudenpc:fondo", "fondo", {"default": "entity_alphatest"}, {"default": "textures/entity/claudenpc/fondo"},
             "geometry.claudenpc.fondo")
-    cliente("claudenpc:orbe", "orbe", {"default": "entity_emissive_alpha", "capa": "entity_alphablend"},
-            {"default": "textures/entity/claudenpc/orbe"}, "geometry.claudenpc.orbe",
-            {"giro": "animation.claudenpc.orbe.giro", "ctrl_efectos": "controller.animation.claudenpc.orbe.efectos"},
-            particulas={"estela_am": "claudenpc:estela_orbe_amarilla", "estela_az": "claudenpc:estela_orbe_azul",
-                        "sonico": "claudenpc:anillo_sonico", "chispas": "claudenpc:chispas_definitiva"},
-            controlador="controller.render.claudenpc_orbe")
+    # Tres orbes: cada una es su propia entidad (no depende de datos que cambian).
+    for ident, archivo, ctrl, extra in (("claudenpc:orbe", "orbe", "amarilla", {}), ("claudenpc:orbe_azul", "orbe_azul", "azul", {}),
+                                        ("claudenpc:orbe_definitiva", "orbe_definitiva", "definitiva",
+                                         {"crecer": "animation.claudenpc.orbe.crecer"})):
+        cliente(ident, archivo, {"default": "entity_emissive_alpha", "capa": "entity_alphablend"},
+                {"default": "textures/entity/claudenpc/orbe"}, "geometry.claudenpc.orbe",
+                {"giro": "animation.claudenpc.orbe.giro", **extra, "ctrl_efectos": f"controller.animation.claudenpc.orbe.{ctrl}"},
+                particulas={"estela_am": "claudenpc:estela_orbe_amarilla", "estela_az": "claudenpc:estela_orbe_azul",
+                            "sonico": "claudenpc:anillo_sonico", "chispas": "claudenpc:chispas_definitiva"},
+                controlador=f"controller.render.claudenpc_orbe_{ctrl}")
     cliente("claudenpc:reloj", "reloj", {"default": "entity_alphatest"},
             {"default": "textures/entity/claudenpc/reloj", "apagado": "textures/entity/claudenpc/reloj_apagado"},
             "geometry.claudenpc.reloj",
@@ -848,8 +874,7 @@ def entidades_cliente():
             controlador="controller.render.claudenpc_signo")
     cliente("claudenpc:marioneta", "marioneta", {"default": "entity_emissive_alpha"},
             {"default": "textures/entity/claudenpc/marioneta"}, "geometry.claudenpc.marioneta",
-            {"seguir": "animation.claudenpc.marioneta.seguir", "ctrl_ojos": "controller.animation.claudenpc.marioneta.ojos"},
-            particulas={"ojo": "claudenpc:ojos_marioneta"})
+            {"seguir": "animation.claudenpc.marioneta.seguir"})
     cliente("claudenpc:ilusion_jugador", "ilusion_jugador", {"default": "entity_alphablend"},
             {"default": "textures/entity/claudenpc/ilusion"}, "geometry.claudenpc.claude",
             {"mirar": "animation.claudenpc.mirar", "caminar": "animation.claudenpc.caminar", "respirar": "animation.claudenpc.respirar",
@@ -858,20 +883,23 @@ def entidades_cliente():
 
 
 def render_controllers():
-    tipo = "query.property('claudenpc:tipo')"
+    def orbe(cual):
+        visibles = {"amarilla": ["amarilla"], "azul": ["azul"], "definitiva": ["definitiva", "def_*"]}[cual]
+        vis = [{"*": True}, {"amarilla": False}, {"azul": False}, {"definitiva": False}, {"def_*": False}] + [{v: True} for v in visibles]
+        return {"geometry": "Geometry.default", "textures": ["Texture.default"],
+                "materials": [{"*": "Material.default"}, {"def_azul*": "Material.capa"}, {"def_amarilla*": "Material.capa"}],
+                "part_visibility": vis}
     write_json(RP / "render_controllers/golden_objetos.render_controllers.json", {"format_version": "1.8.0", "render_controllers": {
-        "controller.render.claudenpc_orbe": {
-            "geometry": "Geometry.default", "textures": ["Texture.default"],
-            "materials": [{"*": "Material.default"}, {"def_azul*": "Material.capa"}, {"def_amarilla*": "Material.capa"}],
-            "part_visibility": [{"*": True}, {"amarilla": f"{tipo} == 0"}, {"azul": f"{tipo} == 1"}, {"definitiva": f"{tipo} == 2"},
-                                {"def_*": f"{tipo} == 2"}]},
+        "controller.render.claudenpc_orbe_amarilla": orbe("amarilla"),
+        "controller.render.claudenpc_orbe_azul": orbe("azul"),
+        "controller.render.claudenpc_orbe_definitiva": orbe("definitiva"),
         "controller.render.claudenpc_reloj": {
             "arrays": {"textures": {"Array.pieles": ["Texture.default", "Texture.apagado"]}},
-            "geometry": "Geometry.default", "textures": ["Array.pieles[query.property('claudenpc:estado') == 2 ? 1 : 0]"],
+            "geometry": "Geometry.default", "textures": ["Array.pieles[query.mark_variant == 2 ? 1 : 0]"],
             "materials": [{"*": "Material.default"}]},
         "controller.render.claudenpc_signo": {
             "arrays": {"textures": {"Array.colores": ["Texture.default", "Texture.azul"]}},
-            "geometry": "Geometry.default", "textures": [f"Array.colores[{tipo}]"],
+            "geometry": "Geometry.default", "textures": ["Array.colores[query.variant]"],
             "materials": [{"*": "Material.default"}]},
         "controller.render.claudenpc_ilusion": {
             "geometry": "Geometry.default", "textures": ["Texture.default"], "materials": [{"*": "Material.default"}],
@@ -883,7 +911,7 @@ def render_controllers():
 # Entidades de comportamiento (BP) de los objetos nuevos
 # =============================================================================
 
-def entidad_bp(ident, familias, caja=(0.1, 0.1), golpeable=False, propiedades=None, eventos=None, extra=None):
+def entidad_bp(ident, familias, caja=(0.1, 0.1), golpeable=False, propiedades=None, eventos=None, extra=None, grupos=None):
     sensor = [{"cause": "all", "deals_damage": "no"}]
     if golpeable:
         sensor = [{"cause": "entity_attack", "deals_damage": "yes"}, {"cause": "projectile", "deals_damage": "yes"},
@@ -905,6 +933,8 @@ def entidad_bp(ident, familias, caja=(0.1, 0.1), golpeable=False, propiedades=No
     if propiedades:
         desc["properties"] = propiedades
     cuerpo = {"description": desc, "components": comps}
+    if grupos:
+        cuerpo["component_groups"] = grupos
     if eventos:
         cuerpo["events"] = eventos
     nombre = ident.split(":")[1]
@@ -912,24 +942,44 @@ def entidad_bp(ident, familias, caja=(0.1, 0.1), golpeable=False, propiedades=No
 
 
 def entidades_bp():
-    entero = lambda maximo, defecto=0: {"type": "int", "range": [0, maximo], "default": defecto, "client_sync": True}
-    flotante = lambda maximo, defecto=1.0: {"type": "float", "range": [0.0, maximo], "default": defecto, "client_sync": True}
-    poner = lambda **props: {"set_property": {f"claudenpc:{k}": v for k, v in props.items()}}
-    entidad_bp("claudenpc:corazon_dorado", ["claudenpc_corazon"],
-               propiedades={"claudenpc:tam": flotante(4.0, 1.0), "claudenpc:brillo": entero(2, 1)})
+    """Sin propiedades: lo que se ve cambia con variantes (minecraft:variant y mark_variant) y
+    escalas puestas por eventos, que el juego siempre manda al cliente."""
+    def grupo(nombre, **comps):
+        return {f"claudenpc:{nombre}": comps}
+
+    def evento(agregar, quitar=()):
+        ev = {"add": {"component_groups": [f"claudenpc:{g}" for g in agregar]}}
+        if quitar:
+            ev["remove"] = {"component_groups": [f"claudenpc:{g}" for g in quitar]}
+        return ev
+    # Corazón: tamaño con la escala de la entidad (crece y se encoge al absorberlo).
+    tams = (4, 8, 12, 16, 22)
+    grupos = {}
+    for t in tams:
+        grupos.update(grupo(f"tam_{t}", **{"minecraft:scale": {"value": t / 10}}))
+    eventos = {f"claudenpc:tam_{t}": evento([f"tam_{t}"], [f"tam_{x}" for x in tams if x != t]) for t in tams}
+    entidad_bp("claudenpc:corazon_dorado", ["claudenpc_corazon"], grupos=grupos, eventos=eventos)
     entidad_bp("claudenpc:fondo", ["claudenpc_fondo"])
-    entidad_bp("claudenpc:orbe", ["claudenpc_orbe"], caja=(0.5, 0.5), golpeable=True,
-               propiedades={"claudenpc:tipo": entero(2), "claudenpc:tam": flotante(4.0, 1.0)},
-               eventos={"claudenpc:amarilla": poner(tipo=0), "claudenpc:azul": poner(tipo=1),
-                        "claudenpc:definitiva": poner(tipo=2, tam=0.3)})
-    entidad_bp("claudenpc:reloj", ["claudenpc_reloj"], caja=(1.0, 1.4), golpeable=True,
-               propiedades={"claudenpc:estado": entero(2)})
-    entidad_bp("claudenpc:signo", ["claudenpc_signo"], propiedades={"claudenpc:tipo": entero(1)},
-               eventos={"claudenpc:amarillo": poner(tipo=0), "claudenpc:azul": poner(tipo=1)})
-    entidad_bp("claudenpc:rayo", ["claudenpc_rayo"], propiedades={"claudenpc:tipo": entero(1), "claudenpc:variante": entero(2)},
-               eventos={f"claudenpc:{color}_{v}": poner(tipo=t, variante=v) for t, color in ((0, "amarillo"), (1, "azul")) for v in range(3)})
-    entidad_bp("claudenpc:marioneta", ["claudenpc_marioneta"], caja=(0.05, 0.05),
-               propiedades={"claudenpc:ojos": flotante(4.0, 1.6), "claudenpc:pecho": flotante(4.0, 1.1), "claudenpc:frente": flotante(1.0, 0.2)})
+    for ident in ("claudenpc:orbe", "claudenpc:orbe_azul", "claudenpc:orbe_definitiva"):
+        entidad_bp(ident, ["claudenpc_orbe"], caja=(0.5, 0.5) if ident != "claudenpc:orbe_definitiva" else (1.2, 1.2), golpeable=True)
+    # Reloj: 0 tic-tac, 1 alarma, 2 apagado (mark_variant).
+    estados = ("tic", "alarma", "apagado")
+    grupos = {}
+    for i, n in enumerate(estados):
+        grupos.update(grupo(n, **{"minecraft:mark_variant": {"value": i}}))
+    eventos = {f"claudenpc:{n}": evento([n], [x for x in estados if x != n]) for n in estados}
+    entidad_bp("claudenpc:reloj", ["claudenpc_reloj"], caja=(1.0, 1.4), golpeable=True, grupos=grupos, eventos=eventos)
+    # Signo: color amarillo o azul (variant), puesto al aparecer.
+    grupos = {**grupo("amarillo", **{"minecraft:variant": {"value": 0}}), **grupo("azul", **{"minecraft:variant": {"value": 1}})}
+    eventos = {"claudenpc:amarillo": evento(["amarillo"]), "claudenpc:azul": evento(["azul"])}
+    entidad_bp("claudenpc:signo", ["claudenpc_signo"], grupos=grupos, eventos=eventos)
+    # Rayo: color (variant) y forma (mark_variant 0-2).
+    grupos = {**grupo("amarillo", **{"minecraft:variant": {"value": 0}}), **grupo("azul", **{"minecraft:variant": {"value": 1}})}
+    for v in range(3):
+        grupos.update(grupo(f"forma_{v}", **{"minecraft:mark_variant": {"value": v}}))
+    eventos = {f"claudenpc:{c}_{v}": evento([c, f"forma_{v}"]) for c in ("amarillo", "azul") for v in range(3)}
+    entidad_bp("claudenpc:rayo", ["claudenpc_rayo"], grupos=grupos, eventos=eventos)
+    entidad_bp("claudenpc:marioneta", ["claudenpc_marioneta"], caja=(0.05, 0.05))
     entidad_bp("claudenpc:ilusion_jugador", ["claudenpc_ilusion"], caja=(0.5, 1.8),
                extra={"minecraft:nameable": {"always_show": True, "allow_name_tag_renaming": False}})
 
@@ -977,7 +1027,10 @@ def generar():
     (RP / "font").mkdir(parents=True, exist_ok=True)
     hoja_glifos().save(RP / "font/glyph_E9.png")
     particulas()
+    for viejo in ("hilo", "ojos_marioneta", "brillo_corazon_fuerte"):
+        (RP / f"particles/{viejo}.particle.json").unlink(missing_ok=True)
     niebla_pausa()
+    niebla_dorada()
     animaciones_objetos()
     entidades_cliente()
     render_controllers()
@@ -1095,15 +1148,9 @@ def huesos_golden_final():
     ]
     for lado, brazo in (("der", "rightArm"), ("izq", "leftArm")):
         g = list(GRIP[lado])
-        h = list(HOMBRO[lado])
         sx = -1 if lado == "der" else 1
         huesos.append({"name": f"espada_{lado}", "parent": brazo, "pivot": g, "cubes": espada_cubos(lado),
                        "locators": {f"punta_{lado}": [6 * sx, 11, -23.5], f"medio_{lado}": [6 * sx, 11, -13]}})
-        # Estelas fantasma (imagen retrasada de la espada): misma cadena hombro → mano, colgada del cuerpo.
-        for f in (1, 2):
-            huesos.append({"name": f"fantasma_{lado}_{f}", "parent": "body", "pivot": h})
-            huesos.append({"name": f"fantasma_{lado}_{f}_espada", "parent": f"fantasma_{lado}_{f}", "pivot": g,
-                           "cubes": espada_cubos(lado, fantasma=True)})
     return huesos
 
 
@@ -1168,7 +1215,10 @@ def pintar_golden_final(img):
 # =============================================================================
 
 Z3 = [0, 0, 0]
+# Las poses las pone el script con playAnimation en un controlador con nombre (una reemplaza
+# a la otra con una transición suave), sin depender de propiedades de la entidad.
 POSES = {
+    0: ("ninguna", {"root": {"rotation": [0, 0, 0]}}),
     1: ("herido", {"root": {"position": [0, -10, 0]}, "rightLeg": {"rotation": [86, 0, 4]}, "leftLeg": {"rotation": [86, 0, -4]},
                    "body": {"rotation": [20, 0, 0]}, "head": {"rotation": [38, 0, 0]},
                    "rightArm": {"rotation": [-30, 0, 8]}, "leftArm": {"rotation": [-4, 0, -8]},
@@ -1195,12 +1245,10 @@ POSES = {
     12: ("espadas", {"rightArm": {"rotation": [-48, -18, 22]}, "leftArm": {"rotation": [-48, 18, -22]},
                      "body": {"rotation": [8, 0, 0]}, "head": {"rotation": [-8, 0, 0]},
                      "rightLeg": {"rotation": [-14, 0, 6]}, "leftLeg": {"rotation": [14, 0, -6]},
-                     "espada_der": {"rotation": [-18, 0, 22]}, "espada_izq": {"rotation": [-18, 0, -22]}}),
+                     "espada_der": {"rotation": ["-18 + math.sin(query.life_time * 140) * 3", 0, 22]},
+                     "espada_izq": {"rotation": ["-18 + math.sin(query.life_time * 140 + 90) * 3", 0, -22]}}),
 }
 POSE_ESPADAS = 12
-# Posturas sin cabeceo libre (la cabeza la pone la pose) y sin flotar (está en el suelo).
-POSES_SIN_MIRAR = (1, 2, 3, 5, 7)
-POSES_EN_SUELO = (1, 2)
 
 
 def kf(lista):
@@ -1220,8 +1268,6 @@ CURVA_CORTE = [
     (0.62, 0.98, "suave"), (0.76, 0.62, "suave"), (0.88, 0.20, "suave"), (1.00, 0.00, "suave"),
 ]
 TRAMO_EXPLOSIVO = (0.33, 0.45)
-DIST = "query.property('claudenpc:corte_dist')"
-ROT = "query.property('claudenpc:corte_rot')"
 
 
 def _prog(v, anti):
@@ -1233,14 +1279,12 @@ def _num(x):
 
 
 def corte_dusttrust(lados, p):
-    """Animación de corte rápido reutilizable (para cualquier espada con la misma cadena
-    hombro → espada). lados: ["der"], ["izq"] o ["der", "izq"].
-    p: dur (s), dist (px), dir (vector del desplazamiento en el espacio del brazo),
-       rot (giro de la espada al final, grados), brazo (barrido del brazo), anti (retroceso
-       de la anticipación, 0-1), cuerpo (giro del cuerpo en y), inclina (cuerpo en x),
-       espera_brazo/espada (postura de preparación, para alinear las estelas fantasma).
-    En el juego se ajustan con propiedades: claudenpc:corte_vel (velocidad),
-    claudenpc:corte_dist (distancia) y claudenpc:corte_rot (rotación)."""
+    """Animación de corte rápido reutilizable (para cualquier espada en la mano de un humanoide).
+    lados: ["der"], ["izq"] o ["der", "izq"].
+    p: dur (duración en s: la velocidad), dist (distancia del desplazamiento en px), dir (vector
+       del desplazamiento en el espacio del brazo: la diagonal), rot (giro sincronizado de la
+       espada al final, grados), brazo (barrido del brazo), anti (retroceso de la anticipación,
+       0-1), cuerpo (giro del cuerpo en y), inclina (cuerpo en x)."""
     dur = p["dur"]
     anti = p.get("anti", 0.25)
     huesos = {}
@@ -1252,36 +1296,15 @@ def corte_dusttrust(lados, p):
         dl = math.sqrt(sum(c * c for c in d))
         dirv = [d[0] / dl * s, d[1] / dl, d[2] / dl]
         hueso_brazo = "rightArm" if lado == "der" else "leftArm"
-        base_brazo = POSES[POSE_ESPADAS][1][hueso_brazo]["rotation"]
-        base_espada = POSES[POSE_ESPADAS][1][f"espada_{lado}"]["rotation"]
-        flotar_z = 8 * s  # la animación de flotar abre un poco los brazos
         filas_brazo, filas_pos, filas_rot = [], [], []
         for f, v, modo in CURVA_CORTE:
             t = f * dur
             k = _prog(v, anti)
             filas_brazo.append((t, [_num(brazo[i] * k) for i in range(3)], modo))
-            filas_pos.append((t, [f"{_num(dirv[i] * p['dist'] * k)} * {DIST}" for i in range(3)], modo))
-            filas_rot.append((t, [f"{_num(rot[i] * k)} * {ROT}" for i in range(3)], modo))
+            filas_pos.append((t, [_num(dirv[i] * p["dist"] * k) for i in range(3)], modo))
+            filas_rot.append((t, [_num(rot[i] * k) for i in range(3)], modo))
         huesos[hueso_brazo] = {"rotation": kf(filas_brazo)}
         huesos[f"espada_{lado}"] = {"position": kf(filas_pos), "rotation": kf(filas_rot)}
-        # Estelas fantasma: la misma cadena con 0,02 s y 0,045 s de retraso; solo se ven
-        # durante el tramo explosivo.
-        t0, t1 = TRAMO_EXPLOSIVO[0] * dur, TRAMO_EXPLOSIVO[1] * dur
-        for n, retraso in ((1, 0.02), (2, 0.045)):
-            fb, fp, fr = [], [], []
-            for f, v, modo in CURVA_CORTE:
-                t = f * dur + retraso
-                if t > dur:
-                    continue
-                k = _prog(v, anti)
-                fb.append((t, [_num(base_brazo[0] + brazo[0] * k), _num(base_brazo[1] + brazo[1] * k),
-                               _num(base_brazo[2] + flotar_z + brazo[2] * k)], modo))
-                fp.append((t, [f"{_num(dirv[i] * p['dist'] * k)} * {DIST}" for i in range(3)], modo))
-                fr.append((t, [f"{_num(base_espada[i])} + {_num(rot[i] * k)} * {ROT}" for i in range(3)], modo))
-            huesos[f"fantasma_{lado}_{n}"] = {"rotation": kf(fb), "scale": {
-                "0.000": 0, f"{t0 - 0.01 + retraso:.3f}": 0, f"{t0 + retraso:.3f}": 1, f"{t1 + retraso:.3f}": 1,
-                f"{t1 + retraso + 0.05:.3f}": 0}}
-            huesos[f"fantasma_{lado}_{n}_espada"] = {"position": kf(fp), "rotation": kf(fr)}
     # El cuerpo acompaña el corte (giro e inclinación), la cabeza compensa un poco.
     cuerpo = []
     cabeza = []
@@ -1292,18 +1315,17 @@ def corte_dusttrust(lados, p):
         cabeza.append((f * dur, [0, _num(-p.get("cuerpo", 0) * 0.45 * signo * k), 0], modo))
     huesos["body"] = {"rotation": kf(cuerpo)}
     huesos["head"] = {"rotation": kf(cabeza)}
-    for lado in ("der", "izq"):  # las estelas de la otra espada no se ven
-        for n in (1, 2):
-            huesos.setdefault(f"fantasma_{lado}_{n}", {"scale": 0})
     t_explota = TRAMO_EXPLOSIVO[0] * dur
     t_final = 0.45 * dur
     particulas = {}
     for i, lado in enumerate(lados):
         color = "am" if lado == "der" else "az"
-        particulas.setdefault(f"{t_explota - 0.012 + i * 0.001:.3f}", []).append({"effect": f"estela_{color}", "locator": f"punta_{lado}"})
+        # Estela luminosa en la punta y en el medio de la hoja (una cinta de luz que se apaga).
+        particulas.setdefault(f"{t_explota - 0.012 + i * 0.001:.3f}", []).extend([
+            {"effect": f"estela_{color}", "locator": f"punta_{lado}"}, {"effect": f"estela_{color}", "locator": f"medio_{lado}"}])
         particulas.setdefault(f"{t_final + i * 0.001:.3f}", []).append({"effect": "destello_corte", "locator": f"punta_{lado}"})
-    return {"animation_length": dur, "anim_time_update": "query.anim_time + query.delta_time * query.property('claudenpc:corte_vel')",
-            "bones": huesos, "particle_effects": particulas, "sound_effects": {f"{t_explota:.3f}": {"effect": "corte"}}}
+    return {"animation_length": dur, "bones": huesos, "particle_effects": particulas,
+            "sound_effects": {f"{t_explota:.3f}": {"effect": "corte"}}}
 
 
 def animaciones_golden_final():
@@ -1356,11 +1378,7 @@ def animaciones_golden_final():
         "rightArm": {"rotation": [-30, 0, "70 + math.sin(query.life_time * 2300) * 6"]},
         "leftArm": {"rotation": [-30, 0, "-70 - math.sin(query.life_time * 2100) * 6"]},
         "head": {"rotation": ["-30 + math.sin(query.life_time * 2900) * 4", 0, 0]}}}
-    # Espadas: postura lista (respiran un poco) y los tres cortes.
-    a["animation.claudenpc.golden.espada_listo"] = {"loop": True, "bones": {
-        "espada_der": {"rotation": ["math.sin(query.life_time * 140) * 3", 0, 0]},
-        "espada_izq": {"rotation": ["math.sin(query.life_time * 140 + 90) * 3", 0, 0]},
-        **{f"fantasma_{l}_{n}": {"scale": 0} for l in ("der", "izq") for n in (1, 2)}}}
+    # Los tres cortes (velocidad, distancia, rotación y duración se ajustan aquí).
     base = {"dur": 0.6, "dist": 7.0, "dir": (0.15, -0.35, -0.92), "rot": (70, 0, -35), "brazo": (28, -42, -32),
             "anti": 0.25, "cuerpo": 18, "inclina": 6}
     a["animation.claudenpc.golden.corte_der"] = corte_dusttrust(["der"], base)
@@ -1370,33 +1388,12 @@ def animaciones_golden_final():
 
 
 def controladores_golden_final():
-    pose = "query.property('claudenpc:pose')"
-    estados = {"p0": {"transitions": [{f"p{n}": f"{pose} == {n}"} for n in POSES], "blend_transition": 0.35}}
-    for n, (nombre, _) in POSES.items():
-        trans = [{"p0": f"{pose} == 0"}] + [{f"p{m}": f"{pose} == {m}"} for m in POSES if m != n]
-        estados[f"p{n}"] = {"animations": [f"pose_{nombre}"], "transitions": trans,
-                            "blend_transition": 0.6 if n in (1, 2, 4) else 0.35}
-    corte = "query.property('claudenpc:corte')"
-    nuevo = f"{corte} != v.corte_visto"
-    cortes = [{"corte_der": f"{nuevo} && math.mod({corte}, 3) == 1"}, {"corte_izq": f"{nuevo} && math.mod({corte}, 3) == 2"},
-              {"corte_x": f"{nuevo} && math.mod({corte}, 3) == 0"}]
-    marca = [f"v.corte_visto = {corte};"]
+    mano = "query.skin_id == 2"
     return {
-        "controller.animation.claudenpc.golden.pose": {"initial_state": "p0", "states": estados},
-        "controller.animation.claudenpc.golden.espadas": {"initial_state": "sin", "states": {
-            "sin": {"transitions": [{"listo": "query.property('claudenpc:espadas')"}]},
-            "listo": {"animations": ["espada_listo"], "transitions": [{"sin": "!query.property('claudenpc:espadas')"}] + cortes,
-                      "blend_transition": 0.08},
-            "corte_der": {"animations": ["corte_der"], "on_entry": marca,
-                          "transitions": [{"listo": "query.all_animations_finished"}], "blend_transition": 0.1},
-            "corte_izq": {"animations": ["corte_izq"], "on_entry": marca,
-                          "transitions": [{"listo": "query.all_animations_finished"}], "blend_transition": 0.1},
-            "corte_x": {"animations": ["corte_x"], "on_entry": marca,
-                        "transitions": [{"listo": "query.all_animations_finished"}], "blend_transition": 0.1}}},
         "controller.animation.claudenpc.golden.orbes_mano": {"initial_state": "no", "states": {
-            "no": {"transitions": [{"si": "query.property('claudenpc:orbes_manos')"}]},
+            "no": {"transitions": [{"si": mano}]},
             "si": {"particle_effects": [{"effect": "mano_am", "locator": "mano_der"}, {"effect": "mano_az", "locator": "mano_izq"}],
-                   "transitions": [{"no": "!query.property('claudenpc:orbes_manos')"}]}}},
+                   "transitions": [{"no": f"!({mano})"}]}}},
     }
 
 
@@ -1406,9 +1403,11 @@ def controladores_golden_final():
 
 MARCO = ""
 NOMBRES = {
-    "es": {"corazon_dorado": "Corazón dorado", "orbe": "Orbe", "reloj": "Reloj", "signo": "Signo", "rayo": "Rayo",
+    "es": {"corazon_dorado": "Corazón dorado", "orbe": "Orbe", "orbe_azul": "Orbe azul", "orbe_definitiva": "Orbe definitiva",
+           "reloj": "Reloj", "signo": "Signo", "rayo": "Rayo",
            "marioneta": "Hilos de marioneta", "ilusion_jugador": "Ilusión", "fondo": "Fondo"},
-    "en": {"corazon_dorado": "Golden Heart", "orbe": "Orb", "reloj": "Clock", "signo": "Mark", "rayo": "Lightning",
+    "en": {"corazon_dorado": "Golden Heart", "orbe": "Orb", "orbe_azul": "Blue Orb", "orbe_definitiva": "Ultimate Orb",
+           "reloj": "Clock", "signo": "Mark", "rayo": "Lightning",
            "marioneta": "Puppet Strings", "ilusion_jugador": "Illusion", "fondo": "Backdrop"},
 }
 

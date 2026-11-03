@@ -3,9 +3,10 @@ import { GOLDEN_FINAL, PARTICLES } from "../../config.js";
 import { particleAt, soundAt } from "../../util.js";
 
 // Arena dorada: al chasquear los dedos en la cinemática, el terreno alrededor de Golden se
-// vuelve una zona de combate de oro (piso con rayos y anillos de luz, columnas con velas y
-// pedestales para los relojes). Antes se guarda el terreno original como estructura del
-// mundo; al morir Golden la arena "se rompe" y el terreno vuelve bloque por bloque.
+// vuelve una zona de combate de oro CERRADA: piso con rayos y anillos de luz, paredes y techo
+// de vidrio dorado con columnas, columnas con velas, faroles y pedestales para los relojes.
+// Antes se guarda el terreno original como estructura del mundo; al morir Golden la arena
+// "se rompe" y el terreno vuelve bloque por bloque.
 
 const REGISTRO = "claudenpc:arenas";
 export const arenas = new Map(); // id de Golden → arena
@@ -30,19 +31,52 @@ function nombreDe(id) {
   return `claudenpc:arena_${String(id).replace(/-/g, "m").replace(/[^0-9a-z_]/gi, "_")}`;
 }
 
-// Puntos de la arena (relativos a su centro): columnas y pedestales de los relojes.
+// Puntos de la arena (relativos a su centro): columnas, faroles y pedestales de los relojes.
+const memo = new Map();
+function puntos(nombre, R, fn) {
+  const k = `${nombre}:${R}`;
+  if (!memo.has(k)) memo.set(k, fn());
+  return memo.get(k);
+}
+
 export function columnas(R = GOLDEN_FINAL.arenaRadio) {
-  const lista = [];
-  for (let k = 0; k < 8; k++) {
-    const a = ((22.5 + 45 * k) * Math.PI) / 180;
-    lista.push({ x: Math.round(Math.cos(a) * (R - 1.5)), z: Math.round(Math.sin(a) * (R - 1.5)) });
-  }
-  return lista;
+  return puntos("col", R, () => {
+    const lista = [];
+    for (let k = 0; k < 8; k++) {
+      const a = ((22.5 + 45 * k) * Math.PI) / 180;
+      lista.push({ x: Math.round(Math.cos(a) * (R - 4)), z: Math.round(Math.sin(a) * (R - 4)) });
+    }
+    return lista;
+  });
+}
+
+export function faroles(R = GOLDEN_FINAL.arenaRadio) {
+  return puntos("far", R, () => {
+    const lista = [];
+    for (let k = 0; k < 16; k++) {
+      const a = ((11.25 + 22.5 * k) * Math.PI) / 180;
+      lista.push({ x: Math.round(Math.cos(a) * (R - 1.8)), z: Math.round(Math.sin(a) * (R - 1.8)) });
+    }
+    return lista;
+  });
 }
 
 export function pedestales(R = GOLDEN_FINAL.arenaRadio) {
-  const d = Math.round(R - 4.5);
+  const d = Math.round(R * 0.62);
   return [{ x: d, z: 0 }, { x: -d, z: 0 }, { x: 0, z: d }, { x: 0, z: -d }];
+}
+
+// Un punto dentro de la arena (a "margen" de la pared y bajo el techo).
+export function limitar(arena, p, margen = 2.5) {
+  if (!arena) return p;
+  const cx = arena.centro.x + 0.5;
+  const cz = arena.centro.z + 0.5;
+  const dx = p.x - cx;
+  const dz = p.z - cz;
+  const d = Math.hypot(dx, dz);
+  const max = arena.R - margen;
+  const k = d > max ? max / d : 1;
+  return { x: cx + dx * k, y: Math.min(Math.max(p.y, arena.centro.y + 0.05), arena.centro.y + GOLDEN_FINAL.arenaAlto - 3.5), z: cz + dz * k };
 }
 
 export function crearArena(id, dim, centro) {
@@ -58,7 +92,7 @@ export function crearArena(id, dim, centro) {
     // Rango por defecto.
   }
   const desde = { x: c.x - R - 1, y: Math.max(min, c.y - 2), z: c.z - R - 1 };
-  const hasta = { x: c.x + R + 1, y: Math.min(max, c.y + H), z: c.z + R + 1 };
+  const hasta = { x: c.x + R + 1, y: Math.min(max, c.y + H - 1), z: c.z + R + 1 };
   const arena = { id, dim, dimId: dim.id, centro: c, desde, hasta, R, nombre: nombreDe(id), guardada: false, puesta: false };
   arenas.set(id, arena);
   return arena;
@@ -113,31 +147,71 @@ function perm(nombre, estados) {
 export function bloqueArena(dx, dy, dz, R = GOLDEN_FINAL.arenaRadio) {
   const d = Math.hypot(dx, dz);
   if (d > R + 0.5) return undefined;
-  const col = columnas(R).some((c) => c.x === dx && c.z === dz);
-  const ped = pedestales(R).some((c) => c.x === dx && c.z === dz);
+  const techo = GOLDEN_FINAL.arenaAlto - 1;
+  const a = Math.atan2(dz, dx);
   if (dy === -2) return "minecraft:gold_block";
   if (dy === -1) {
-    if (d < 1.2) return "minecraft:ochre_froglight";
-    if (d < 2.6) return "minecraft:raw_gold_block";
-    if (d >= 6 && d < 6.9) return "minecraft:ochre_froglight";
-    if (d >= R - 0.9) return "minecraft:raw_gold_block";
-    const a = Math.atan2(dz, dx);
-    if (Math.abs(Math.sin(4 * a)) < 0.16) return "minecraft:raw_gold_block";
+    if (d < 1.5) return "minecraft:ochre_froglight";
+    if (d < 3.5) return "minecraft:raw_gold_block";
+    if ((d >= 7 && d < 7.9) || (d >= 14 && d < 14.9 && Math.abs(Math.sin(8 * a)) > 0.3)) return "minecraft:ochre_froglight";
+    if (d >= R - 1.5) return "minecraft:raw_gold_block";
+    if (Math.abs(Math.sin(4 * a)) < 0.12) return "minecraft:raw_gold_block";
     return "minecraft:gold_block";
   }
-  if (col) {
+  // Pared (anillo exterior) y techo: vidrio dorado con columnas de oro.
+  if (d >= R - 1) {
+    if (dy > techo) return undefined;
+    const pilar = Math.abs(Math.sin(12 * a)) < 0.14;
+    if (dy === 0 || dy === techo || dy === techo - 1) return "minecraft:gold_block";
+    if (pilar) return dy === 6 ? "minecraft:ochre_froglight" : "minecraft:gold_block";
+    return "minecraft:yellow_stained_glass";
+  }
+  if (dy === techo) {
+    if (d < 2.5) return "minecraft:ochre_froglight";
+    if ((d >= 9 && d < 9.9) || (d >= R - 3 && d < R - 2)) return "minecraft:gold_block";
+    if (Math.abs(Math.sin(4 * a)) < 0.06) return "minecraft:gold_block";
+    return "minecraft:yellow_stained_glass";
+  }
+  if (dy > techo) return undefined;
+  const es = (lista) => lista.some((c) => c.x === dx && c.z === dz);
+  if (es(columnas(R))) {
     if (dy === 0) return "minecraft:raw_gold_block";
     if (dy <= 3) return "minecraft:gold_block";
     if (dy === 4) return "minecraft:ochre_froglight";
     if (dy === 5) return "vela";
     return "minecraft:air";
   }
-  if (ped) {
+  if (es(pedestales(R))) {
     if (dy === 0) return "minecraft:raw_gold_block";
     if (dy === 1) return "minecraft:gold_block";
     return "minecraft:air";
   }
+  if (es(faroles(R))) {
+    if (dy === 0) return "minecraft:raw_gold_block";
+    if (dy === 1) return "farol";
+    return "minecraft:air";
+  }
   return "minecraft:air";
+}
+
+// Los que quedaron fuera (o dentro de la pared) entran a la arena, mirando al centro.
+export function llevarDentro(arena, jugadores) {
+  const c = { x: arena.centro.x + 0.5, y: arena.centro.y, z: arena.centro.z + 0.5 };
+  for (const p of jugadores) {
+    try {
+      if (!p.isValid || p.dimension.id !== arena.dimId) continue;
+      const dx = p.location.x - c.x;
+      const dz = p.location.z - c.z;
+      const d = Math.hypot(dx, dz);
+      const dentro = d <= arena.R - 2 && p.location.y >= c.y - 0.5 && p.location.y <= c.y + GOLDEN_FINAL.arenaAlto - 3;
+      if (dentro) continue;
+      const k = d > 0.5 ? (arena.R - 6) / d : 0;
+      const lugar = { x: c.x + (d > 0.5 ? dx * k : arena.R - 6), y: c.y + 0.05, z: c.z + (d > 0.5 ? dz * k : 0) };
+      p.teleport(lugar, { facingLocation: { x: c.x, y: c.y + 1.5, z: c.z }, keepVelocity: false });
+    } catch {
+      // Jugador no disponible.
+    }
+  }
 }
 
 // Prepara la arena dorada en memoria poco a poco (durante la cinemática) para ponerla de una
@@ -166,7 +240,8 @@ function* armar(arena) {
         const b = bloqueArena(desde.x + x - centro.x, desde.y + y - centro.y, desde.z + z - centro.z, R);
         if (!b) continue;
         try {
-          s.setBlockPermutation({ x, y, z }, b === "vela" ? perm("minecraft:yellow_candle", { candles: 3, lit: true }) : perm(b));
+          s.setBlockPermutation({ x, y, z }, b === "vela" ? perm("minecraft:yellow_candle", { candles: 3, lit: true })
+            : b === "farol" ? perm("minecraft:lantern", { hanging: false }) : perm(b));
         } catch {
           // Bloque no disponible.
         }
@@ -212,13 +287,9 @@ export function ponerArena(arena) {
     // Ya no está.
   }
   arena.oro = undefined;
-  // Nadie queda metido dentro de un bloque.
+  // Los que están cerca quedan dentro de la arena cerrada (nadie queda en la pared).
   try {
-    for (const p of arena.dim.getPlayers({ location: { x: centro.x + 0.5, y: centro.y, z: centro.z + 0.5 }, maxDistance: R + 3 })) {
-      const pie = { x: Math.floor(p.location.x), y: Math.floor(p.location.y), z: Math.floor(p.location.z) };
-      const b = arena.dim.getBlock(pie);
-      if (b && !b.isAir) p.teleport({ x: p.location.x, y: centro.y + 0.05, z: p.location.z }, { keepVelocity: false });
-    }
+    llevarDentro(arena, arena.dim.getPlayers({ location: { x: centro.x + 0.5, y: centro.y, z: centro.z + 0.5 }, maxDistance: R + 8 }));
   } catch {
     // Jugadores no disponibles.
   }

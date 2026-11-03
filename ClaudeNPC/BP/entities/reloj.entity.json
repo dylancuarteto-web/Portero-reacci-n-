@@ -4,18 +4,7 @@
     "description": {
       "identifier": "claudenpc:reloj",
       "is_spawnable": false,
-      "is_summonable": true,
-      "properties": {
-        "claudenpc:estado": {
-          "type": "int",
-          "range": [
-            0,
-            2
-          ],
-          "default": 0,
-          "client_sync": true
-        }
-      }
+      "is_summonable": true
     },
     "components": {
       "minecraft:type_family": {
@@ -69,6 +58,64 @@
       },
       "minecraft:movement": {
         "value": 0
+      }
+    },
+    "component_groups": {
+      "claudenpc:tic": {
+        "minecraft:mark_variant": {
+          "value": 0
+        }
+      },
+      "claudenpc:alarma": {
+        "minecraft:mark_variant": {
+          "value": 1
+        }
+      },
+      "claudenpc:apagado": {
+        "minecraft:mark_variant": {
+          "value": 2
+        }
+      }
+    },
+    "events": {
+      "claudenpc:tic": {
+        "add": {
+          "component_groups": [
+            "claudenpc:tic"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:alarma",
+            "claudenpc:apagado"
+          ]
+        }
+      },
+      "claudenpc:alarma": {
+        "add": {
+          "component_groups": [
+            "claudenpc:alarma"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:tic",
+            "claudenpc:apagado"
+          ]
+        }
+      },
+      "claudenpc:apagado": {
+        "add": {
+          "component_groups": [
+            "claudenpc:apagado"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:tic",
+            "claudenpc:alarma"
+          ]
+        }
       }
     }
   }

@@ -92,9 +92,6 @@
         },
         {
           "sombra": "Material.aura"
-        },
-        {
-          "fantasma_*": "Material.aura"
         }
       ],
       "part_visibility": [
@@ -102,34 +99,31 @@
           "*": true
         },
         {
-          "sombra": "query.property('claudenpc:pose') == 1 || query.property('claudenpc:pose') == 2"
+          "sombra": "query.skin_id == 1"
         },
         {
-          "ojo_brillo": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"
+          "ojo_brillo": "query.skin_id != 1"
         },
         {
-          "ojo_rayos": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"
+          "ojo_rayos": "query.skin_id != 1"
         },
         {
-          "corona": "query.property('claudenpc:corona')"
+          "corona": "query.mark_variant >= 1"
         },
         {
-          "halo": "!query.property('claudenpc:corona')"
+          "halo": "query.mark_variant == 0"
         },
         {
-          "alas": "query.property('claudenpc:alas')"
+          "alas": "query.mark_variant >= 1"
         },
         {
-          "ala_*": "query.property('claudenpc:alas')"
+          "ala_*": "query.mark_variant >= 1"
         },
         {
-          "espada_*": "query.property('claudenpc:espadas')"
+          "espada_*": "query.mark_variant == 2"
         },
         {
-          "fantasma_*": "query.property('claudenpc:espadas')"
-        },
-        {
-          "orbe_mano_*": "query.property('claudenpc:orbes_manos')"
+          "orbe_mano_*": "query.skin_id == 2"
         }
       ]
     },

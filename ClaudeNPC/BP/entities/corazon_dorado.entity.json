@@ -4,27 +4,7 @@
     "description": {
       "identifier": "claudenpc:corazon_dorado",
       "is_spawnable": false,
-      "is_summonable": true,
-      "properties": {
-        "claudenpc:tam": {
-          "type": "float",
-          "range": [
-            0.0,
-            4.0
-          ],
-          "default": 1.0,
-          "client_sync": true
-        },
-        "claudenpc:brillo": {
-          "type": "int",
-          "range": [
-            0,
-            2
-          ],
-          "default": 1,
-          "client_sync": true
-        }
-      }
+      "is_summonable": true
     },
     "components": {
       "minecraft:type_family": {
@@ -70,6 +50,110 @@
       },
       "minecraft:movement": {
         "value": 0
+      }
+    },
+    "component_groups": {
+      "claudenpc:tam_4": {
+        "minecraft:scale": {
+          "value": 0.4
+        }
+      },
+      "claudenpc:tam_8": {
+        "minecraft:scale": {
+          "value": 0.8
+        }
+      },
+      "claudenpc:tam_12": {
+        "minecraft:scale": {
+          "value": 1.2
+        }
+      },
+      "claudenpc:tam_16": {
+        "minecraft:scale": {
+          "value": 1.6
+        }
+      },
+      "claudenpc:tam_22": {
+        "minecraft:scale": {
+          "value": 2.2
+        }
+      }
+    },
+    "events": {
+      "claudenpc:tam_4": {
+        "add": {
+          "component_groups": [
+            "claudenpc:tam_4"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:tam_8",
+            "claudenpc:tam_12",
+            "claudenpc:tam_16",
+            "claudenpc:tam_22"
+          ]
+        }
+      },
+      "claudenpc:tam_8": {
+        "add": {
+          "component_groups": [
+            "claudenpc:tam_8"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:tam_4",
+            "claudenpc:tam_12",
+            "claudenpc:tam_16",
+            "claudenpc:tam_22"
+          ]
+        }
+      },
+      "claudenpc:tam_12": {
+        "add": {
+          "component_groups": [
+            "claudenpc:tam_12"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:tam_4",
+            "claudenpc:tam_8",
+            "claudenpc:tam_16",
+            "claudenpc:tam_22"
+          ]
+        }
+      },
+      "claudenpc:tam_16": {
+        "add": {
+          "component_groups": [
+            "claudenpc:tam_16"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:tam_4",
+            "claudenpc:tam_8",
+            "claudenpc:tam_12",
+            "claudenpc:tam_22"
+          ]
+        }
+      },
+      "claudenpc:tam_22": {
+        "add": {
+          "component_groups": [
+            "claudenpc:tam_22"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:tam_4",
+            "claudenpc:tam_8",
+            "claudenpc:tam_12",
+            "claudenpc:tam_16"
+          ]
+        }
       }
     }
   }

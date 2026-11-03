@@ -15,7 +15,7 @@
             "math.sin(query.life_time * 120) * 0.8",
             0
           ],
-          "scale": "query.property('claudenpc:tam') * math.min(1, query.life_time * 3) * (1 + math.pow(math.sin(query.life_time * 420), 16) * 0.12)"
+          "scale": "math.min(1, query.life_time * 3) * (1 + math.pow(math.sin(query.life_time * 420), 16) * 0.12)"
         }
       }
     },
@@ -23,7 +23,7 @@
       "loop": true,
       "bones": {
         "raiz": {
-          "scale": "query.property('claudenpc:tam') * math.min(1, query.life_time * 6)"
+          "scale": "math.min(1, query.life_time * 6)"
         },
         "amarilla": {
           "rotation": [
@@ -63,6 +63,14 @@
             0
           ],
           "scale": "1 + math.sin(query.life_time * 600) * 0.08"
+        }
+      }
+    },
+    "animation.claudenpc.orbe.crecer": {
+      "loop": true,
+      "bones": {
+        "definitiva": {
+          "scale": "0.3 + 2.1 * math.min(1, query.life_time / 3.3)"
         }
       }
     },
@@ -229,33 +237,19 @@
           }
         },
         "rayo_0": {
-          "scale": "query.property('claudenpc:variante') == 0 ? 1 : 0"
+          "scale": "query.mark_variant == 0 ? 1 : 0"
         },
         "rayo_1": {
-          "scale": "query.property('claudenpc:variante') == 1 ? 1 : 0"
+          "scale": "query.mark_variant == 1 ? 1 : 0"
         },
         "rayo_2": {
-          "scale": "query.property('claudenpc:variante') == 2 ? 1 : 0"
+          "scale": "query.mark_variant == 2 ? 1 : 0"
         }
       }
     },
     "animation.claudenpc.marioneta.seguir": {
       "loop": true,
       "bones": {
-        "cabeza": {
-          "position": [
-            0,
-            "query.property('claudenpc:ojos') * 16",
-            0
-          ]
-        },
-        "pecho": {
-          "position": [
-            0,
-            "query.property('claudenpc:pecho') * 16",
-            "-query.property('claudenpc:frente') * 16"
-          ]
-        },
         "corazon": {
           "rotation": [
             0,

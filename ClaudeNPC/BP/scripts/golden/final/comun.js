@@ -1,5 +1,5 @@
 import { EasingType, GameMode, HudVisibility, InputPermissionCategory, MolangVariableMap, system, world } from "@minecraft/server";
-import { GOLDEN_FINAL, PROP } from "../../config.js";
+import { GOLDEN_FINAL } from "../../config.js";
 import { enCinematica } from "../../robot/cinematica.js";
 import { blockAt, now } from "../../util.js";
 
@@ -23,8 +23,53 @@ export function leerProp(e, id, defecto = 0) {
   }
 }
 
+// --- Cómo se ve Golden (sin propiedades: eventos y animaciones que el juego siempre manda) ---
+
+// Forma: 0 normal, 1 con alas y corona, 2 además con las dos espadas (mark_variant).
+export function forma(e, n) {
+  try {
+    e.triggerEvent(`claudenpc:forma_${n}`);
+  } catch {
+    // Entidad no disponible.
+  }
+}
+
+// Detalle: 0 nada, 1 sombra sobre los ojos (herido), 2 una orbe en cada mano (skin_id).
+export function detalle(g, n) {
+  if (g.detalle === n) return;
+  g.detalle = n;
+  try {
+    g.entidad.triggerEvent(`claudenpc:detalle_${n}`);
+  } catch {
+    // Entidad no disponible.
+  }
+}
+
+const POSES = ["ninguna", "herido", "cabizbajo", "alzar_derecho", "mano_pecho", "revelacion", "chasquido_listo", "brazos_arriba",
+  "orbes_arriba", "orbes_juntas", "marionetas", "pausa", "espadas"];
+
+// Postura que se mantiene (se reemplaza por la siguiente con una transición suave). Se pone
+// con playAnimation en un controlador con nombre, igual que los gestos.
 export function pose(g, n) {
-  prop(g.entidad, PROP.pose, n);
+  const e = g.entidad;
+  g.pose = n;
+  try {
+    e.playAnimation(`animation.claudenpc.golden.pose_${POSES[n] ?? "ninguna"}`, { controller: "claudenpc_golden_pose", blendOutTime: 0.4 });
+  } catch {
+    // Paquete de recursos no activo.
+  }
+  if (n === 1 || n === 2) detalle(g, 1);
+  else if (g.detalle === 1) detalle(g, 0);
+}
+
+// Corte rápido de espada: 1 amarilla (derecha), 2 azul (izquierda), 0 las dos en X.
+export function cortar(e, variante) {
+  const nombre = ["corte_x", "corte_der", "corte_izq"][variante] ?? "corte_der";
+  try {
+    e.playAnimation(`animation.claudenpc.golden.${nombre}`, { controller: "claudenpc_golden_corte", blendOutTime: 0.05 });
+  } catch {
+    // Paquete de recursos no activo.
+  }
 }
 
 export function animar(e, animacion, blend = 0.2) {

@@ -1,0 +1,39 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:orbe_definitiva",
+      "materials": {
+        "default": "entity_emissive_alpha",
+        "capa": "entity_alphablend"
+      },
+      "textures": {
+        "default": "textures/entity/claudenpc/orbe"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.orbe"
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_orbe_definitiva"
+      ],
+      "animations": {
+        "giro": "animation.claudenpc.orbe.giro",
+        "crecer": "animation.claudenpc.orbe.crecer",
+        "ctrl_efectos": "controller.animation.claudenpc.orbe.definitiva"
+      },
+      "scripts": {
+        "animate": [
+          "giro",
+          "crecer",
+          "ctrl_efectos"
+        ]
+      },
+      "particle_effects": {
+        "estela_am": "claudenpc:estela_orbe_amarilla",
+        "estela_az": "claudenpc:estela_orbe_azul",
+        "sonico": "claudenpc:anillo_sonico",
+        "chispas": "claudenpc:chispas_definitiva"
+      }
+    }
+  }
+}

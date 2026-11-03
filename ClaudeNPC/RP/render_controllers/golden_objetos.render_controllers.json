@@ -1,7 +1,7 @@
 {
   "format_version": "1.8.0",
   "render_controllers": {
-    "controller.render.claudenpc_orbe": {
+    "controller.render.claudenpc_orbe_amarilla": {
       "geometry": "Geometry.default",
       "textures": [
         "Texture.default"
@@ -22,16 +22,96 @@
           "*": true
         },
         {
-          "amarilla": "query.property('claudenpc:tipo') == 0"
+          "amarilla": false
         },
         {
-          "azul": "query.property('claudenpc:tipo') == 1"
+          "azul": false
         },
         {
-          "definitiva": "query.property('claudenpc:tipo') == 2"
+          "definitiva": false
         },
         {
-          "def_*": "query.property('claudenpc:tipo') == 2"
+          "def_*": false
+        },
+        {
+          "amarilla": true
+        }
+      ]
+    },
+    "controller.render.claudenpc_orbe_azul": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "def_azul*": "Material.capa"
+        },
+        {
+          "def_amarilla*": "Material.capa"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "amarilla": false
+        },
+        {
+          "azul": false
+        },
+        {
+          "definitiva": false
+        },
+        {
+          "def_*": false
+        },
+        {
+          "azul": true
+        }
+      ]
+    },
+    "controller.render.claudenpc_orbe_definitiva": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "def_azul*": "Material.capa"
+        },
+        {
+          "def_amarilla*": "Material.capa"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "amarilla": false
+        },
+        {
+          "azul": false
+        },
+        {
+          "definitiva": false
+        },
+        {
+          "def_*": false
+        },
+        {
+          "definitiva": true
+        },
+        {
+          "def_*": true
         }
       ]
     },
@@ -46,7 +126,7 @@
       },
       "geometry": "Geometry.default",
       "textures": [
-        "Array.pieles[query.property('claudenpc:estado') == 2 ? 1 : 0]"
+        "Array.pieles[query.mark_variant == 2 ? 1 : 0]"
       ],
       "materials": [
         {
@@ -65,7 +145,7 @@
       },
       "geometry": "Geometry.default",
       "textures": [
-        "Array.colores[query.property('claudenpc:tipo')]"
+        "Array.colores[query.variant]"
       ],
       "materials": [
         {

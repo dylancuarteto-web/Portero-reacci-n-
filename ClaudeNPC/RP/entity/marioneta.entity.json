@@ -16,17 +16,12 @@
         "controller.render.default"
       ],
       "animations": {
-        "seguir": "animation.claudenpc.marioneta.seguir",
-        "ctrl_ojos": "controller.animation.claudenpc.marioneta.ojos"
+        "seguir": "animation.claudenpc.marioneta.seguir"
       },
       "scripts": {
         "animate": [
-          "seguir",
-          "ctrl_ojos"
+          "seguir"
         ]
-      },
-      "particle_effects": {
-        "ojo": "claudenpc:ojos_marioneta"
       }
     }
   }

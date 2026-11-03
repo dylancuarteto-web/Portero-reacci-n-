@@ -10,71 +10,6 @@
           "type": "bool",
           "default": false,
           "client_sync": true
-        },
-        "claudenpc:pose": {
-          "type": "int",
-          "range": [
-            0,
-            15
-          ],
-          "default": 0,
-          "client_sync": true
-        },
-        "claudenpc:alas": {
-          "type": "bool",
-          "default": false,
-          "client_sync": true
-        },
-        "claudenpc:corona": {
-          "type": "bool",
-          "default": false,
-          "client_sync": true
-        },
-        "claudenpc:espadas": {
-          "type": "bool",
-          "default": false,
-          "client_sync": true
-        },
-        "claudenpc:orbes_manos": {
-          "type": "bool",
-          "default": false,
-          "client_sync": true
-        },
-        "claudenpc:corte": {
-          "type": "int",
-          "range": [
-            0,
-            1000000
-          ],
-          "default": 0,
-          "client_sync": true
-        },
-        "claudenpc:corte_vel": {
-          "type": "float",
-          "range": [
-            0.2,
-            3.0
-          ],
-          "default": 1.0,
-          "client_sync": true
-        },
-        "claudenpc:corte_dist": {
-          "type": "float",
-          "range": [
-            0.0,
-            3.0
-          ],
-          "default": 1.0,
-          "client_sync": true
-        },
-        "claudenpc:corte_rot": {
-          "type": "float",
-          "range": [
-            0.0,
-            3.0
-          ],
-          "default": 1.0,
-          "client_sync": true
         }
       }
     },
@@ -157,6 +92,36 @@
           "hud_range": 64,
           "should_darken_sky": true
         }
+      },
+      "claudenpc:forma_normal": {
+        "minecraft:mark_variant": {
+          "value": 0
+        }
+      },
+      "claudenpc:forma_final": {
+        "minecraft:mark_variant": {
+          "value": 1
+        }
+      },
+      "claudenpc:forma_espadas": {
+        "minecraft:mark_variant": {
+          "value": 2
+        }
+      },
+      "claudenpc:detalle_nada": {
+        "minecraft:skin_id": {
+          "value": 0
+        }
+      },
+      "claudenpc:detalle_sombra": {
+        "minecraft:skin_id": {
+          "value": 1
+        }
+      },
+      "claudenpc:detalle_orbes": {
+        "minecraft:skin_id": {
+          "value": 2
+        }
       }
     },
     "events": {
@@ -164,6 +129,84 @@
         "add": {
           "component_groups": [
             "claudenpc:final"
+          ]
+        }
+      },
+      "claudenpc:forma_0": {
+        "add": {
+          "component_groups": [
+            "claudenpc:forma_normal"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:forma_final",
+            "claudenpc:forma_espadas"
+          ]
+        }
+      },
+      "claudenpc:forma_1": {
+        "add": {
+          "component_groups": [
+            "claudenpc:forma_final"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:forma_normal",
+            "claudenpc:forma_espadas"
+          ]
+        }
+      },
+      "claudenpc:forma_2": {
+        "add": {
+          "component_groups": [
+            "claudenpc:forma_espadas"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:forma_normal",
+            "claudenpc:forma_final"
+          ]
+        }
+      },
+      "claudenpc:detalle_0": {
+        "add": {
+          "component_groups": [
+            "claudenpc:detalle_nada"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:detalle_sombra",
+            "claudenpc:detalle_orbes"
+          ]
+        }
+      },
+      "claudenpc:detalle_1": {
+        "add": {
+          "component_groups": [
+            "claudenpc:detalle_sombra"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:detalle_nada",
+            "claudenpc:detalle_orbes"
+          ]
+        }
+      },
+      "claudenpc:detalle_2": {
+        "add": {
+          "component_groups": [
+            "claudenpc:detalle_orbes"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:detalle_nada",
+            "claudenpc:detalle_sombra"
           ]
         }
       }

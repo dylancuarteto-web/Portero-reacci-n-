@@ -27,7 +27,6 @@
       },
       "particle_effects": {
         "brillo": "claudenpc:brillo_corazon",
-        "fuerte": "claudenpc:brillo_corazon_fuerte",
         "rayos": "claudenpc:rayos_corazon"
       }
     }

@@ -1,10 +1,10 @@
 import { GameMode, system } from "@minecraft/server";
-import { ANIM, FINAL, GOLDEN_FINAL, PARTICLES, PROP, SONIDO } from "../../../config.js";
+import { ANIM, FINAL, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../../config.js";
 import { now, particleAt, soundAt } from "../../../util.js";
 import { danar } from "../../comun.js";
+import { limitar } from "../arena.js";
 import {
-  NEGRO, animar, bloquear, camara, fundido, leerProp, musica, particula, pararMusica, pose, prop, punto, sonar, soltar,
-  sueloBajo, vivos, yawHacia,
+  NEGRO, animar, bloquear, camara, cortar, forma, fundido, musica, pararMusica, particula, pose, punto, soltar, sonar, sueloBajo, vivos, yawHacia,
 } from "../comun.js";
 
 // Espadas: con 500 de vida, una cinemática (se apaga la música) en la que saca una espada
@@ -15,14 +15,6 @@ import {
 
 const RADIO = 2.4;
 
-// Siguiente número de corte (el controlador de animación elige el corte con el resto entre 3:
-// 1 espada amarilla, 2 espada azul, 0 las dos en X).
-export function cortar(e, variante) {
-  const actual = leerProp(e, PROP.corte, 0);
-  let n = actual + 1;
-  while (n % 3 !== variante) n++;
-  prop(e, PROP.corte, n % 1000000);
-}
 
 // --- ¿Se está moviendo? (posiciones de los últimos ticks) ------------------------------
 const huellas = new Map();
@@ -97,12 +89,13 @@ function rayo(dim, lugar, azul, golden, conDano = true) {
   }
 }
 
-function lugares(dim, j, n) {
+function lugares(dim, j, n, arena) {
   const lista = [sueloBajo(dim, { x: j.location.x, y: j.location.y + 1, z: j.location.z }, 8)];
   for (let i = 1; i < n; i++) {
     const a = Math.random() * Math.PI * 2;
     const r = 2.5 + Math.random() * 4.5;
-    lista.push(sueloBajo(dim, { x: j.location.x + Math.cos(a) * r, y: j.location.y + 2, z: j.location.z + Math.sin(a) * r }, 8));
+    const p = limitar(arena, { x: j.location.x + Math.cos(a) * r, y: j.location.y + 2, z: j.location.z + Math.sin(a) * r }, 2);
+    lista.push(sueloBajo(dim, { x: p.x, y: j.location.y + 2, z: p.z }, 8));
   }
   return lista;
 }
@@ -120,7 +113,7 @@ export default {
     pose(g, 12);
     const olas = [{ azul: false }, { azul: true }];
     if (Math.random() < 0.4) olas.reverse();
-    if (leerProp(e, PROP.corte, 0) % 2 === 0 && Math.random() < 0.5) olas.push({ azul: Math.random() < 0.5, x: true });
+    if (f.espadasHechas && Math.random() < 0.45) olas.push({ azul: Math.random() < 0.5, x: true });
     let t = 0;
     const marcas = [];
     const id = system.runInterval(() => {
@@ -130,7 +123,7 @@ export default {
         olas.forEach((ola, i) => {
           const t0 = 4 + i * 24;
           if (t === t0) {
-            ola.lugares = lugares(dim, j, ola.x ? 6 : 4);
+            ola.lugares = lugares(dim, j, ola.x ? 6 : 4, f.arena);
             for (const l of ola.lugares) {
               const m = marca(dim, l, ola.azul);
               if (m) marcas.push(m);
@@ -221,7 +214,7 @@ export function tickCineEspadas(g) {
     sonar(v, "random.anvil_use", 1.8, 0.7);
   }
   if (t === 34) {
-    prop(e, PROP.espadas, true);
+    forma(e, 2); // aparecen las espadas
     sonar(v, "beacon.activate", 1.8, 1);
     sonar(v, SONIDO.corte, 1.2, 1);
   }

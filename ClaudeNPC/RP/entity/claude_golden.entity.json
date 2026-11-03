@@ -38,10 +38,10 @@
         "combo": "animation.claudenpc.golden.combo",
         "sacar_espadas": "animation.claudenpc.golden.sacar_espadas",
         "temblor_final": "animation.claudenpc.golden.temblor_final",
-        "espada_listo": "animation.claudenpc.golden.espada_listo",
         "corte_der": "animation.claudenpc.golden.corte_der",
         "corte_izq": "animation.claudenpc.golden.corte_izq",
         "corte_x": "animation.claudenpc.golden.corte_x",
+        "pose_ninguna": "animation.claudenpc.golden.pose_ninguna",
         "pose_herido": "animation.claudenpc.golden.pose_herido",
         "pose_cabizbajo": "animation.claudenpc.golden.pose_cabizbajo",
         "pose_alzar_derecho": "animation.claudenpc.golden.pose_alzar_derecho",
@@ -55,8 +55,6 @@
         "pose_pausa": "animation.claudenpc.golden.pose_pausa",
         "pose_espadas": "animation.claudenpc.golden.pose_espadas",
         "ctrl_ojo": "controller.animation.claudenpc.golden.ojo",
-        "ctrl_pose": "controller.animation.claudenpc.golden.pose",
-        "ctrl_espadas": "controller.animation.claudenpc.golden.espadas",
         "ctrl_orbes": "controller.animation.claudenpc.golden.orbes_mano"
       },
       "particle_effects": {
@@ -76,22 +74,20 @@
       "scripts": {
         "animate": [
           {
-            "mirar": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2 && query.property('claudenpc:pose') != 3 && query.property('claudenpc:pose') != 5 && query.property('claudenpc:pose') != 7"
+            "mirar": "query.skin_id != 1"
           },
           "respirar",
           "parpadeo",
           {
-            "flotar": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"
+            "flotar": "query.skin_id != 1"
           },
           "halo",
           "aura",
           "ojo",
           "ctrl_ojo",
-          "ctrl_pose",
-          "ctrl_espadas",
           "ctrl_orbes",
           {
-            "alas": "query.property('claudenpc:alas')"
+            "alas": "query.mark_variant >= 1"
           }
         ]
       },

@@ -1,10 +1,10 @@
 import { system } from "@minecraft/server";
-import { ANIM, FINAL, GOLDEN_FINAL, PARTICLES, PROP, SONIDO } from "../../config.js";
+import { ANIM, FINAL, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../config.js";
 import { now, particleAt } from "../../util.js";
-import { crearArena, guardarTerreno, ponerArena, prepararArena } from "./arena.js";
+import { crearArena, guardarTerreno, llevarDentro, ponerArena, prepararArena } from "./arena.js";
 import {
-  AMARILLO, DORADO, NEGRO, animar, arcoiris, barra, bloquear, borrarTextos, camara, escribir, fundido, jugadoresCerca,
-  lerp, letras, musica, particula, pose, prop, punto, solidoEn, soltar, sonar, sueloBajo, suave, temblar, titulo, vivos, yawHacia,
+  AMARILLO, DORADO, NEGRO, animar, arcoiris, barra, bloquear, borrarTextos, camara, escribir, forma, fundido, jugadoresCerca,
+  lerp, letras, musica, particula, pose, punto, solidoEn, soltar, sonar, sueloBajo, suave, temblar, titulo, vivos, yawHacia,
 } from "./comun.js";
 import { empezarPelea } from "./pelea.js";
 
@@ -36,6 +36,7 @@ function quitar(e) {
 }
 
 function aparecer(dim, id, pos, evento) {
+  // "evento" se aplica al nacer (por ejemplo el tamaño del corazón).
   try {
     return dim.spawnEntity(id, pos, evento ? { spawnEvent: evento } : undefined);
   } catch {
@@ -52,7 +53,6 @@ export function iniciarHerido(g, jugador) {
   const yaw = jugador?.isValid ? yawHacia(e.location, jugador.location) : e.getRotation().y;
   g.final = { etapa: "herido", t: 0, control: true, jugadores: new Set(), desde: { ...e.location }, suelo, yaw, inicio: now() };
   pose(g, 2);
-  prop(e, PROP.furia, false);
   particleAt(dim, PARTICLES.estallido, { x: e.location.x, y: e.location.y + 1, z: e.location.z });
   soundAtTodos(dim, e.location, "beacon.deactivate", 0.6, 1.5);
 }
@@ -144,8 +144,7 @@ export function empezarCine(g) {
   if (!f.vistas.length) {
     // Nadie para ver la cinemática: la arena aparece y empieza la batalla.
     ponerArena(f.arena);
-    prop(e, PROP.alas, true);
-    prop(e, PROP.corona, true);
+    forma(e, 1);
     pose(g, 0);
     empezarPelea(g);
     return;
@@ -222,11 +221,9 @@ export function tickCine(g) {
   if (t > 296 && t < 330 && (t - 296) % 8 === 0) particleAt(dim, PARTICLES.converge, H);
   if (t === 312) sonar(v, SONIDO.carga, 0.8, 0.45);
   if (t === 330) {
-    f.corazon = aparecer(dim, FINAL.corazon, H);
-    if (f.corazon) {
-      prop(f.corazon, PROP.tam, 1.6);
-      prop(f.corazon, PROP.brillo, 2);
-    }
+    f.corazon = aparecer(dim, FINAL.corazon, H, "claudenpc:tam_16");
+    particleAt(dim, PARTICLES.destelloCorazon, H);
+    particleAt(dim, PARTICLES.fusionDestello, H);
     fundido(v, DORADO, 0.05, 0.25, 1.4); // ilumina todo; después se ve claramente
     sonar(v, "random.levelup", 0.6, 1);
     sonar(v, "beacon.activate", 1.4, 1);
@@ -234,18 +231,13 @@ export function tickCine(g) {
     cam(punto(G, yaw, 4.2, 1.6, 0), H, 1.6, punto(G, yaw, 2.9, 2.3, 0.25));
   }
   if (t > 330 && t < 571 && f.corazon?.isValid) f.corazon.teleport(H);
-  if (t === 352 && f.corazon) prop(f.corazon, PROP.brillo, 1);
   // --- Negro que parpadea: solo el corazón girando (caja negra lejos de todo) ---
   const V = f.vacio;
   const ojoVacio = (d) => ({ x: V.x + Math.cos(0.6) * d, y: V.y, z: V.z + Math.sin(0.6) * d });
   const miraVacio = { x: V.x, y: V.y - 0.45, z: V.z };
   if (t === 362) {
     f.fondo = aparecer(dim, FINAL.fondo, V);
-    f.corazon2 = aparecer(dim, FINAL.corazon, V);
-    if (f.corazon2) {
-      prop(f.corazon2, PROP.tam, 2.2);
-      prop(f.corazon2, PROP.brillo, 1);
-    }
+    f.corazon2 = aparecer(dim, FINAL.corazon, V, "claudenpc:tam_22");
   }
   if ([364, 372, 381].includes(t)) {
     cam(ojoVacio(2.9), miraVacio);
@@ -261,7 +253,7 @@ export function tickCine(g) {
     if (t % 17 === 0) particleAt(dim, PARTICLES.converge, V);
     if (f.corazon2?.isValid) f.corazon2.teleport(V);
   }
-  if (t === 433 && f.corazon2) prop(f.corazon2, PROP.brillo, 2);
+  if (t >= 433 && t < 571 && (t - 433) % 17 === 0) particleAt(dim, PARTICLES.destelloCorazon, V); // late con la música
   if (t >= 399 && t < 566) {
     const a = escribir(TXT_A, Math.floor((t - 399) * 1.5));
     const b = t >= 433 ? escribir(TXT_B, Math.floor((t - 433) * 1.5)) : "";
@@ -289,7 +281,9 @@ export function tickCine(g) {
   if (t > 575 && t < 600 && f.corazon?.isValid) {
     const k = suave((t - 575) / 25);
     f.corazon.teleport(lerp(H, PECHO, k));
-    prop(f.corazon, PROP.tam, 1.6 - 1.25 * k);
+    if (t === 582) f.corazon.triggerEvent("claudenpc:tam_12"); // se encoge mientras entra en su pecho
+    if (t === 589) f.corazon.triggerEvent("claudenpc:tam_08");
+    if (t === 595) f.corazon.triggerEvent("claudenpc:tam_04");
     if (t % 4 === 0) particleAt(dim, PARTICLES.auraDorada, f.corazon.location);
   }
   if (t === 590) sonar(v, "random.orb", 0.5, 0.8);
@@ -302,8 +296,7 @@ export function tickCine(g) {
     sonar(v, "beacon.activate", 0.8, 1);
   }
   if (t === 603) {
-    prop(e, PROP.alas, true);
-    prop(e, PROP.corona, true);
+    forma(e, 1); // alas y corona
     pose(g, 5);
     animar(e, ANIM.goldenAlasBatir);
     particleAt(dim, PARTICLES.plumas, { x: G.x, y: G.y + 1.5, z: G.z });
@@ -318,11 +311,12 @@ export function tickCine(g) {
   if (t === 671) fundido(v, AMARILLO, 0.05, 0.5, 0.9);
   if (t === 674) {
     ponerArena(f.arena);
+    llevarDentro(f.arena, v); // todos dentro de la arena cerrada
     pose(g, 0);
   }
   const A = f.arena ? { x: f.arena.centro.x + 0.5, y: f.arena.centro.y, z: f.arena.centro.z + 0.5 } : G;
   if (t === 690) {
-    cam(punto(A, yaw + 40, 12, 7.5, 0), { x: A.x, y: A.y + 1, z: A.z }, 3.4, punto(A, yaw - 25, 10.5, 5.5, 0));
+    cam(punto(A, yaw + 40, 17, 8.5, 0), { x: A.x, y: A.y + 1.5, z: A.z }, 3.4, punto(A, yaw - 25, 15, 6.5, 0));
     particleAt(dim, PARTICLES.fusionAnillo, { x: A.x, y: A.y + 0.2, z: A.z });
     sonar(v, "beacon.activate", 0.7, 1);
     sonar(v, "block.bell.hit", 0.8, 0.8);
@@ -356,8 +350,7 @@ export function terminarCine(g) {
   borrarTextos(f.vistas ?? []);
   soltar(f.vistas ?? []);
   if (f.arena && !f.arena.puesta) ponerArena(f.arena);
-  prop(g.entidad, PROP.alas, true);
-  prop(g.entidad, PROP.corona, true);
+  forma(g.entidad, 1);
   pose(g, 0);
   system.run(() => empezarPelea(g));
 }

@@ -4,36 +4,7 @@
     "description": {
       "identifier": "claudenpc:marioneta",
       "is_spawnable": false,
-      "is_summonable": true,
-      "properties": {
-        "claudenpc:ojos": {
-          "type": "float",
-          "range": [
-            0.0,
-            4.0
-          ],
-          "default": 1.6,
-          "client_sync": true
-        },
-        "claudenpc:pecho": {
-          "type": "float",
-          "range": [
-            0.0,
-            4.0
-          ],
-          "default": 1.1,
-          "client_sync": true
-        },
-        "claudenpc:frente": {
-          "type": "float",
-          "range": [
-            0.0,
-            1.0
-          ],
-          "default": 0.2,
-          "client_sync": true
-        }
-      }
+      "is_summonable": true
     },
     "components": {
       "minecraft:type_family": {

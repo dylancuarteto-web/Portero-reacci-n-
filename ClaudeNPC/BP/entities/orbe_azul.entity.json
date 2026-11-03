@@ -1,0 +1,64 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "claudenpc:orbe_azul",
+      "is_spawnable": false,
+      "is_summonable": true
+    },
+    "components": {
+      "minecraft:type_family": {
+        "family": [
+          "claudenpc",
+          "claudenpc_objeto",
+          "inanimate",
+          "claudenpc_orbe"
+        ]
+      },
+      "minecraft:collision_box": {
+        "width": 0.5,
+        "height": 0.5
+      },
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
+      },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:health": {
+        "value": 1000,
+        "max": 1000
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "cause": "entity_attack",
+            "deals_damage": "yes"
+          },
+          {
+            "cause": "projectile",
+            "deals_damage": "yes"
+          },
+          {
+            "cause": "all",
+            "deals_damage": "no"
+          }
+        ]
+      },
+      "minecraft:knockback_resistance": {
+        "value": 1.0
+      },
+      "minecraft:fire_immune": true,
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": 0,
+        "breathes_water": true
+      },
+      "minecraft:movement": {
+        "value": 0
+      }
+    }
+  }
+}

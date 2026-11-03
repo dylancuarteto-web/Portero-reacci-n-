@@ -1,7 +1,7 @@
 import { GameMode, system } from "@minecraft/server";
-import { ANIM, GOLDEN_FINAL, PARTICLES, PROP, SONIDO } from "../../config.js";
+import { ANIM, GOLDEN_FINAL, GOLDEN_MARCO, PARTICLES, SONIDO } from "../../config.js";
 import { now, particleAt, rand, soundAt, sortear } from "../../util.js";
-import { animar, jugadoresCerca, musica, pararMusica, pose, prop, todosLosJugadores, vivos } from "./comun.js";
+import { animar, barra, detalle, jugadoresCerca, musica, pararMusica, particula, pose, todosLosJugadores, vivos } from "./comun.js";
 import { PODERES_FINALES, tickPoderes } from "./poderes.js";
 
 // Fase final, parte 2: la batalla. Lo primero que hace Claude Golden es chasquear los
@@ -54,6 +54,7 @@ export function empezarPelea(g) {
   g.ocupadoHasta = now() + 50;
   try {
     e.triggerEvent("claudenpc:fase_final"); // 1000 de vida y barra de jefe
+    e.nameTag = GOLDEN_MARCO; // el nombre de la barra de jefe: sus alas y su cara (sin letras)
   } catch {
     // Paquete antiguo.
   }
@@ -66,6 +67,7 @@ export function empezarPelea(g) {
     particleAt(e.dimension, PARTICLES.curacion, e.location);
     particleAt(e.dimension, PARTICLES.fusionDestello, { x: e.location.x, y: e.location.y + 1.5, z: e.location.z });
     f.curando = 1;
+    f.curaDesde = now();
   }, 6);
   musica(participantes(g), SONIDO.combate, true, 1.5);
   f.musica = new Set(participantes(g).map((p) => p.id));
@@ -78,7 +80,7 @@ function curar(g) {
   const { h, max } = vidaDe(g.entidad);
   if (!h) return;
   if (f.curando === 1) {
-    if (max < GOLDEN_FINAL.vida) return; // el grupo de 1000 todavía no se aplicó
+    if (max < GOLDEN_FINAL.vida && now() - (f.curaDesde ?? 0) < 40) return; // el grupo de 1000 todavía no se aplicó
     h.setCurrentValue(f.vidaAntes);
     f.curando = 2;
     f.cura = f.vidaAntes;
@@ -95,6 +97,17 @@ function revisarJugadores(g) {
   const f = g.final;
   const e = g.entidad;
   const c = f.arena ? { x: f.arena.centro.x + 0.5, y: f.arena.centro.y, z: f.arena.centro.z + 0.5 } : e.location;
+  f.niebla = f.niebla ?? new Set();
+  for (const p of participantes(g)) {
+    const adentro = dentro(f, p);
+    if (adentro && !f.niebla.has(p.id)) {
+      niebla(p, true);
+      f.niebla.add(p.id);
+    } else if (!adentro && f.niebla.has(p.id)) {
+      niebla(p, false);
+      f.niebla.delete(p.id);
+    }
+  }
   for (const p of jugadoresCerca(e.dimension, c, 48)) {
     if (p.getGameMode() === GameMode.Creative) continue;
     f.jugadores.add(p.id);
@@ -122,7 +135,60 @@ export function tickPelea(g) {
   f.t++;
   if (f.curando) curar(g);
   if (f.t % 20 === 0) revisarJugadores(g);
+  if (f.t % 5 === 0) hud(g);
   tickPoderes(g);
+}
+
+// --- Barra de vida propia (con su cara), niebla dorada y motas de luz -----------------
+// La barra de jefe de Minecraft muestra su nombre (alas y cara); además, abajo, una barra
+// dorada propia hecha con dibujos de la fuente del paquete (sin letras).
+const BARRA = { cara: "\uE903", izq: "\uE90D", lleno: "\uE90B", vacio: "\uE90C", der: "\uE90E" };
+const TRAMOS = 20;
+const NIEBLA = "claudenpc:dorada";
+const ETIQUETA_NIEBLA = "claudenpc_dorada";
+
+export function textoBarra(actual, max) {
+  const llenos = Math.max(0, Math.min(TRAMOS, Math.ceil((TRAMOS * actual) / Math.max(1, max))));
+  return `${BARRA.cara}${BARRA.izq}${BARRA.lleno.repeat(llenos)}${BARRA.vacio.repeat(TRAMOS - llenos)}${BARRA.der}`;
+}
+
+function dentro(f, p) {
+  const a = f.arena;
+  if (!a) return true;
+  try {
+    return p.dimension.id === a.dimId && Math.hypot(p.location.x - a.centro.x - 0.5, p.location.z - a.centro.z - 0.5) <= a.R + 2;
+  } catch {
+    return false;
+  }
+}
+
+function hud(g) {
+  const f = g.final;
+  const { actual, max } = vidaDe(g.entidad);
+  const linea = textoBarra(f.curando ? f.cura ?? actual : actual, max);
+  const relojes = f.relojes?.hud;
+  const jugadores = participantes(g).filter((p) => dentro(f, p));
+  barra(jugadores, relojes ? `${relojes}\n${linea}` : linea);
+  if (f.t % 10 === 0) {
+    for (const p of jugadores) particula(p.dimension, PARTICLES.motas, { x: p.location.x, y: p.location.y + 1.5, z: p.location.z });
+  }
+}
+
+function niebla(p, poner) {
+  try {
+    if (poner) p.fogSettings.push(NIEBLA, ETIQUETA_NIEBLA);
+    else p.fogSettings.remove(ETIQUETA_NIEBLA);
+  } catch {
+    // Sin niebla.
+  }
+}
+
+export function quitarNiebla(g) {
+  for (const id of g.final?.niebla ?? []) {
+    const p = todosLosJugadores().find((x) => x.id === id);
+    if (p) niebla(p, false);
+  }
+  g.final?.niebla?.clear();
 }
 
 // Cerebro (cada 4 ticks, desde golden/index.js): elige poderes cuando está libre.
@@ -160,9 +226,10 @@ export function cerebroFinal(g, j) {
 export function terminarMusica(g) {
   pararMusica(vivos(participantes(g)));
   g.final.musica?.clear();
+  quitarNiebla(g);
 }
 
 export function ponerPose(g, n) {
   pose(g, n);
-  prop(g.entidad, PROP.orbesManos, false);
+  if (g.detalle === 2) detalle(g, 0);
 }

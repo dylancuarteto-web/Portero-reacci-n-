@@ -981,6 +981,18 @@
         }
       }
     },
+    "animation.claudenpc.golden.pose_ninguna": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
     "animation.claudenpc.golden.pose_herido": {
       "loop": true,
       "bones": {
@@ -1384,14 +1396,14 @@
         },
         "espada_der": {
           "rotation": [
-            -18,
+            "-18 + math.sin(query.life_time * 140) * 3",
             0,
             22
           ]
         },
         "espada_izq": {
           "rotation": [
-            -18,
+            "-18 + math.sin(query.life_time * 140 + 90) * 3",
             0,
             -22
           ]
@@ -2192,40 +2204,8 @@
         }
       }
     },
-    "animation.claudenpc.golden.espada_listo": {
-      "loop": true,
-      "bones": {
-        "espada_der": {
-          "rotation": [
-            "math.sin(query.life_time * 140) * 3",
-            0,
-            0
-          ]
-        },
-        "espada_izq": {
-          "rotation": [
-            "math.sin(query.life_time * 140 + 90) * 3",
-            0,
-            0
-          ]
-        },
-        "fantasma_der_1": {
-          "scale": 0
-        },
-        "fantasma_der_2": {
-          "scale": 0
-        },
-        "fantasma_izq_1": {
-          "scale": 0
-        },
-        "fantasma_izq_2": {
-          "scale": 0
-        }
-      }
-    },
     "animation.claudenpc.golden.corte_der": {
       "animation_length": 0.6,
-      "anim_time_update": "query.anim_time + query.delta_time * query.property('claudenpc:corte_vel')",
       "bones": {
         "rightArm": {
           "rotation": {
@@ -2322,88 +2302,88 @@
           "position": {
             "0.000": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.084": {
               "post": [
-                "-0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
+                -0.16,
+                0.37,
+                0.97
               ],
               "lerp_mode": "catmullrom"
             },
             "0.144": {
               "post": [
-                "-0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
+                -0.26,
+                0.62,
+                1.62
               ],
               "lerp_mode": "catmullrom"
             },
             "0.198": [
-              "-0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
+              -0.28,
+              0.65,
+              1.7
             ],
             "0.222": [
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
+              0.65,
+              -1.53,
+              -4.01
             ],
             "0.246": [
-              "1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
+              1.02,
+              -2.39,
+              -6.27
             ],
             "0.270": {
               "post": [
-                "1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
+                1.13,
+                -2.63,
+                -6.92
               ],
               "lerp_mode": "catmullrom"
             },
             "0.312": {
               "post": [
-                "1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
+                1.05,
+                -2.46,
+                -6.47
               ],
               "lerp_mode": "catmullrom"
             },
             "0.372": {
               "post": [
-                "1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
+                1.03,
+                -2.41,
+                -6.34
               ],
               "lerp_mode": "catmullrom"
             },
             "0.456": {
               "post": [
-                "0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
+                0.65,
+                -1.53,
+                -4.01
               ],
               "lerp_mode": "catmullrom"
             },
             "0.528": {
               "post": [
-                "0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
+                0.21,
+                -0.49,
+                -1.29
               ],
               "lerp_mode": "catmullrom"
             },
             "0.600": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -2411,596 +2391,88 @@
           "rotation": {
             "0.000": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.084": {
               "post": [
-                "-10.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "5.25 * query.property('claudenpc:corte_rot')"
+                -10.5,
+                -0.0,
+                5.25
               ],
               "lerp_mode": "catmullrom"
             },
             "0.144": {
               "post": [
-                "-17.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "8.75 * query.property('claudenpc:corte_rot')"
+                -17.5,
+                -0.0,
+                8.75
               ],
               "lerp_mode": "catmullrom"
             },
             "0.198": [
-              "-18.38 * query.property('claudenpc:corte_rot')",
-              "-0.0 * query.property('claudenpc:corte_rot')",
-              "9.19 * query.property('claudenpc:corte_rot')"
+              -18.38,
+              -0.0,
+              9.19
             ],
             "0.222": [
-              "43.4 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "-21.7 * query.property('claudenpc:corte_rot')"
+              43.4,
+              0.0,
+              -21.7
             ],
             "0.246": [
-              "67.9 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "-33.95 * query.property('claudenpc:corte_rot')"
+              67.9,
+              0.0,
+              -33.95
             ],
             "0.270": {
               "post": [
-                "74.9 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-37.45 * query.property('claudenpc:corte_rot')"
+                74.9,
+                0.0,
+                -37.45
               ],
               "lerp_mode": "catmullrom"
             },
             "0.312": {
               "post": [
-                "70.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-35.0 * query.property('claudenpc:corte_rot')"
+                70.0,
+                0.0,
+                -35.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.372": {
               "post": [
-                "68.6 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-34.3 * query.property('claudenpc:corte_rot')"
+                68.6,
+                0.0,
+                -34.3
               ],
               "lerp_mode": "catmullrom"
             },
             "0.456": {
               "post": [
-                "43.4 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-21.7 * query.property('claudenpc:corte_rot')"
+                43.4,
+                0.0,
+                -21.7
               ],
               "lerp_mode": "catmullrom"
             },
             "0.528": {
               "post": [
-                "14.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-7.0 * query.property('claudenpc:corte_rot')"
+                14.0,
+                0.0,
+                -7.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.600": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_der_1": {
-          "rotation": {
-            "0.020": {
-              "post": [
-                -48.0,
-                -18.0,
-                30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.104": {
-              "post": [
-                -52.2,
-                -11.7,
-                34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.164": {
-              "post": [
-                -55.0,
-                -7.5,
-                38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.218": [
-              -55.35,
-              -6.97,
-              38.4
-            ],
-            "0.242": [
-              -30.64,
-              -44.04,
-              10.16
-            ],
-            "0.266": [
-              -20.84,
-              -58.74,
-              -1.04
-            ],
-            "0.290": {
-              "post": [
-                -18.04,
-                -62.94,
-                -4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.332": {
-              "post": [
-                -20.0,
-                -60.0,
-                -2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.392": {
-              "post": [
-                -20.56,
-                -59.16,
-                -1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.476": {
-              "post": [
-                -30.64,
-                -44.04,
-                10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.548": {
-              "post": [
-                -42.4,
-                -26.4,
-                23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.208": 0,
-            "0.218": 1,
-            "0.290": 1,
-            "0.340": 0
-          }
-        },
-        "fantasma_der_1_espada": {
-          "position": {
-            "0.020": {
-              "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.104": {
-              "post": [
-                "-0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.164": {
-              "post": [
-                "-0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.218": [
-              "-0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.242": [
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.266": [
-              "1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.290": {
-              "post": [
-                "1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.332": {
-              "post": [
-                "1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.392": {
-              "post": [
-                "1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.476": {
-              "post": [
-                "0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.548": {
-              "post": [
-                "0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.020": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.104": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.164": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.218": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "22 + 9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.242": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.266": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.290": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.332": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.392": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.476": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.548": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -7.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_der_2": {
-          "rotation": {
-            "0.045": {
-              "post": [
-                -48.0,
-                -18.0,
-                30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.129": {
-              "post": [
-                -52.2,
-                -11.7,
-                34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.189": {
-              "post": [
-                -55.0,
-                -7.5,
-                38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.243": [
-              -55.35,
-              -6.97,
-              38.4
-            ],
-            "0.267": [
-              -30.64,
-              -44.04,
-              10.16
-            ],
-            "0.291": [
-              -20.84,
-              -58.74,
-              -1.04
-            ],
-            "0.315": {
-              "post": [
-                -18.04,
-                -62.94,
-                -4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.357": {
-              "post": [
-                -20.0,
-                -60.0,
-                -2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.417": {
-              "post": [
-                -20.56,
-                -59.16,
-                -1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.501": {
-              "post": [
-                -30.64,
-                -44.04,
-                10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.573": {
-              "post": [
-                -42.4,
-                -26.4,
-                23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.233": 0,
-            "0.243": 1,
-            "0.315": 1,
-            "0.365": 0
-          }
-        },
-        "fantasma_der_2_espada": {
-          "position": {
-            "0.045": {
-              "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.129": {
-              "post": [
-                "-0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.189": {
-              "post": [
-                "-0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.243": [
-              "-0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.267": [
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.291": [
-              "1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.315": {
-              "post": [
-                "1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.357": {
-              "post": [
-                "1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.417": {
-              "post": [
-                "1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.501": {
-              "post": [
-                "0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.573": {
-              "post": [
-                "0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.045": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.129": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.189": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.243": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "22 + 9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.267": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.291": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.315": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.357": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.417": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.501": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.573": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -7.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -3187,12 +2659,6 @@
               "lerp_mode": "catmullrom"
             }
           }
-        },
-        "fantasma_izq_1": {
-          "scale": 0
-        },
-        "fantasma_izq_2": {
-          "scale": 0
         }
       },
       "particle_effects": {
@@ -3200,6 +2666,10 @@
           {
             "effect": "estela_am",
             "locator": "punta_der"
+          },
+          {
+            "effect": "estela_am",
+            "locator": "medio_der"
           }
         ],
         "0.270": [
@@ -3217,7 +2687,6 @@
     },
     "animation.claudenpc.golden.corte_izq": {
       "animation_length": 0.6,
-      "anim_time_update": "query.anim_time + query.delta_time * query.property('claudenpc:corte_vel')",
       "bones": {
         "leftArm": {
           "rotation": {
@@ -3314,88 +2783,88 @@
           "position": {
             "0.000": {
               "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                -0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.084": {
               "post": [
-                "0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
+                0.16,
+                0.37,
+                0.97
               ],
               "lerp_mode": "catmullrom"
             },
             "0.144": {
               "post": [
-                "0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
+                0.26,
+                0.62,
+                1.62
               ],
               "lerp_mode": "catmullrom"
             },
             "0.198": [
-              "0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
+              0.28,
+              0.65,
+              1.7
             ],
             "0.222": [
-              "-0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
+              -0.65,
+              -1.53,
+              -4.01
             ],
             "0.246": [
-              "-1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
+              -1.02,
+              -2.39,
+              -6.27
             ],
             "0.270": {
               "post": [
-                "-1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
+                -1.13,
+                -2.63,
+                -6.92
               ],
               "lerp_mode": "catmullrom"
             },
             "0.312": {
               "post": [
-                "-1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
+                -1.05,
+                -2.46,
+                -6.47
               ],
               "lerp_mode": "catmullrom"
             },
             "0.372": {
               "post": [
-                "-1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
+                -1.03,
+                -2.41,
+                -6.34
               ],
               "lerp_mode": "catmullrom"
             },
             "0.456": {
               "post": [
-                "-0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
+                -0.65,
+                -1.53,
+                -4.01
               ],
               "lerp_mode": "catmullrom"
             },
             "0.528": {
               "post": [
-                "-0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
+                -0.21,
+                -0.49,
+                -1.29
               ],
               "lerp_mode": "catmullrom"
             },
             "0.600": {
               "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                -0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -3403,596 +2872,88 @@
           "rotation": {
             "0.000": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.084": {
               "post": [
-                "-10.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "-5.25 * query.property('claudenpc:corte_rot')"
+                -10.5,
+                -0.0,
+                -5.25
               ],
               "lerp_mode": "catmullrom"
             },
             "0.144": {
               "post": [
-                "-17.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "-8.75 * query.property('claudenpc:corte_rot')"
+                -17.5,
+                -0.0,
+                -8.75
               ],
               "lerp_mode": "catmullrom"
             },
             "0.198": [
-              "-18.38 * query.property('claudenpc:corte_rot')",
-              "-0.0 * query.property('claudenpc:corte_rot')",
-              "-9.19 * query.property('claudenpc:corte_rot')"
+              -18.38,
+              -0.0,
+              -9.19
             ],
             "0.222": [
-              "43.4 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "21.7 * query.property('claudenpc:corte_rot')"
+              43.4,
+              0.0,
+              21.7
             ],
             "0.246": [
-              "67.9 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "33.95 * query.property('claudenpc:corte_rot')"
+              67.9,
+              0.0,
+              33.95
             ],
             "0.270": {
               "post": [
-                "74.9 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "37.45 * query.property('claudenpc:corte_rot')"
+                74.9,
+                0.0,
+                37.45
               ],
               "lerp_mode": "catmullrom"
             },
             "0.312": {
               "post": [
-                "70.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "35.0 * query.property('claudenpc:corte_rot')"
+                70.0,
+                0.0,
+                35.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.372": {
               "post": [
-                "68.6 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "34.3 * query.property('claudenpc:corte_rot')"
+                68.6,
+                0.0,
+                34.3
               ],
               "lerp_mode": "catmullrom"
             },
             "0.456": {
               "post": [
-                "43.4 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "21.7 * query.property('claudenpc:corte_rot')"
+                43.4,
+                0.0,
+                21.7
               ],
               "lerp_mode": "catmullrom"
             },
             "0.528": {
               "post": [
-                "14.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "7.0 * query.property('claudenpc:corte_rot')"
+                14.0,
+                0.0,
+                7.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.600": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_izq_1": {
-          "rotation": {
-            "0.020": {
-              "post": [
-                -48.0,
-                18.0,
-                -30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.104": {
-              "post": [
-                -52.2,
-                11.7,
-                -34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.164": {
-              "post": [
-                -55.0,
-                7.5,
-                -38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.218": [
-              -55.35,
-              6.97,
-              -38.4
-            ],
-            "0.242": [
-              -30.64,
-              44.04,
-              -10.16
-            ],
-            "0.266": [
-              -20.84,
-              58.74,
-              1.04
-            ],
-            "0.290": {
-              "post": [
-                -18.04,
-                62.94,
-                4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.332": {
-              "post": [
-                -20.0,
-                60.0,
-                2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.392": {
-              "post": [
-                -20.56,
-                59.16,
-                1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.476": {
-              "post": [
-                -30.64,
-                44.04,
-                -10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.548": {
-              "post": [
-                -42.4,
-                26.4,
-                -23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.208": 0,
-            "0.218": 1,
-            "0.290": 1,
-            "0.340": 0
-          }
-        },
-        "fantasma_izq_1_espada": {
-          "position": {
-            "0.020": {
-              "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.104": {
-              "post": [
-                "0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.164": {
-              "post": [
-                "0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.218": [
-              "0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.242": [
-              "-0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.266": [
-              "-1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.290": {
-              "post": [
-                "-1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.332": {
-              "post": [
-                "-1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.392": {
-              "post": [
-                "-1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.476": {
-              "post": [
-                "-0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.548": {
-              "post": [
-                "-0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.020": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.104": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.164": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.218": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + -9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.242": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.266": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.290": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.332": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.392": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.476": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.548": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 7.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_izq_2": {
-          "rotation": {
-            "0.045": {
-              "post": [
-                -48.0,
-                18.0,
-                -30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.129": {
-              "post": [
-                -52.2,
-                11.7,
-                -34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.189": {
-              "post": [
-                -55.0,
-                7.5,
-                -38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.243": [
-              -55.35,
-              6.97,
-              -38.4
-            ],
-            "0.267": [
-              -30.64,
-              44.04,
-              -10.16
-            ],
-            "0.291": [
-              -20.84,
-              58.74,
-              1.04
-            ],
-            "0.315": {
-              "post": [
-                -18.04,
-                62.94,
-                4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.357": {
-              "post": [
-                -20.0,
-                60.0,
-                2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.417": {
-              "post": [
-                -20.56,
-                59.16,
-                1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.501": {
-              "post": [
-                -30.64,
-                44.04,
-                -10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.573": {
-              "post": [
-                -42.4,
-                26.4,
-                -23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.233": 0,
-            "0.243": 1,
-            "0.315": 1,
-            "0.365": 0
-          }
-        },
-        "fantasma_izq_2_espada": {
-          "position": {
-            "0.045": {
-              "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.129": {
-              "post": [
-                "0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.189": {
-              "post": [
-                "0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.243": [
-              "0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.267": [
-              "-0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.291": [
-              "-1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.315": {
-              "post": [
-                "-1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.357": {
-              "post": [
-                "-1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.417": {
-              "post": [
-                "-1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.501": {
-              "post": [
-                "-0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.573": {
-              "post": [
-                "-0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.045": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.129": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.189": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.243": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + -9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.267": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.291": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.315": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.357": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.417": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.501": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.573": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 7.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -4179,12 +3140,6 @@
               "lerp_mode": "catmullrom"
             }
           }
-        },
-        "fantasma_der_1": {
-          "scale": 0
-        },
-        "fantasma_der_2": {
-          "scale": 0
         }
       },
       "particle_effects": {
@@ -4192,6 +3147,10 @@
           {
             "effect": "estela_az",
             "locator": "punta_izq"
+          },
+          {
+            "effect": "estela_az",
+            "locator": "medio_izq"
           }
         ],
         "0.270": [
@@ -4209,7 +3168,6 @@
     },
     "animation.claudenpc.golden.corte_x": {
       "animation_length": 0.7,
-      "anim_time_update": "query.anim_time + query.delta_time * query.property('claudenpc:corte_vel')",
       "bones": {
         "rightArm": {
           "rotation": {
@@ -4306,88 +3264,88 @@
           "position": {
             "0.000": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.098": {
               "post": [
-                "-0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
+                -0.16,
+                0.37,
+                0.97
               ],
               "lerp_mode": "catmullrom"
             },
             "0.168": {
               "post": [
-                "-0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
+                -0.26,
+                0.62,
+                1.62
               ],
               "lerp_mode": "catmullrom"
             },
             "0.231": [
-              "-0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
+              -0.28,
+              0.65,
+              1.7
             ],
             "0.259": [
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
+              0.65,
+              -1.53,
+              -4.01
             ],
             "0.287": [
-              "1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
+              1.02,
+              -2.39,
+              -6.27
             ],
             "0.315": {
               "post": [
-                "1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
+                1.13,
+                -2.63,
+                -6.92
               ],
               "lerp_mode": "catmullrom"
             },
             "0.364": {
               "post": [
-                "1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
+                1.05,
+                -2.46,
+                -6.47
               ],
               "lerp_mode": "catmullrom"
             },
             "0.434": {
               "post": [
-                "1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
+                1.03,
+                -2.41,
+                -6.34
               ],
               "lerp_mode": "catmullrom"
             },
             "0.532": {
               "post": [
-                "0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
+                0.65,
+                -1.53,
+                -4.01
               ],
               "lerp_mode": "catmullrom"
             },
             "0.616": {
               "post": [
-                "0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
+                0.21,
+                -0.49,
+                -1.29
               ],
               "lerp_mode": "catmullrom"
             },
             "0.700": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -4395,596 +3353,88 @@
           "rotation": {
             "0.000": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.098": {
               "post": [
-                "-10.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "5.25 * query.property('claudenpc:corte_rot')"
+                -10.5,
+                -0.0,
+                5.25
               ],
               "lerp_mode": "catmullrom"
             },
             "0.168": {
               "post": [
-                "-17.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "8.75 * query.property('claudenpc:corte_rot')"
+                -17.5,
+                -0.0,
+                8.75
               ],
               "lerp_mode": "catmullrom"
             },
             "0.231": [
-              "-18.38 * query.property('claudenpc:corte_rot')",
-              "-0.0 * query.property('claudenpc:corte_rot')",
-              "9.19 * query.property('claudenpc:corte_rot')"
+              -18.38,
+              -0.0,
+              9.19
             ],
             "0.259": [
-              "43.4 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "-21.7 * query.property('claudenpc:corte_rot')"
+              43.4,
+              0.0,
+              -21.7
             ],
             "0.287": [
-              "67.9 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "-33.95 * query.property('claudenpc:corte_rot')"
+              67.9,
+              0.0,
+              -33.95
             ],
             "0.315": {
               "post": [
-                "74.9 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-37.45 * query.property('claudenpc:corte_rot')"
+                74.9,
+                0.0,
+                -37.45
               ],
               "lerp_mode": "catmullrom"
             },
             "0.364": {
               "post": [
-                "70.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-35.0 * query.property('claudenpc:corte_rot')"
+                70.0,
+                0.0,
+                -35.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.434": {
               "post": [
-                "68.6 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-34.3 * query.property('claudenpc:corte_rot')"
+                68.6,
+                0.0,
+                -34.3
               ],
               "lerp_mode": "catmullrom"
             },
             "0.532": {
               "post": [
-                "43.4 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-21.7 * query.property('claudenpc:corte_rot')"
+                43.4,
+                0.0,
+                -21.7
               ],
               "lerp_mode": "catmullrom"
             },
             "0.616": {
               "post": [
-                "14.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-7.0 * query.property('claudenpc:corte_rot')"
+                14.0,
+                0.0,
+                -7.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.700": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_der_1": {
-          "rotation": {
-            "0.020": {
-              "post": [
-                -48.0,
-                -18.0,
-                30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.118": {
-              "post": [
-                -52.2,
-                -11.7,
-                34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.188": {
-              "post": [
-                -55.0,
-                -7.5,
-                38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.251": [
-              -55.35,
-              -6.97,
-              38.4
-            ],
-            "0.279": [
-              -30.64,
-              -44.04,
-              10.16
-            ],
-            "0.307": [
-              -20.84,
-              -58.74,
-              -1.04
-            ],
-            "0.335": {
-              "post": [
-                -18.04,
-                -62.94,
-                -4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.384": {
-              "post": [
-                -20.0,
-                -60.0,
-                -2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.454": {
-              "post": [
-                -20.56,
-                -59.16,
-                -1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.552": {
-              "post": [
-                -30.64,
-                -44.04,
-                10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.636": {
-              "post": [
-                -42.4,
-                -26.4,
-                23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.241": 0,
-            "0.251": 1,
-            "0.335": 1,
-            "0.385": 0
-          }
-        },
-        "fantasma_der_1_espada": {
-          "position": {
-            "0.020": {
-              "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.118": {
-              "post": [
-                "-0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.188": {
-              "post": [
-                "-0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.251": [
-              "-0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.279": [
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.307": [
-              "1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.335": {
-              "post": [
-                "1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.384": {
-              "post": [
-                "1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.454": {
-              "post": [
-                "1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.552": {
-              "post": [
-                "0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.636": {
-              "post": [
-                "0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.020": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.118": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.188": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.251": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "22 + 9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.279": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.307": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.335": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.384": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.454": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.552": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.636": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -7.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_der_2": {
-          "rotation": {
-            "0.045": {
-              "post": [
-                -48.0,
-                -18.0,
-                30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.143": {
-              "post": [
-                -52.2,
-                -11.7,
-                34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.213": {
-              "post": [
-                -55.0,
-                -7.5,
-                38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.276": [
-              -55.35,
-              -6.97,
-              38.4
-            ],
-            "0.304": [
-              -30.64,
-              -44.04,
-              10.16
-            ],
-            "0.332": [
-              -20.84,
-              -58.74,
-              -1.04
-            ],
-            "0.360": {
-              "post": [
-                -18.04,
-                -62.94,
-                -4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.409": {
-              "post": [
-                -20.0,
-                -60.0,
-                -2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.479": {
-              "post": [
-                -20.56,
-                -59.16,
-                -1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.577": {
-              "post": [
-                -30.64,
-                -44.04,
-                10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.661": {
-              "post": [
-                -42.4,
-                -26.4,
-                23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.266": 0,
-            "0.276": 1,
-            "0.360": 1,
-            "0.410": 0
-          }
-        },
-        "fantasma_der_2_espada": {
-          "position": {
-            "0.045": {
-              "post": [
-                "0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.143": {
-              "post": [
-                "-0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.213": {
-              "post": [
-                "-0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.276": [
-              "-0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.304": [
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.332": [
-              "1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.360": {
-              "post": [
-                "1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.409": {
-              "post": [
-                "1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.479": {
-              "post": [
-                "1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.577": {
-              "post": [
-                "0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.661": {
-              "post": [
-                "0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.045": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.143": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.213": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "22 + 8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.276": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "22 + 9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.304": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.332": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "22 + -33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.360": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.409": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.479": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.577": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.661": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "22 + -7.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -5085,88 +3535,88 @@
           "position": {
             "0.000": {
               "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                -0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.098": {
               "post": [
-                "0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
+                0.16,
+                0.37,
+                0.97
               ],
               "lerp_mode": "catmullrom"
             },
             "0.168": {
               "post": [
-                "0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
+                0.26,
+                0.62,
+                1.62
               ],
               "lerp_mode": "catmullrom"
             },
             "0.231": [
-              "0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
+              0.28,
+              0.65,
+              1.7
             ],
             "0.259": [
-              "-0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
+              -0.65,
+              -1.53,
+              -4.01
             ],
             "0.287": [
-              "-1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
+              -1.02,
+              -2.39,
+              -6.27
             ],
             "0.315": {
               "post": [
-                "-1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
+                -1.13,
+                -2.63,
+                -6.92
               ],
               "lerp_mode": "catmullrom"
             },
             "0.364": {
               "post": [
-                "-1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
+                -1.05,
+                -2.46,
+                -6.47
               ],
               "lerp_mode": "catmullrom"
             },
             "0.434": {
               "post": [
-                "-1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
+                -1.03,
+                -2.41,
+                -6.34
               ],
               "lerp_mode": "catmullrom"
             },
             "0.532": {
               "post": [
-                "-0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
+                -0.65,
+                -1.53,
+                -4.01
               ],
               "lerp_mode": "catmullrom"
             },
             "0.616": {
               "post": [
-                "-0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
+                -0.21,
+                -0.49,
+                -1.29
               ],
               "lerp_mode": "catmullrom"
             },
             "0.700": {
               "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
+                -0.0,
+                -0.0,
+                -0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -5174,596 +3624,88 @@
           "rotation": {
             "0.000": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                0.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.098": {
               "post": [
-                "-10.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "-5.25 * query.property('claudenpc:corte_rot')"
+                -10.5,
+                -0.0,
+                -5.25
               ],
               "lerp_mode": "catmullrom"
             },
             "0.168": {
               "post": [
-                "-17.5 * query.property('claudenpc:corte_rot')",
-                "-0.0 * query.property('claudenpc:corte_rot')",
-                "-8.75 * query.property('claudenpc:corte_rot')"
+                -17.5,
+                -0.0,
+                -8.75
               ],
               "lerp_mode": "catmullrom"
             },
             "0.231": [
-              "-18.38 * query.property('claudenpc:corte_rot')",
-              "-0.0 * query.property('claudenpc:corte_rot')",
-              "-9.19 * query.property('claudenpc:corte_rot')"
+              -18.38,
+              -0.0,
+              -9.19
             ],
             "0.259": [
-              "43.4 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "21.7 * query.property('claudenpc:corte_rot')"
+              43.4,
+              0.0,
+              21.7
             ],
             "0.287": [
-              "67.9 * query.property('claudenpc:corte_rot')",
-              "0.0 * query.property('claudenpc:corte_rot')",
-              "33.95 * query.property('claudenpc:corte_rot')"
+              67.9,
+              0.0,
+              33.95
             ],
             "0.315": {
               "post": [
-                "74.9 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "37.45 * query.property('claudenpc:corte_rot')"
+                74.9,
+                0.0,
+                37.45
               ],
               "lerp_mode": "catmullrom"
             },
             "0.364": {
               "post": [
-                "70.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "35.0 * query.property('claudenpc:corte_rot')"
+                70.0,
+                0.0,
+                35.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.434": {
               "post": [
-                "68.6 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "34.3 * query.property('claudenpc:corte_rot')"
+                68.6,
+                0.0,
+                34.3
               ],
               "lerp_mode": "catmullrom"
             },
             "0.532": {
               "post": [
-                "43.4 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "21.7 * query.property('claudenpc:corte_rot')"
+                43.4,
+                0.0,
+                21.7
               ],
               "lerp_mode": "catmullrom"
             },
             "0.616": {
               "post": [
-                "14.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "7.0 * query.property('claudenpc:corte_rot')"
+                14.0,
+                0.0,
+                7.0
               ],
               "lerp_mode": "catmullrom"
             },
             "0.700": {
               "post": [
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')",
-                "0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_izq_1": {
-          "rotation": {
-            "0.020": {
-              "post": [
-                -48.0,
-                18.0,
-                -30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.118": {
-              "post": [
-                -52.2,
-                11.7,
-                -34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.188": {
-              "post": [
-                -55.0,
-                7.5,
-                -38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.251": [
-              -55.35,
-              6.97,
-              -38.4
-            ],
-            "0.279": [
-              -30.64,
-              44.04,
-              -10.16
-            ],
-            "0.307": [
-              -20.84,
-              58.74,
-              1.04
-            ],
-            "0.335": {
-              "post": [
-                -18.04,
-                62.94,
-                4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.384": {
-              "post": [
-                -20.0,
-                60.0,
-                2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.454": {
-              "post": [
-                -20.56,
-                59.16,
-                1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.552": {
-              "post": [
-                -30.64,
-                44.04,
-                -10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.636": {
-              "post": [
-                -42.4,
-                26.4,
-                -23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.241": 0,
-            "0.251": 1,
-            "0.335": 1,
-            "0.385": 0
-          }
-        },
-        "fantasma_izq_1_espada": {
-          "position": {
-            "0.020": {
-              "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.118": {
-              "post": [
-                "0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.188": {
-              "post": [
-                "0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.251": [
-              "0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.279": [
-              "-0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.307": [
-              "-1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.335": {
-              "post": [
-                "-1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.384": {
-              "post": [
-                "-1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.454": {
-              "post": [
-                "-1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.552": {
-              "post": [
-                "-0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.636": {
-              "post": [
-                "-0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.020": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.118": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.188": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.251": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + -9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.279": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.307": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.335": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.384": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.454": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.552": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.636": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 7.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          }
-        },
-        "fantasma_izq_2": {
-          "rotation": {
-            "0.045": {
-              "post": [
-                -48.0,
-                18.0,
-                -30.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.143": {
-              "post": [
-                -52.2,
-                11.7,
-                -34.8
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.213": {
-              "post": [
-                -55.0,
-                7.5,
-                -38.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.276": [
-              -55.35,
-              6.97,
-              -38.4
-            ],
-            "0.304": [
-              -30.64,
-              44.04,
-              -10.16
-            ],
-            "0.332": [
-              -20.84,
-              58.74,
-              1.04
-            ],
-            "0.360": {
-              "post": [
-                -18.04,
-                62.94,
-                4.24
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.409": {
-              "post": [
-                -20.0,
-                60.0,
-                2.0
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.479": {
-              "post": [
-                -20.56,
-                59.16,
-                1.36
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.577": {
-              "post": [
-                -30.64,
-                44.04,
-                -10.16
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.661": {
-              "post": [
-                -42.4,
-                26.4,
-                -23.6
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "scale": {
-            "0.000": 0,
-            "0.266": 0,
-            "0.276": 1,
-            "0.360": 1,
-            "0.410": 0
-          }
-        },
-        "fantasma_izq_2_espada": {
-          "position": {
-            "0.045": {
-              "post": [
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')",
-                "-0.0 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.143": {
-              "post": [
-                "0.16 * query.property('claudenpc:corte_dist')",
-                "0.37 * query.property('claudenpc:corte_dist')",
-                "0.97 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.213": {
-              "post": [
-                "0.26 * query.property('claudenpc:corte_dist')",
-                "0.62 * query.property('claudenpc:corte_dist')",
-                "1.62 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.276": [
-              "0.28 * query.property('claudenpc:corte_dist')",
-              "0.65 * query.property('claudenpc:corte_dist')",
-              "1.7 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.304": [
-              "-0.65 * query.property('claudenpc:corte_dist')",
-              "-1.53 * query.property('claudenpc:corte_dist')",
-              "-4.01 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.332": [
-              "-1.02 * query.property('claudenpc:corte_dist')",
-              "-2.39 * query.property('claudenpc:corte_dist')",
-              "-6.27 * query.property('claudenpc:corte_dist')"
-            ],
-            "0.360": {
-              "post": [
-                "-1.13 * query.property('claudenpc:corte_dist')",
-                "-2.63 * query.property('claudenpc:corte_dist')",
-                "-6.92 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.409": {
-              "post": [
-                "-1.05 * query.property('claudenpc:corte_dist')",
-                "-2.46 * query.property('claudenpc:corte_dist')",
-                "-6.47 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.479": {
-              "post": [
-                "-1.03 * query.property('claudenpc:corte_dist')",
-                "-2.41 * query.property('claudenpc:corte_dist')",
-                "-6.34 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.577": {
-              "post": [
-                "-0.65 * query.property('claudenpc:corte_dist')",
-                "-1.53 * query.property('claudenpc:corte_dist')",
-                "-4.01 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.661": {
-              "post": [
-                "-0.21 * query.property('claudenpc:corte_dist')",
-                "-0.49 * query.property('claudenpc:corte_dist')",
-                "-1.29 * query.property('claudenpc:corte_dist')"
-              ],
-              "lerp_mode": "catmullrom"
-            }
-          },
-          "rotation": {
-            "0.045": {
-              "post": [
-                "-18 + 0.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 0.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.143": {
-              "post": [
-                "-18 + -10.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -5.25 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.213": {
-              "post": [
-                "-18 + -17.5 * query.property('claudenpc:corte_rot')",
-                "0 + -0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + -8.75 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.276": [
-              "-18 + -18.38 * query.property('claudenpc:corte_rot')",
-              "0 + -0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + -9.19 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.304": [
-              "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.332": [
-              "-18 + 67.9 * query.property('claudenpc:corte_rot')",
-              "0 + 0.0 * query.property('claudenpc:corte_rot')",
-              "-22 + 33.95 * query.property('claudenpc:corte_rot')"
-            ],
-            "0.360": {
-              "post": [
-                "-18 + 74.9 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 37.45 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.409": {
-              "post": [
-                "-18 + 70.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 35.0 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.479": {
-              "post": [
-                "-18 + 68.6 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 34.3 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.577": {
-              "post": [
-                "-18 + 43.4 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 21.7 * query.property('claudenpc:corte_rot')"
-              ],
-              "lerp_mode": "catmullrom"
-            },
-            "0.661": {
-              "post": [
-                "-18 + 14.0 * query.property('claudenpc:corte_rot')",
-                "0 + 0.0 * query.property('claudenpc:corte_rot')",
-                "-22 + 7.0 * query.property('claudenpc:corte_rot')"
+                0.0,
+                0.0,
+                0.0
               ],
               "lerp_mode": "catmullrom"
             }
@@ -5957,6 +3899,10 @@
           {
             "effect": "estela_am",
             "locator": "punta_der"
+          },
+          {
+            "effect": "estela_am",
+            "locator": "medio_der"
           }
         ],
         "0.315": [
@@ -5969,6 +3915,10 @@
           {
             "effect": "estela_az",
             "locator": "punta_izq"
+          },
+          {
+            "effect": "estela_az",
+            "locator": "medio_izq"
           }
         ],
         "0.316": [

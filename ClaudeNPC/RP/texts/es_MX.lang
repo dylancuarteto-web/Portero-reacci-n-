@@ -23,3 +23,5 @@ entity.claudenpc:rayo.name=Rayo
 entity.claudenpc:marioneta.name=Hilos de marioneta
 entity.claudenpc:ilusion_jugador.name=Ilusión
 entity.claudenpc:fondo.name=Fondo
+entity.claudenpc:orbe_azul.name=Orbe azul
+entity.claudenpc:orbe_definitiva.name=Orbe definitiva

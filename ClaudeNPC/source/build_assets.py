@@ -1881,17 +1881,18 @@ def render_controllers():
                                 {"herr_bateria": "query.property('claudenpc:herramienta') == 4"}]},
         "controller.render.claudenpc_golden": {
             "geometry": "Geometry.default", "textures": ["Texture.default"],
-            "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES]
-                         + [{"sombra": "Material.aura"}, {"fantasma_*": "Material.aura"}],
+            "materials": [{"*": "Material.default"}] + [{b: "Material.aura"} for b in AURA_BONES] + [{"sombra": "Material.aura"}],
+            # Variantes de la entidad (las pone el script con eventos): mark_variant = forma
+            # (0 normal, 1 alas y corona, 2 además las espadas); skin_id = detalle (1 sombra en
+            # los ojos, herido; 2 una orbe en cada mano).
             "part_visibility": [
                 {"*": True},
-                {"sombra": "query.property('claudenpc:pose') == 1 || query.property('claudenpc:pose') == 2"},
-                {"ojo_brillo": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"},
-                {"ojo_rayos": "query.property('claudenpc:pose') != 1 && query.property('claudenpc:pose') != 2"},
-                {"corona": "query.property('claudenpc:corona')"}, {"halo": "!query.property('claudenpc:corona')"},
-                {"alas": "query.property('claudenpc:alas')"}, {"ala_*": "query.property('claudenpc:alas')"},
-                {"espada_*": "query.property('claudenpc:espadas')"}, {"fantasma_*": "query.property('claudenpc:espadas')"},
-                {"orbe_mano_*": "query.property('claudenpc:orbes_manos')"}]},
+                {"sombra": "query.skin_id == 1"},
+                {"ojo_brillo": "query.skin_id != 1"}, {"ojo_rayos": "query.skin_id != 1"},
+                {"corona": "query.mark_variant >= 1"}, {"halo": "query.mark_variant == 0"},
+                {"alas": "query.mark_variant >= 1"}, {"ala_*": "query.mark_variant >= 1"},
+                {"espada_*": "query.mark_variant == 2"},
+                {"orbe_mano_*": "query.skin_id == 2"}]},
         "controller.render.claudenpc_robot": {
             "arrays": {"textures": {"Array.fases": ["Texture.default", "Texture.turbo", "Texture.genio"]}},
             "geometry": "Geometry.default", "textures": ["Array.fases[query.property('claudenpc:fase')]"],
@@ -1955,17 +1956,16 @@ def client_entities():
         "enable_attachables": True,
         "spawn_egg": {"base_color": "#74543A", "overlay_color": "#D97757"}}}})
     golden_anims = dict(base_anims)
-    from golden_final_assets import POSES, POSES_EN_SUELO, POSES_SIN_MIRAR
+    from golden_final_assets import POSES
     for name in ("flotar", "halo", "aura", "poder", "chasquido", "dirigir", "pensar", "ojo", "golpe", "aturdido", "risa", "picada",
                  "alas", "alas_batir", "chasquido_izq", "chasquido_der", "lanzar_orbe", "combo", "sacar_espadas", "temblor_final",
-                 "espada_listo", "corte_der", "corte_izq", "corte_x") + tuple(f"pose_{n}" for n, _ in POSES.values()):
+                 "corte_der", "corte_izq", "corte_x") + tuple(f"pose_{n}" for n, _ in POSES.values()):
         golden_anims[name] = f"animation.claudenpc.golden.{name}"
     golden_anims["ctrl_ojo"] = "controller.animation.claudenpc.golden.ojo"
-    golden_anims["ctrl_pose"] = "controller.animation.claudenpc.golden.pose"
-    golden_anims["ctrl_espadas"] = "controller.animation.claudenpc.golden.espadas"
     golden_anims["ctrl_orbes"] = "controller.animation.claudenpc.golden.orbes_mano"
-    sin_mirar = " && ".join(f"query.property('claudenpc:pose') != {n}" for n in POSES_SIN_MIRAR)
-    sin_flotar = " && ".join(f"query.property('claudenpc:pose') != {n}" for n in POSES_EN_SUELO)
+    # Herido (sombra en los ojos): ni mira alrededor ni flota (está de rodillas en el suelo).
+    sin_mirar = "query.skin_id != 1"
+    sin_flotar = "query.skin_id != 1"
     for ident, archivo in (("claudenpc:claude_golden", "claude_golden"), ("claudenpc:espejismo", "espejismo")):
         write_json(RP / f"entity/{archivo}.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
             "identifier": ident,
@@ -1980,8 +1980,7 @@ def client_entities():
                                  "mano_az": "claudenpc:mano_azul"},
             "sound_effects": {"corte": "claudenpc.golden.corte"},
             "scripts": {"animate": [{"mirar": sin_mirar}, "respirar", "parpadeo", {"flotar": sin_flotar}, "halo", "aura", "ojo",
-                                    "ctrl_ojo", "ctrl_pose", "ctrl_espadas", "ctrl_orbes",
-                                    {"alas": "query.property('claudenpc:alas')"}]},
+                                    "ctrl_ojo", "ctrl_orbes", {"alas": "query.mark_variant >= 1"}]},
             "render_controllers": ["controller.render.claudenpc_golden"],
             "enable_attachables": True}}})
     write_json(RP / "entity/eco.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
@@ -2092,7 +2091,7 @@ def client_entities():
         "controller.animation.claudenpc.misil.humo": {"initial_state": "vuela", "states": {"vuela": {
             "particle_effects": [{"effect": "humo", "locator": "cola"}, {"effect": "llama", "locator": "cola"}]}}}}})
     from golden_final_assets import controladores_golden_final
-    herido = "query.property('claudenpc:pose') == 1 || query.property('claudenpc:pose') == 2"
+    herido = "query.skin_id == 1"
     write_json(RP / "animation_controllers/golden.animation_controllers.json", {"format_version": "1.10.0", "animation_controllers": {
         "controller.animation.claudenpc.golden.ojo": {"initial_state": "brillar", "states": {
             "brillar": {"particle_effects": [{"effect": "ojo", "locator": "ojo_derecho"}, {"effect": "halo_ojo", "locator": "ojo_derecho"}],

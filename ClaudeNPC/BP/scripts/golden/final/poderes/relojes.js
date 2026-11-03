@@ -1,9 +1,9 @@
 import { Player, system, world } from "@minecraft/server";
-import { ANIM, FINAL, GOLDEN_FINAL, PARTICLES, PROP, SONIDO } from "../../../config.js";
+import { ANIM, FINAL, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../../config.js";
 import { now, particleAt, soundAt } from "../../../util.js";
 import { goldens } from "../../comun.js";
 import { pedestales } from "../arena.js";
-import { animar, barra, pose, prop } from "../comun.js";
+import { animar, pose } from "../comun.js";
 import { lanzarDefinitiva } from "./definitiva.js";
 
 // Requisito RELOJ: Claude Golden chasquea los dedos y aparecen 4 relojes 3D sobre los
@@ -11,7 +11,15 @@ import { lanzarDefinitiva } from "./definitiva.js";
 // se acabe el tiempo. Si los apagas, Golden queda aturdido; si no, lanza la orbe definitiva.
 // En la barra de acción solo se ven íconos: relojes encendidos/apagados y el tiempo.
 
-const ICONO = { on: "", off: "", lleno: "", vacio: "" };
+const ICONO = { on: "\uE907", off: "\uE908", lleno: "\uE909", vacio: "\uE90A" };
+
+function evento(e, nombre) {
+  try {
+    if (e.isValid) e.triggerEvent(nombre);
+  } catch {
+    // Reloj no disponible.
+  }
+}
 
 export default {
   id: "relojes",
@@ -79,13 +87,17 @@ export function tickRelojes(g, jugadores) {
   if (R.t % cada === 0) {
     for (const r of encendidos) {
       soundAt(dim, r.pos, SONIDO.tictac, (R.t / cada) % 2 ? 1.0 : 0.8, 1);
-      if (alarma) prop(r.e, PROP.estado, 1);
+      if (alarma && !r.alarma) {
+        r.alarma = true;
+        evento(r.e, "claudenpc:alarma");
+      }
     }
   }
-  if (R.t % 5 === 0 && R.lista.length) {
+  if (R.lista.length) {
+    // Íconos para la barra de la pelea (relojes encendidos/apagados y el tiempo que queda).
     const iconos = R.lista.map((r) => (r.apagado ? ICONO.off : ICONO.on)).join("");
     const llenos = Math.max(0, Math.ceil(10 * (1 - R.t / R.limite)));
-    barra(jugadores, `${iconos}  ${ICONO.lleno.repeat(llenos)}${ICONO.vacio.repeat(10 - llenos)}`);
+    R.hud = `${iconos}  ${ICONO.lleno.repeat(llenos)}${ICONO.vacio.repeat(10 - llenos)}`;
   }
   if (R.t > 8 && R.lista.length && !encendidos.length) {
     // ¡Los apagaron todos! Golden queda aturdido un rato.
@@ -94,14 +106,12 @@ export function tickRelojes(g, jugadores) {
     g.aturdidoHasta = now() + 120;
     animar(e, ANIM.goldenAturdido);
     soundAt(dim, e.location, "beacon.deactivate", 0.7, 1.4);
-    barra(jugadores, " ");
     return;
   }
   if (R.t >= R.limite) {
     for (const r of encendidos) soundAt(dim, r.pos, "block.bell.hit", 0.6, 1.4);
     quitarRelojes(f);
     f.relojes = undefined;
-    barra(jugadores, " ");
     const j = R.objetivo?.isValid ? R.objetivo : jugadores.find((p) => p.isValid);
     if (j) lanzarDefinitiva(g, j);
   }
@@ -124,7 +134,7 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
     soundAt(hurtEntity.dimension, r.pos, "random.anvil_land", 1.6, 0.5);
     if (r.golpes >= GOLDEN_FINAL.relojes.golpes) {
       r.apagado = true;
-      prop(r.e, PROP.estado, 2);
+      evento(r.e, "claudenpc:apagado");
       soundAt(hurtEntity.dimension, r.pos, "random.fizz", 0.8, 1);
       soundAt(hurtEntity.dimension, r.pos, "beacon.deactivate", 1.4, 0.8);
     }

@@ -1,12 +1,12 @@
 import { HudVisibility, InputPermissionCategory, Player, system, world } from "@minecraft/server";
-import { DIMENSIONES, FINAL, GOLDEN_FINAL, PROP } from "../../config.js";
+import { DIMENSIONES, FINAL, GOLDEN_FINAL } from "../../config.js";
 import { enCinematica } from "../../robot/cinematica.js";
 import { now } from "../../util.js";
 import { goldens } from "../comun.js";
 import { arenas, crearArena, ponerArena, revisarArenasHuerfanas, romperArena } from "./arena.js";
 import { configurarCaidos, revivirCaidos } from "./caidos.js";
 import { iniciarHerido, tickCine, tickHerido } from "./cine.js";
-import { prop } from "./comun.js";
+import { forma, pose } from "./comun.js";
 import { iniciarMuerte, tickMuerte } from "./muerte.js";
 import { orbes } from "./orbes.js";
 import { cerebroFinal, empezarPelea, participantes, terminarMusica, tickPelea, vidaDe } from "./pelea.js";
@@ -115,9 +115,8 @@ export function reanudarFinal(g) {
   }
   g.fase = 2;
   g.presentado = true;
-  prop(e, PROP.alas, true);
-  prop(e, PROP.corona, true);
-  prop(e, PROP.pose, 0);
+  forma(e, datos.espadas ? 2 : 1);
+  pose(g, 0);
   if (datos.etapa === "muerte") system.run(() => iniciarMuerte(g));
   // Objetos de la cinemática o de poderes que quedaron sueltos al cerrar el mundo.
   try {

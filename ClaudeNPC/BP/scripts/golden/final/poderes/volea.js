@@ -1,7 +1,7 @@
 import { system } from "@minecraft/server";
-import { GOLDEN_FINAL, PROP } from "../../../config.js";
+import { GOLDEN_FINAL } from "../../../config.js";
 import { now, soundAt } from "../../../util.js";
-import { pose, prop, punto } from "../comun.js";
+import { detalle, pose, punto } from "../comun.js";
 import { lanzarOrbe } from "../orbes.js";
 
 // Orbes doradas y azules 3D (3 corazones de daño cada una): alza los brazos con una orbe
@@ -19,7 +19,7 @@ export default {
     const n = g.final?.espadasHechas ? 8 : 6;
     g.quietoHasta = now() + 20 + n * 6;
     pose(g, 8);
-    prop(e, PROP.orbesManos, true);
+    detalle(g, 2); // una orbe en cada mano
     soundAt(dim, e.location, "beacon.power", 1.5, 1);
     system.runTimeout(() => e.isValid && pose(g, 0), 14);
     for (let k = 0; k < n; k++) {
@@ -36,7 +36,7 @@ export default {
           contra: "jugadores", dano: GOLDEN_FINAL.danoOrbe, guiado: tipo === 0 ? 0.03 : 0.08, guiadoHasta: tipo === 0 ? 20 : 45,
           vida: 100, radio: 0.55 });
         soundAt(dim, desde, tipo === 0 ? "mob.blaze.shoot" : "mob.shulker.shoot", 1.4, 0.8);
-        if (k === n - 1) prop(e, PROP.orbesManos, false);
+        if (k === n - 1) detalle(g, 0);
       }, 16 + k * 6);
     }
     return 22 + n * 6;

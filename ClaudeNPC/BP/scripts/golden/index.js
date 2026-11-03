@@ -4,6 +4,7 @@ import { animate, blockAt, burst, distancia, now, particleAt, piso, rand, sortea
 import { danar, empujar, estallido, goldens, historial, objetivos } from "./comun.js";
 import { PODERES } from "./poderes/index.js";
 import { cerebroFinal, controlarDano, finalInterrumpido, reanudarFinal, revisarUmbral } from "./final/index.js";
+import { limitar } from "./final/arena.js";
 
 // Claude Golden: nace de la fusión de cinco Claudes con IQ 1000 y es un jefe HOSTIL.
 // Vuela en órbita a tu alrededor, se lanza a golpearte con la palma dorada, te devuelve
@@ -224,10 +225,12 @@ system.runInterval(() => {
         const dz = e.location.z - j.location.z;
         const d = Math.hypot(dx, dz) || 1;
         objetivo = { x: j.location.x + (dx / d) * 1.5, y: j.location.y + 0.4, z: j.location.z + (dz / d) * 1.5 };
+        if (g.final?.arena?.puesta) objetivo = limitar(g.final.arena, objetivo, 1.8); // no sale de su arena cerrada
         volarHacia(e, objetivo, mirar, g.fase === 2 ? 0.55 : 0.45);
       } else {
         const r = j ? (g.fase === 2 ? 4.5 : 5.5) + Math.sin(now() / 40) * 1.2 : 2;
         objetivo = { x: base.x + Math.cos(a) * r, y: base.y + (j ? 2 : 1.4) + Math.sin(now() / 18) * 0.5, z: base.z + Math.sin(a) * r };
+        if (g.final?.arena?.puesta) objetivo = limitar(g.final.arena, objetivo, 2.5); // no sale de su arena cerrada
         volarHacia(e, objetivo, mirar, g.fase === 2 ? 0.34 : 0.26);
       }
       // Espejismos: vuelan en la misma órbita, a 120° y 240°, y copian su nombre.

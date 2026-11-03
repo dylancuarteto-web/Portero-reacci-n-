@@ -1,8 +1,9 @@
 import { system } from "@minecraft/server";
-import { ESPEJISMO, GOLDEN_FINAL, PARTICLES, PROP } from "../../../config.js";
+import { ESPEJISMO, GOLDEN_FINAL, PARTICLES } from "../../../config.js";
 import { now, particleAt, soundAt } from "../../../util.js";
 import { danar, empujar, estallido } from "../../comun.js";
-import { lerp, pose, prop } from "../comun.js";
+import { limitar } from "../arena.js";
+import { lerp, pose } from "../comun.js";
 
 // Ilusiones: se queda quieto, alza los brazos y mira arriba; después se separa en cinco
 // (él y cuatro copias con alas y corona) que te rodean y te atacan desde distintos lados,
@@ -44,13 +45,11 @@ export default {
           f.ilusiones = [];
           for (let k = 0; k < 5; k++) {
             const a = a0 + (k * Math.PI * 2) / 5;
-            const lugar = { x: j.location.x + Math.cos(a) * 6, y: j.location.y + 1.4, z: j.location.z + Math.sin(a) * 6 };
+            const lugar = limitar(f.arena, { x: j.location.x + Math.cos(a) * 6, y: j.location.y + 1.4, z: j.location.z + Math.sin(a) * 6 }, 2);
             let ent = e;
             if (k > 0) {
               try {
-                ent = dim.spawnEntity(ESPEJISMO, inicio);
-                prop(ent, PROP.alas, true);
-                prop(ent, PROP.corona, true);
+                ent = dim.spawnEntity(ESPEJISMO, inicio, { spawnEvent: "claudenpc:forma_1" }); // con alas y corona
                 f.ilusiones.push(ent);
               } catch {
                 continue;

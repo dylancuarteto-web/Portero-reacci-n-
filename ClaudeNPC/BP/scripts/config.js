@@ -21,11 +21,7 @@ export const DIMENSIONES = ["minecraft:overworld", "minecraft:nether", "minecraf
 export const PROP = { escudo: "claudenpc:escudo", sentado: "claudenpc:sentado", furia: "claudenpc:furia", variante: "claudenpc:variante",
   alarma: "claudenpc:alarma", herramienta: "claudenpc:herramienta", fase: "claudenpc:fase", corriendo: "claudenpc:corriendo",
   sinPuno: "claudenpc:sin_puno", volando: "claudenpc:volando", apagado: "claudenpc:apagado", cargando: "claudenpc:cargando",
-  // Fase final de Claude Golden y sus objetos
-  pose: "claudenpc:pose", alas: "claudenpc:alas", corona: "claudenpc:corona", espadas: "claudenpc:espadas", corte: "claudenpc:corte",
-  orbesManos: "claudenpc:orbes_manos", corteVel: "claudenpc:corte_vel", corteDist: "claudenpc:corte_dist", corteRot: "claudenpc:corte_rot",
-  tam: "claudenpc:tam", brillo: "claudenpc:brillo", tipo: "claudenpc:tipo", estado: "claudenpc:estado", ojos: "claudenpc:ojos",
-  pecho: "claudenpc:pecho", frente: "claudenpc:frente" };
+};
 
 // Eventos de la entidad: perseguir o no al jugador, sentarse o levantarse.
 export const EVENTO = {
@@ -80,7 +76,10 @@ export const PARTICLES = {
   tornillo: "claudenpc:tornillo",
   converge: "claudenpc:converge_dorado",
   lluviaDorada: "claudenpc:lluvia_dorada",
-  hilo: "claudenpc:hilo",
+  hiloPunto: "claudenpc:hilo_punto",
+  ojoDorado: "claudenpc:ojo_dorado",
+  motas: "claudenpc:motas_doradas",
+  destelloCorazon: "claudenpc:destello_corazon",
   explosionDorada: "claudenpc:explosion_dorada",
   explosionAzul: "claudenpc:explosion_azul",
   explosionDefinitiva: "claudenpc:explosion_definitiva",
@@ -296,8 +295,8 @@ export const GOLDEN_FINAL = {
   vida: 1000,
   espadas: 500, // con esta vida saca las dos espadas
   radioCine: 64, // jugadores que ven la cinemática
-  arenaRadio: 13,
-  arenaAlto: 10,
+  arenaRadio: 22, // arena cerrada (paredes y techo de vidrio dorado)
+  arenaAlto: 14, // del piso al techo
   poderCada: [50, 90], // ticks entre poderes
   danoOrbe: 6, // 3 corazones
   danoRayo: 6,
@@ -310,7 +309,8 @@ export const GOLDEN_FINAL = {
   volumenMusica: 1.0,
 };
 export const FINAL = {
-  corazon: "claudenpc:corazon_dorado", fondo: "claudenpc:fondo", orbe: "claudenpc:orbe", reloj: "claudenpc:reloj",
+  corazon: "claudenpc:corazon_dorado", fondo: "claudenpc:fondo", orbe: "claudenpc:orbe", orbeAzul: "claudenpc:orbe_azul",
+  orbeDefinitiva: "claudenpc:orbe_definitiva", reloj: "claudenpc:reloj",
   signo: "claudenpc:signo", rayo: "claudenpc:rayo", marioneta: "claudenpc:marioneta", ilusion: "claudenpc:ilusion_jugador",
 };
 export const ITEM_CORAZON = "claudenpc:corazon_dorado";

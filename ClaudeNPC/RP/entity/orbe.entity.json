@@ -14,11 +14,11 @@
         "default": "geometry.claudenpc.orbe"
       },
       "render_controllers": [
-        "controller.render.claudenpc_orbe"
+        "controller.render.claudenpc_orbe_amarilla"
       ],
       "animations": {
         "giro": "animation.claudenpc.orbe.giro",
-        "ctrl_efectos": "controller.animation.claudenpc.orbe.efectos"
+        "ctrl_efectos": "controller.animation.claudenpc.orbe.amarilla"
       },
       "scripts": {
         "animate": [

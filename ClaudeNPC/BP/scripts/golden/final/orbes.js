@@ -1,7 +1,6 @@
 import { EntityDamageCause, EquipmentSlot, GameMode, Player, system, world } from "@minecraft/server";
-import { FINAL, GOLDEN, GOLDEN_FINAL, PARTICLES, PROP, SONIDO } from "../../config.js";
+import { FINAL, GOLDEN, GOLDEN_FINAL, PARTICLES } from "../../config.js";
 import { blockAt, particleAt, soundAt } from "../../util.js";
-import { prop } from "./comun.js";
 
 // Orbes 3D: amarilla y azul (3 corazones de daño) y la definitiva (grande, mata de un
 // toque). Vuelan movidas por el script (un poco guiadas), chocan con bloques y con sus
@@ -14,7 +13,7 @@ import { prop } from "./comun.js";
 
 export const orbes = new Map();
 let pausadas = false;
-const EVENTO = ["claudenpc:amarilla", "claudenpc:azul", "claudenpc:definitiva"];
+const TIPOS = [FINAL.orbe, FINAL.orbeAzul, FINAL.orbeDefinitiva]; // cada orbe es su propia entidad
 const EXPLOSION = [PARTICLES.explosionDorada, PARTICLES.explosionAzul, PARTICLES.explosionDefinitiva];
 
 export function pausarOrbes(valor) {
@@ -42,7 +41,7 @@ function centroDe(e) {
 export function lanzarOrbe(dim, o) {
   let e;
   try {
-    e = dim.spawnEntity(FINAL.orbe, o.desde, { spawnEvent: EVENTO[o.tipo] ?? EVENTO[0] });
+    e = dim.spawnEntity(TIPOS[o.tipo] ?? TIPOS[0], o.desde);
   } catch {
     return undefined;
   }
@@ -50,7 +49,6 @@ export function lanzarOrbe(dim, o) {
     dueno: o.dueno, contra: o.contra ?? "jugadores", dano: o.dano ?? GOLDEN_FINAL.danoOrbe, guiado: o.guiado ?? 0.05,
     guiadoHasta: o.guiadoHasta ?? 40, vida: o.vida ?? 120, radio: o.radio ?? 0.7, t: 0, golpes: 0, quieta: !!o.quieta,
     alTocar: o.alTocar, rapidez: Math.hypot(o.vel?.x ?? 0, o.vel?.y ?? 0, o.vel?.z ?? 0) || 0.5 };
-  if (o.tam !== undefined) prop(e, PROP.tam, o.tam);
   orbes.set(e.id, orbe);
   return orbe;
 }
@@ -211,7 +209,7 @@ system.runInterval(() => {
 
 // Golpear una orbe: la normal se devuelve; la definitiva necesita 3 golpes.
 world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
-  if (hurtEntity.typeId !== FINAL.orbe) return;
+  if (!TIPOS.includes(hurtEntity.typeId)) return;
   const o = orbes.get(hurtEntity.id);
   try {
     hurtEntity.getComponent("minecraft:health")?.resetToMaxValue();

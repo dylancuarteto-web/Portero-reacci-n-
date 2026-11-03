@@ -1,10 +1,10 @@
 import { ItemStack, system } from "@minecraft/server";
-import { ITEM_CORAZON, PARTICLES, PROP } from "../../config.js";
+import { ITEM_CORAZON, PARTICLES } from "../../config.js";
 import { particleAt, soundAt } from "../../util.js";
 import { estallido } from "../comun.js";
 import { romperArena } from "./arena.js";
 import { revivirCaidos } from "./caidos.js";
-import { BLANCO, animar, fundido, jugadoresCerca, pose, prop, sueloBajo, titulo } from "./comun.js";
+import { BLANCO, animar, fundido, jugadoresCerca, pose, sueloBajo, titulo } from "./comun.js";
 import { quitarOrbes } from "./orbes.js";
 import { participantes, terminarMusica } from "./pelea.js";
 import { quitarMarionetas } from "./poderes/marionetas.js";
@@ -34,7 +34,6 @@ export function iniciarMuerte(g) {
   }
   terminarMusica(g);
   pose(g, 0);
-  prop(e, PROP.orbesManos, false);
   animar(e, "animation.claudenpc.golden.temblor_final", 0.3);
   try {
     e.getComponent("minecraft:health")?.setCurrentValue(1);

@@ -1,7 +1,7 @@
 import { system } from "@minecraft/server";
-import { ANIM, PARTICLES, PROP, SONIDO } from "../../../config.js";
+import { ANIM, PARTICLES, SONIDO } from "../../../config.js";
 import { now, particleAt, soundAt } from "../../../util.js";
-import { animar, pose, prop, punto, yawHacia } from "../comun.js";
+import { animar, detalle, pose, punto, yawHacia } from "../comun.js";
 import { lanzarOrbe } from "../orbes.js";
 
 // Orbe definitiva (solo si no apagaste los 4 relojes): alza los dos brazos con una orbe
@@ -19,7 +19,7 @@ export function lanzarDefinitiva(g, j) {
   f.definitiva = { t: 0, objetivo: j, orbe: undefined, inicio: { ...e.location } };
   g.vueloPropio = true;
   pose(g, 8);
-  prop(e, PROP.orbesManos, true);
+  detalle(g, 2); // orbe amarilla en la derecha y azul en la izquierda
   soundAt(dim, e.location, "beacon.power", 1.2, 1.4);
   const id = system.runInterval(() => {
     const D = f.definitiva;
@@ -44,16 +44,15 @@ export function lanzarDefinitiva(g, j) {
       }
       if (t === 22) pose(g, 9); // junta las manos
       if (t === 30) {
-        prop(e, PROP.orbesManos, false);
-        D.orbe = lanzarOrbe(dim, { tipo: 2, desde: punto(c, yaw, 1.0, 1.3, 0), quieta: true, tam: 0.3, objetivo: obj, dueno: e,
+        detalle(g, 0);
+        D.orbe = lanzarOrbe(dim, { tipo: 2, desde: punto(c, yaw, 1.0, 1.3, 0), quieta: true, objetivo: obj, dueno: e,
           contra: "jugadores", vida: 260, radio: 1.2 });
         particleAt(dim, PARTICLES.fusionDestello, punto(c, yaw, 1.0, 1.3, 0));
         soundAt(dim, c, "mob.warden.sonic_charge", 1, 1.4);
         soundAt(dim, c, SONIDO.carga, 1, 1.2);
       }
       if (D.orbe && t > 30 && t < 96) {
-        const tam = 0.3 + 2.1 * Math.min(1, (t - 30) / 55);
-        prop(D.orbe.e, PROP.tam, Math.round(tam * 20) / 20);
+        const tam = 0.3 + 2.1 * Math.min(1, (t - 30) / 66); // crece igual que el modelo (3,3 s)
         D.orbe.pos = punto(c, yaw, 1.1 + tam * 0.45, 1.3, 0);
         D.orbe.radio = 0.6 + tam * 0.45;
         if (t % 12 === 0) soundAt(dim, D.orbe.pos, "mob.warden.sonic_boom", 1.6, 0.5);
