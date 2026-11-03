@@ -3,9 +3,11 @@
 export const NPC = "claudenpc:claude";
 export const MAESTRO = "claudenpc:maestro";
 export const GOLDEN = "claudenpc:claude_golden";
-// Marco de la barra de jefe de Claude Golden (sin letras): ala izquierda, su cara y ala
-// derecha, dibujados en RP/font/glyph_E9.png (caracteres U+E900 a U+E906).
-export const GOLDEN_MARCO = "\uE900\uE901\uE902\uE903\uE904\uE905\uE906";
+// Nombre de Claude Golden en su barra de jefe (fase final). La interfaz del paquete
+// (RP/ui/hud_screen.json) reconoce este nombre y, en lugar del nombre y la barra morada,
+// dibuja su barra dorada con alas y su cara (sin letras). Si la interfaz no cargara, se ve
+// la barra normal con este nombre (en texto, para que nunca salga "Desconocido").
+export const GOLDEN_NOMBRE = "§6Claude Golden";
 export const ESPEJISMO = "claudenpc:espejismo";
 export const ROBOT = "claudenpc:robot";
 export const MISIL = "claudenpc:misil";

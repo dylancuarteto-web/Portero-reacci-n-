@@ -1,7 +1,7 @@
 import { EasingType, GameMode, HudVisibility, InputPermissionCategory, MolangVariableMap, system, world } from "@minecraft/server";
 import { GOLDEN_FINAL } from "../../config.js";
 import { enCinematica } from "../../robot/cinematica.js";
-import { blockAt, now } from "../../util.js";
+import { blockAt, now, reemplazable } from "../../util.js";
 
 // Herramientas de la fase final de Claude Golden: propiedades, puntos alrededor de él,
 // cámara, fundidos, música y textos que aparecen letra por letra (o que tiemblan).
@@ -45,7 +45,7 @@ export function detalle(g, n) {
   }
 }
 
-const POSES = ["ninguna", "herido", "cabizbajo", "alzar_derecho", "mano_pecho", "revelacion", "chasquido_listo", "brazos_arriba",
+const POSES = ["ninguna", "herido", "agachado", "alzar_derecho", "mano_pecho", "revelacion", "chasquido_listo", "brazos_arriba",
   "orbes_arriba", "orbes_juntas", "marionetas", "pausa", "espadas"];
 
 // Postura que se mantiene (se reemplaza por la siguiente con una transición suave). Se pone
@@ -322,7 +322,10 @@ export function arcoiris(texto, colores = ["§6", "§e", "§g", "§f"]) {
 
 export function solidoEn(dim, p) {
   const b = blockAt(dim, p);
-  return !!b && !b.isAir && !b.isLiquid && !/(grass|fern|flower|torch|snow_layer|carpet|vine|sapling|bush|_sign|button|lever|rail)/.test(b.typeId);
+  // Plantas y adornos finos no cuentan como suelo. Ojo: "grass_block" SÍ es suelo (antes se
+  // confundía con la hierba alta y Golden aterrizaba un bloque más abajo, hundido).
+  if (!b || b.isAir || b.isLiquid || reemplazable(b)) return false; // flores, hierba, nieve fina...
+  return !/(_grass$|^minecraft:grass$|seagrass|fern|flower|torch|snow_layer|carpet|vine|sapling|bush|_sign|button|lever|rail)/.test(b.typeId);
 }
 
 // Bloque de suelo (el primero sólido) debajo de "p": devuelve la posición encima de él.

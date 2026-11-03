@@ -1,8 +1,8 @@
 pack.description=Claudes with their own personality: fight with sword and shield, build, fish, farm, attend Claude Teacher's classes, gain IQ and fuse into Claude Golden. Bedrock 26.60.
 entity.claudenpc:claude.name=Claude
 entity.claudenpc:maestro.name=Claude Teacher
-entity.claudenpc:claude_golden.name=
-entity.claudenpc:espejismo.name=
+entity.claudenpc:claude_golden.name=Claude Golden
+entity.claudenpc:espejismo.name=Claude Golden
 entity.claudenpc:robot.name=Claudes' Robot
 entity.claudenpc:misil.name=Missile
 entity.claudenpc:eco.name=Claude Echo

@@ -832,7 +832,7 @@ def sphere_texture(color=(255, 196, 64)):
 
 ATLAS = {"brillo": (0, 0, 16, 16), "anillo": (16, 0, 16, 16), "estrella": (32, 0, 16, 16),
          "chispa": (48, 0, 8, 8), "cuadro": (56, 0, 8, 8), "humo": (0, 16, 16, 16), "nota": (16, 16, 16, 16),
-         "z": (32, 16, 16, 16)}
+         "z": (32, 16, 16, 16), "ojo": (48, 16, 16, 16)}
 
 
 def particle_atlas():
@@ -865,6 +865,15 @@ def particle_atlas():
         return min(1, cabeza * 1.4 + palo + bandera)
 
     region("nota", nota)
+
+    def ojo(x, y):  # ojo de marioneta: núcleo nítido de 2 x 1 (como el ojo del mob) y halo
+        dx = max(0.0, abs(x) - 0.5)
+        dy = max(0.0, abs(y) - 0.25)
+        if dx == 0 and dy == 0:
+            return 1.0
+        return 0.6 * math.exp(-(dx * dx + dy * dy) * 18)
+
+    region("ojo", ojo)
 
     def letra_z(x, y):  # una "Z" para cuando duermen
         if abs(y + 0.62) < 0.16 or abs(y - 0.62) < 0.16:

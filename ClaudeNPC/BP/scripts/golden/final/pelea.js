@@ -1,5 +1,5 @@
 import { GameMode, system } from "@minecraft/server";
-import { ANIM, GOLDEN_FINAL, GOLDEN_MARCO, PARTICLES, SONIDO } from "../../config.js";
+import { ANIM, GOLDEN_FINAL, GOLDEN_NOMBRE, PARTICLES, SONIDO } from "../../config.js";
 import { now, particleAt, rand, soundAt, sortear } from "../../util.js";
 import { animar, barra, detalle, jugadoresCerca, musica, pararMusica, particula, pose, todosLosJugadores, vivos } from "./comun.js";
 import { PODERES_FINALES, tickPoderes } from "./poderes.js";
@@ -54,7 +54,7 @@ export function empezarPelea(g) {
   g.ocupadoHasta = now() + 50;
   try {
     e.triggerEvent("claudenpc:fase_final"); // 1000 de vida y barra de jefe
-    e.nameTag = GOLDEN_MARCO; // el nombre de la barra de jefe: sus alas y su cara (sin letras)
+    e.nameTag = GOLDEN_NOMBRE; // la interfaz lo reconoce y dibuja su barra dorada arriba
   } catch {
     // Paquete antiguo.
   }
@@ -139,18 +139,12 @@ export function tickPelea(g) {
   tickPoderes(g);
 }
 
-// --- Barra de vida propia (con su cara), niebla dorada y motas de luz -----------------
-// La barra de jefe de Minecraft muestra su nombre (alas y cara); además, abajo, una barra
-// dorada propia hecha con dibujos de la fuente del paquete (sin letras).
-const BARRA = { cara: "\uE903", izq: "\uE90D", lleno: "\uE90B", vacio: "\uE90C", der: "\uE90E" };
-const TRAMOS = 20;
+// --- Relojes en pantalla, niebla dorada y motas de luz -----------------------------------
+// Su vida va ARRIBA, en su barra de jefe: la interfaz del paquete (RP/ui) cambia el nombre
+// y la barra morada por su barra dorada con alas y su cara. Abajo (barra de acción) solo
+// salen los íconos pequeños de los relojes mientras están activos.
 const NIEBLA = "claudenpc:dorada";
 const ETIQUETA_NIEBLA = "claudenpc_dorada";
-
-export function textoBarra(actual, max) {
-  const llenos = Math.max(0, Math.min(TRAMOS, Math.ceil((TRAMOS * actual) / Math.max(1, max))));
-  return `${BARRA.cara}${BARRA.izq}${BARRA.lleno.repeat(llenos)}${BARRA.vacio.repeat(TRAMOS - llenos)}${BARRA.der}`;
-}
 
 function dentro(f, p) {
   const a = f.arena;
@@ -164,11 +158,15 @@ function dentro(f, p) {
 
 function hud(g) {
   const f = g.final;
-  const { actual, max } = vidaDe(g.entidad);
-  const linea = textoBarra(f.curando ? f.cura ?? actual : actual, max);
   const relojes = f.relojes?.hud;
   const jugadores = participantes(g).filter((p) => dentro(f, p));
-  barra(jugadores, relojes ? `${relojes}\n${linea}` : linea);
+  if (relojes) {
+    barra(jugadores, relojes);
+    f.hudRelojes = true;
+  } else if (f.hudRelojes) {
+    barra(jugadores, " "); // se fueron los relojes: se borra la línea de inmediato
+    f.hudRelojes = false;
+  }
   if (f.t % 10 === 0) {
     for (const p of jugadores) particula(p.dimension, PARTICLES.motas, { x: p.location.x, y: p.location.y + 1.5, z: p.location.z });
   }

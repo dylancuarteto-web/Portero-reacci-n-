@@ -16,9 +16,8 @@ import { limitar } from "./final/arena.js";
 const LUZ = "minecraft:light_block_15";
 
 
-// --- Nombre: sin letras ni etiqueta sobre la cabeza. Su nombre (en los textos del paquete)
-// es el marco de la barra de jefe: alas doradas y su cara, dibujados en la fuente del
-// paquete (RP/font/glyph_E9.png).
+// --- Nombre: sin etiqueta antes de la fase final. En la fase final su nombre es
+// GOLDEN_NOMBRE y la interfaz del paquete (RP/ui) dibuja con él su barra de jefe dorada.
 
 // --- Registro y luz ------------------------------------------------------------------
 

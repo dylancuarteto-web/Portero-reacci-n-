@@ -43,7 +43,7 @@
         "corte_x": "animation.claudenpc.golden.corte_x",
         "pose_ninguna": "animation.claudenpc.golden.pose_ninguna",
         "pose_herido": "animation.claudenpc.golden.pose_herido",
-        "pose_cabizbajo": "animation.claudenpc.golden.pose_cabizbajo",
+        "pose_agachado": "animation.claudenpc.golden.pose_agachado",
         "pose_alzar_derecho": "animation.claudenpc.golden.pose_alzar_derecho",
         "pose_mano_pecho": "animation.claudenpc.golden.pose_mano_pecho",
         "pose_revelacion": "animation.claudenpc.golden.pose_revelacion",

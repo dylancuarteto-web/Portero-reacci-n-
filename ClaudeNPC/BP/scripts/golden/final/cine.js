@@ -52,7 +52,7 @@ export function iniciarHerido(g, jugador) {
   const suelo = sueloBajo(dim, e.location, 64);
   const yaw = jugador?.isValid ? yawHacia(e.location, jugador.location) : e.getRotation().y;
   g.final = { etapa: "herido", t: 0, control: true, jugadores: new Set(), desde: { ...e.location }, suelo, yaw, inicio: now() };
-  pose(g, 2);
+  pose(g, 2); // baja agachado (encorvado, con la cabeza gacha)
   particleAt(dim, PARTICLES.estallido, { x: e.location.x, y: e.location.y + 1, z: e.location.z });
   soundAtTodos(dim, e.location, "beacon.deactivate", 0.6, 1.5);
 }
@@ -89,7 +89,7 @@ export function tickHerido(g) {
     mover(g, { x: f.suelo.x + (Math.random() - 0.5) * 0.02, y: f.suelo.y, z: f.suelo.z + (Math.random() - 0.5) * 0.02 });
   }
   if (t === 50) {
-    pose(g, 1); // de rodillas, con la sombra sobre los ojos
+    pose(g, 1); // aterriza agachado (una pierna adelante, la mano hacia el suelo), con la sombra en los ojos
     soundAtTodos(dim, f.suelo, "random.anvil_land", 0.5, 1);
     for (let i = 0; i < 4; i++) particleAt(dim, PARTICLES.polvo, { x: f.suelo.x + Math.random() - 0.5, y: f.suelo.y + 0.2, z: f.suelo.z + Math.random() - 0.5 });
   }
@@ -204,7 +204,7 @@ export function tickCine(g) {
   if (t === 228) cam(punto(G, yaw, 1.1, 0.2, -3.0), punto(G, yaw, 0, 0.9, 0), 1.7, punto(G, yaw, 1.6, 0.25, -2.6));
   // --- Frase 3: se levanta ---
   if (t === 262) cam(punto(G, yaw, 4.4, 1.3, 0), punto(G, yaw, 0, 1.3, 0), 1.7, punto(G, yaw, 4.0, 1.4, 0));
-  if (t === 264) pose(g, 2);
+  if (t === 264) pose(g, 2); // se levanta: primero agachado y luego de pie
   if (t >= 266 && t < 296) {
     if (!escribirBarra(f, TXT3, 266, 1.5, t) && t % 20 === 0) barra(v, TXT3);
   }

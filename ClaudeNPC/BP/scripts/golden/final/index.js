@@ -1,5 +1,5 @@
 import { HudVisibility, InputPermissionCategory, Player, system, world } from "@minecraft/server";
-import { DIMENSIONES, FINAL, GOLDEN_FINAL } from "../../config.js";
+import { DIMENSIONES, FINAL, GOLDEN_FINAL, GOLDEN_NOMBRE } from "../../config.js";
 import { enCinematica } from "../../robot/cinematica.js";
 import { now } from "../../util.js";
 import { goldens } from "../comun.js";
@@ -117,6 +117,11 @@ export function reanudarFinal(g) {
   g.presentado = true;
   forma(e, datos.espadas ? 2 : 1);
   pose(g, 0);
+  try {
+    e.nameTag = GOLDEN_NOMBRE; // su barra de jefe (también si venía de la v8.0)
+  } catch {
+    // Sin nombre.
+  }
   if (datos.etapa === "muerte") system.run(() => iniciarMuerte(g));
   // Objetos de la cinemática o de poderes que quedaron sueltos al cerrar el mundo.
   try {

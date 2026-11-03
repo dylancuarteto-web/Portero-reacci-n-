@@ -1,0 +1,67 @@
+{
+  "namespace": "claudenpc_jefe",
+  "barra_golden": {
+    "type": "panel",
+    "size": [
+      232,
+      28
+    ],
+    "anchor_from": "top_middle",
+    "anchor_to": "top_middle",
+    "layer": 30,
+    "bindings": [
+      {
+        "binding_name": "#bossName",
+        "binding_type": "collection",
+        "binding_collection_name": "boss_bars",
+        "binding_condition": "always"
+      },
+      {
+        "binding_type": "view",
+        "source_property_name": "(not (((#bossName - 'olden') = #bossName) or ((#bossName - 'laude') = #bossName)))",
+        "target_property_name": "#visible",
+        "binding_condition": "always"
+      }
+    ],
+    "controls": [
+      {
+        "marco": {
+          "type": "image",
+          "texture": "textures/ui/claudenpc/jefe_marco",
+          "size": [
+            232,
+            28
+          ],
+          "layer": 1
+        }
+      },
+      {
+        "vida": {
+          "type": "image",
+          "texture": "textures/ui/claudenpc/jefe_lleno",
+          "size": [
+            182,
+            5
+          ],
+          "anchor_from": "top_left",
+          "anchor_to": "top_left",
+          "offset": [
+            25,
+            20
+          ],
+          "layer": 2,
+          "clip_direction": "left",
+          "clip_pixelperfect": false,
+          "bindings": [
+            {
+              "binding_name": "#progress_percentage",
+              "binding_name_override": "#clip_ratio",
+              "binding_type": "collection",
+              "binding_collection_name": "boss_bars"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

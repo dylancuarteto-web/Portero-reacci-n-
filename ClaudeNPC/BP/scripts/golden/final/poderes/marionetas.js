@@ -1,4 +1,4 @@
-import { EntityDamageCause, GameMode, system, world } from "@minecraft/server";
+import { GameMode, system, world } from "@minecraft/server";
 import { FINAL, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../../config.js";
 import { now, particleAt, soundAt } from "../../../util.js";
 import { danar, estallido } from "../../comun.js";
@@ -10,26 +10,35 @@ import { ejes, particula, pose, punto } from "../comun.js";
 // warden). Les brillan los ojos dorados, son un poco más fuertes y te atacan. Duran 2 minutos
 // o hasta que mueren (se deshacen en polvo dorado, sin soltar objetos).
 //
-// Los ojos y el corazón se ponen en cada tick donde están de verdad (la cabeza del mob y
-// hacia dónde mira), así siempre quedan bien puestos aunque el mob gire la cabeza.
+// Los ojos se calculan con las medidas reales de cada modelo vanilla (altura del cuello,
+// de los ojos y de la cara) y con el giro de su cabeza. Además se dibujan donde el juego
+// MUESTRA al mob: el cliente lo dibuja unos 2 ticks atrasado (lo suaviza), así que se usa
+// su posición y su mirada de hace 2 ticks y los ojos se mueven con él mientras brillan.
 
 const TAG = "claudenpc_marioneta";
-// cara: distancia del centro de la cabeza a la cara; sep: mitad de la separación entre los
-// ojos; baja: cuánto más abajo están los ojos; pecho: altura del corazón (fracción de la de
-// los ojos); cuerpo: medio grosor del pecho (el corazón queda justo delante).
+// Medidas (en bloques, del modelo vanilla): cuello = altura del pivote de la cabeza; ojos =
+// cuánto más arriba del cuello están los ojos; cara = del centro de la cabeza a la cara
+// (un poco por delante, para que no los tape el sombrero o la capa); sep = mitad de la
+// distancia entre los ojos; pecho = altura del corazón; frente = cuánto delante del centro
+// del cuerpo va el corazón.
+// Zombis, esqueletos, aldeanos e illagers: ojos a 27,5 px del suelo (fila de los ojos de su
+// textura), a 2 px a cada lado del centro. El creeper: cabeza más baja (pivote a 18 px).
+const HUMANO = { cuello: 24 / 16, ojos: 3.5 / 16, cara: 4.8 / 16, sep: 2 / 16, pecho: 1.2, frente: 0.24 };
+const ALDEANO = { ...HUMANO, frente: 0.3 };
 const TIPOS = [
-  { id: "minecraft:zombie", cara: 0.27, sep: 0.125, baja: 0.03, pecho: 0.6, cuerpo: 0.14 },
-  { id: "minecraft:skeleton", cara: 0.27, sep: 0.125, baja: 0.03, pecho: 0.6, cuerpo: 0.13 },
-  { id: "minecraft:creeper", cara: 0.27, sep: 0.125, baja: 0.02, pecho: 0.55, cuerpo: 0.14 },
-  { id: "minecraft:enderman", cara: 0.27, sep: 0.14, baja: 0.06, pecho: 0.7, cuerpo: 0.12, enojar: true },
-  { id: "minecraft:pillager", cara: 0.27, sep: 0.125, baja: 0.09, pecho: 0.6, cuerpo: 0.2 },
-  { id: "minecraft:villager_v2", cara: 0.27, sep: 0.125, baja: 0.09, pecho: 0.6, cuerpo: 0.22, empujar: true },
-  { id: "minecraft:husk", cara: 0.27, sep: 0.125, baja: 0.03, pecho: 0.6, cuerpo: 0.14 },
-  { id: "minecraft:stray", cara: 0.27, sep: 0.125, baja: 0.03, pecho: 0.6, cuerpo: 0.13 },
-  { id: "minecraft:vindicator", cara: 0.27, sep: 0.125, baja: 0.09, pecho: 0.6, cuerpo: 0.2 },
-  { id: "minecraft:witch", cara: 0.27, sep: 0.125, baja: 0.09, pecho: 0.6, cuerpo: 0.22 },
-  { id: "minecraft:zombie_villager_v2", cara: 0.27, sep: 0.125, baja: 0.09, pecho: 0.6, cuerpo: 0.2 },
+  { id: "minecraft:zombie", ...HUMANO },
+  { id: "minecraft:husk", ...HUMANO },
+  { id: "minecraft:skeleton", ...HUMANO },
+  { id: "minecraft:stray", ...HUMANO },
+  { id: "minecraft:creeper", cuello: 18 / 16, ojos: 5 / 16, cara: 4.8 / 16, sep: 2 / 16, pecho: 0.8, frente: 0.24 },
+  { id: "minecraft:pillager", ...ALDEANO },
+  { id: "minecraft:vindicator", ...ALDEANO },
+  { id: "minecraft:witch", ...ALDEANO },
+  { id: "minecraft:villager_v2", ...ALDEANO, empujar: true },
+  { id: "minecraft:zombie_villager_v2", ...ALDEANO },
 ];
+// Cuántos ticks atrasado dibuja el juego a un mob que camina.
+const ATRASO = 2;
 const NUNCA = /warden|wither|ender_dragon|elder_guardian/;
 
 function mezclar(lista) {
@@ -57,11 +66,18 @@ export default {
         const r = 4.5 + Math.random() * 2.5;
         const lugar = limitar(f.arena, { x: j.location.x + Math.cos(a) * r, y: j.location.y + 0.1, z: j.location.z + Math.sin(a) * r }, 3);
         let m;
-        try {
-          m = dim.spawnEntity(tipo.id, lugar);
-        } catch {
-          return;
+        for (let intento = 0; intento < 3 && !m; intento++) {
+          try {
+            m = dim.spawnEntity(tipo.id, lugar);
+            if (m.getComponent("minecraft:is_baby")) {
+              m.remove(); // los bebés tienen la cabeza de otro tamaño: los ojos no calzarían
+              m = undefined;
+            }
+          } catch {
+            m = undefined;
+          }
         }
+        if (!m) return;
         try {
           m.addTag(TAG);
           for (const [ef, amp] of [["strength", 0], ["speed", 0], ["resistance", 0], ["fire_resistance", 0]]) {
@@ -75,13 +91,6 @@ export default {
           corazon = dim.spawnEntity(FINAL.marioneta, lugar);
         } catch {
           // Sin corazón 3D.
-        }
-        if (tipo.enojar) {
-          try {
-            m.applyDamage(1, { cause: EntityDamageCause.entityAttack, damagingEntity: j });
-          } catch {
-            // No se enojó.
-          }
         }
         f.marionetas.push({ m, hilos: corazon, tipo, hasta: now() + GOLDEN_FINAL.marionetas.duran, objetivo: j, golpe: 0, k });
         particleAt(dim, PARTICLES.fusionDestello, { x: lugar.x, y: lugar.y + 1, z: lugar.z });
@@ -119,22 +128,49 @@ export function quitarMarionetas(g, efecto = true) {
   if (g.final) g.final.marionetas = [];
 }
 
-// Dónde están los ojos y el corazón de un mob ahora mismo.
-function cuerpoDe(x) {
-  const m = x.m;
-  const t = x.tipo;
-  const cabeza = m.getHeadLocation();
-  const v = m.getViewDirection();
-  const lh = Math.hypot(v.x, v.z) || 1;
-  const fx = v.x / lh;
-  const fz = v.z / lh;
-  const der = { x: -fz, z: fx }; // a su derecha
-  const cara = { x: cabeza.x + v.x * t.cara, y: cabeza.y + v.y * t.cara - t.baja, z: cabeza.z + v.z * t.cara };
-  const alto = cabeza.y - m.location.y;
+// Estado del mob en un tick: dónde está y hacia dónde mira.
+function estadoDe(m) {
+  return { pos: { ...m.location }, mira: m.getViewDirection() };
+}
+
+// Dónde están los ojos y el corazón de un mob con ese estado (cuello, giro y cabeceo).
+function cuerpoDe(t, estado) {
+  const { pos, mira } = estado;
+  const lh = Math.hypot(mira.x, mira.z) || 1;
+  const fx = mira.x / lh;
+  const fz = mira.z / lh;
+  const der = { x: -fz, z: fx }; // a su lado (los dos ojos son simétricos)
+  // Cabeceo: el eje "arriba" de la cabeza se inclina hacia atrás cuando mira arriba.
+  const sen = Math.max(-1, Math.min(1, mira.y));
+  const cos = Math.sqrt(1 - sen * sen);
+  const arriba = { x: -fx * sen, y: cos, z: -fz * sen };
+  const cuello = { x: pos.x, y: pos.y + t.cuello, z: pos.z };
+  const cara = {
+    x: cuello.x + mira.x * t.cara + arriba.x * t.ojos,
+    y: cuello.y + mira.y * t.cara + arriba.y * t.ojos,
+    z: cuello.z + mira.z * t.cara + arriba.z * t.ojos,
+  };
   return {
     ojos: [{ x: cara.x + der.x * t.sep, y: cara.y, z: cara.z + der.z * t.sep }, { x: cara.x - der.x * t.sep, y: cara.y, z: cara.z - der.z * t.sep }],
-    corazon: { x: m.location.x + fx * (t.cuerpo + 0.1), y: m.location.y + alto * t.pecho, z: m.location.z + fz * (t.cuerpo + 0.1) },
+    corazon: { x: pos.x + fx * t.frente, y: pos.y + t.pecho, z: pos.z + fz * t.frente },
   };
+}
+
+// Ojos dorados donde el juego muestra al mob (su estado de hace ATRASO ticks), moviéndose
+// con él mientras duran (2 ticks).
+function dibujarOjos(dim, x) {
+  const h = x.historia;
+  const viejo = h[Math.min(ATRASO, h.length - 1)];
+  const siguiente = h[Math.max(0, Math.min(ATRASO, h.length - 1) - 1)];
+  let d = { x: siguiente.pos.x - viejo.pos.x, y: siguiente.pos.y - viejo.pos.y, z: siguiente.pos.z - viejo.pos.z };
+  let rapidez = Math.hypot(d.x, d.y, d.z);
+  if (rapidez > 1.2 || rapidez < 0.002) {
+    // Quieto, o un salto brusco (empujón, teletransporte): ojos quietos.
+    d = { x: 0, y: 1, z: 0 };
+    rapidez = 0;
+  }
+  const vars = { "variable.mov": d, "variable.rapidez": rapidez * 20 };
+  for (const o of cuerpoDe(x.tipo, viejo).ojos) particula(dim, PARTICLES.ojoDorado, o, vars);
 }
 
 // Hilo 3D ondulante (como los de Error Sans): cuentas de luz en una curva que cuelga un poco
@@ -176,8 +212,10 @@ export function tickMarionetas(g, jugadores) {
       return false;
     }
     try {
-      const c = cuerpoDe(x);
-      for (const o of c.ojos) particula(dim, PARTICLES.ojoDorado, o);
+      const ahora = estadoDe(x.m);
+      x.historia = [ahora, ...(x.historia ?? [])].slice(0, ATRASO + 1);
+      dibujarOjos(dim, x);
+      const c = cuerpoDe(x.tipo, ahora);
       if (x.hilos?.isValid) x.hilos.teleport(c.corazon, { keepVelocity: false });
       if (now() % 2 === 0) {
         // Desde la punta de los dedos (separados un poco, uno por hilo) hasta el corazón.

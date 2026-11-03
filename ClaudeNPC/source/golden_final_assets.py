@@ -508,109 +508,255 @@ def icono_corazon():
     return img
 
 
-def cara_golden(tam=32):
-    """Cara de Claude Golden para la barra de jefe: dorada, ojos blancos, ojo derecho
-    luminoso y corona."""
-    img = Image.new("RGBA", (tam, tam), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.rectangle([5, 9, 26, 30], fill=(255, 205, 70, 255), outline=(170, 110, 20, 255))
-    d.rectangle([6, 10, 25, 13], fill=(255, 232, 150, 255))
-    d.rectangle([9, 17, 12, 23], fill=(255, 255, 250, 255))
-    d.rectangle([19, 17, 22, 23], fill=(255, 255, 250, 255))
-    # Ojo derecho (a la izquierda de la imagen) con destello
-    for k in range(-4, 5):
-        a = 255 if abs(k) < 3 else 150
-        d.point((10 + k, 20), fill=(255, 255, 220, a))
-        d.point((10, 20 + k), fill=(255, 255, 220, a))
-    # Corona
-    d.rectangle([5, 5, 26, 8], fill=(255, 196, 40, 255), outline=(170, 110, 20, 255))
-    for x in (6, 15, 24):
-        d.polygon([(x - 1, 5), (x + 2, 5), (x + 0.5, 0)], fill=(255, 214, 80, 255))
-    d.rectangle([14, 6, 17, 7], fill=(230, 40, 60, 255))
-    return img
-
-
-def ala_glifo(ancho=96, alto=32, izquierda=True):
-    """Ala dorada de plumas (diseño propio). Se corta en tres glifos de 32 px."""
-    img = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    raiz = (ancho - 2, 13)
-    for i in range(9):
-        ang = math.radians(196 + i * 9)  # abanico hacia la izquierda
-        largo = 92 - i * 7
-        x1 = raiz[0] + math.cos(ang) * largo
-        y1 = raiz[1] - math.sin(ang) * largo * 0.42 + i * 1.4
-        t = i / 8
-        col = (clamp(255), clamp(236 - 50 * t), clamp(150 - 110 * t), 255)
-        d.line([raiz, (x1, y1)], fill=col, width=5 - (i > 5))
-        d.line([raiz, (x1, y1)], fill=(255, 252, 230, 255), width=1)
-    # Bordes completos para que el motor no recorte el ancho de cada glifo
-    for x in (0, 31, 32, 63, 64, 95):
-        img.putpixel((x, 15), (255, 214, 90, 20))
-    if not izquierda:
-        img = img.transpose(Image.FLIP_LEFT_RIGHT)
-    return img
-
+# =============================================================================
+# Íconos de los relojes (fuente del paquete) y barra de jefe propia (JSON UI)
+# =============================================================================
 
 def hoja_glifos():
-    """RP/font/glyph_E9.png: U+E900-E902 ala izquierda, U+E903 cara, U+E904-E906 ala derecha;
-    U+E907-E90A íconos de los relojes y del tiempo (barra de acción sin letras)."""
-    hoja = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    izq = ala_glifo(izquierda=True)
-    der = ala_glifo(izquierda=False)
-    for i in range(3):
-        hoja.alpha_composite(izq.crop((i * 32, 0, i * 32 + 32, 32)), (i * 32, 0))
-        hoja.alpha_composite(der.crop((i * 32, 0, i * 32 + 32, 32)), ((4 + i) * 32, 0))
-    hoja.alpha_composite(cara_golden(), (3 * 32, 0))
-    # U+E907 reloj encendido, U+E908 reloj apagado, U+E909 tiempo lleno, U+E90A tiempo vacío.
+    """RP/font/glyph_E9.png (256 x 256, celdas de 16 px: el motor dibuja cada glifo más o
+    menos del tamaño de su celda, así que 16 px es como un ícono pequeño junto al texto).
+    U+E907 reloj encendido, U+E908 reloj apagado, U+E909 tiempo lleno, U+E90A tiempo vacío.
+    La vida de Golden ya no va en la barra de acción: va arriba, en su barra de jefe."""
+    hoja = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
     for i, encendido in ((7, True), (8, False)):
-        ic = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+        ic = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
         d = ImageDraw.Draw(ic)
         aro = (255, 200, 60, 255) if encendido else (120, 116, 110, 255)
         cara = (255, 248, 226, 255) if encendido else (80, 80, 86, 255)
         tinta = (70, 44, 20, 255) if encendido else (40, 40, 44, 255)
-        d.ellipse([3, 7, 28, 31], fill=aro)
-        d.ellipse([6, 10, 25, 28], fill=cara)
-        d.line([(15.5, 19), (15.5, 12)], fill=tinta, width=2)
-        d.line([(15.5, 19), (21, 19)], fill=tinta, width=2)
-        for x in (5, 26):
-            d.ellipse([x - 4, 2, x + 4, 9], fill=aro)
+        d.ellipse([1, 3, 14, 15], fill=aro)
+        d.ellipse([3, 5, 12, 13], fill=cara)
+        d.line([(7, 9), (7, 6)], fill=tinta)
+        d.line([(7, 9), (10, 9)], fill=tinta)
+        for x in (2, 13):
+            d.ellipse([x - 2, 0, x + 2, 4], fill=aro)
         if not encendido:
-            d.line([(4, 29), (28, 5)], fill=(200, 40, 50, 255), width=3)
-        ic.putpixel((0, 20), (255, 255, 255, 12))
-        ic.putpixel((31, 20), (255, 255, 255, 12))
-        hoja.alpha_composite(ic, (i * 32, 0))
-    # U+E90B tramo lleno, U+E90C tramo vacío, U+E90D y U+E90E puntas de la barra de vida.
-    for i, tipo in ((11, "lleno"), (12, "vacio"), (13, "izq"), (14, "der")):
-        ic = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
-        d = ImageDraw.Draw(ic)
-        if tipo == "lleno":
-            for y in range(10, 23):
-                t = (y - 10) / 12
-                col = (255, clamp(236 - 70 * t), clamp(150 - 120 * t), 255)
-                d.line([(0, y), (31, y)], fill=col)
-            d.line([(0, 10), (31, 10)], fill=(170, 110, 20, 255))
-            d.line([(0, 22), (31, 22)], fill=(150, 90, 16, 255))
-            d.line([(0, 12), (31, 12)], fill=(255, 250, 220, 255))
-        elif tipo == "vacio":
-            d.rectangle([0, 10, 31, 22], fill=(48, 36, 22, 220))
-            d.line([(0, 10), (31, 10)], fill=(170, 110, 20, 255))
-            d.line([(0, 22), (31, 22)], fill=(150, 90, 16, 255))
-        else:
-            caja = [18, 6, 31, 26] if tipo == "izq" else [0, 6, 13, 26]
-            d.rounded_rectangle(caja, radius=5, fill=(255, 205, 70, 255), outline=(170, 110, 20, 255), width=2)
-            d.polygon([(25, 2), (28, 9), (22, 9)] if tipo == "izq" else [(6, 2), (9, 9), (3, 9)], fill=(255, 230, 120, 255))
-        hoja.alpha_composite(ic, (i * 32, 0))
+            d.line([(2, 14), (14, 2)], fill=(210, 40, 50, 255), width=2)
+        # Bordes casi invisibles: todos los relojes ocupan lo mismo (el motor recorta el
+        # ancho de cada glifo por su parte visible).
+        ic.putpixel((0, 10), (255, 255, 255, 12))
+        ic.putpixel((15, 10), (255, 255, 255, 12))
+        hoja.alpha_composite(ic, (i * 16, 0))
     for i, lleno in ((9, True), (10, False)):
-        ic = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+        ic = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
         d = ImageDraw.Draw(ic)
         if lleno:
-            d.rounded_rectangle([1, 9, 30, 25], radius=4, fill=(255, 196, 40, 255), outline=(180, 110, 20, 255), width=2)
-            d.rectangle([5, 12, 26, 14], fill=(255, 240, 170, 255))
+            d.rectangle([0, 5, 4, 12], fill=(255, 196, 40, 255), outline=(180, 110, 20, 255))
+            d.line([(1, 6), (3, 6)], fill=(255, 244, 190, 255))
         else:
-            d.rounded_rectangle([1, 9, 30, 25], radius=4, fill=(40, 34, 30, 200), outline=(120, 100, 70, 255), width=2)
-        hoja.alpha_composite(ic, (i * 32, 0))
+            d.rectangle([0, 5, 4, 12], fill=(40, 34, 30, 210), outline=(120, 100, 70, 255))
+        hoja.alpha_composite(ic, (i * 16, 0))
     return hoja
+
+
+# --- Barra de jefe de Claude Golden ------------------------------------------------------
+# Se dibuja a 2 px por píxel de la interfaz y se guarda al doble (4 px por píxel) para que
+# se vea nítida en cualquier escala de interfaz del celular.
+JEFE_ANCHO, JEFE_ALTO = 232, 28          # tamaño en píxeles de la interfaz
+JEFE_BARRA = (25, 20, 182, 5)           # x, y, ancho, alto del relleno (como la barra vanilla)
+_S = 2                                   # píxeles de dibujo por píxel de interfaz
+
+
+def _mezcla(a, b, t):
+    return tuple(clamp(a[k] + (b[k] - a[k]) * t) for k in range(len(a)))
+
+
+def _pluma(d, raiz, ang, largo, ancho, col, brillo):
+    """Una pluma: un rombo alargado desde la raíz, con su nervio claro."""
+    x0, y0 = raiz
+    dx, dy = math.cos(ang), math.sin(ang)
+    nx, ny = -dy, dx
+    punta = (x0 + dx * largo, y0 + dy * largo)
+    medio = (x0 + dx * largo * 0.45, y0 + dy * largo * 0.45)
+    d.polygon([(x0, y0), (medio[0] + nx * ancho, medio[1] + ny * ancho), punta,
+               (medio[0] - nx * ancho, medio[1] - ny * ancho)], fill=col)
+    d.line([(x0, y0), (x0 + dx * largo * 0.85, y0 + dy * largo * 0.85)], fill=brillo)
+
+
+def _ala_jefe(d, cx, cy, izquierda):
+    """Ala dorada de plumas (diseño propio) que sale del medallón hacia un lado."""
+    sentido = -1 if izquierda else 1
+    for i in range(6):
+        t = i / 5
+        ang_grados = (180 - 22 + i * 9) if izquierda else (22 - i * 9)
+        ang = math.radians(ang_grados)
+        largo = (31 - i * 3.4) * _S
+        col = (255, clamp(226 - 60 * t), clamp(120 - 90 * t), 255)
+        raiz = (cx + sentido * 7 * _S, cy + (i * 0.6 - 1) * _S)
+        _pluma(d, raiz, ang, largo, 2.4 * _S - i * 0.2 * _S, col, (255, 250, 222, 255))
+    # Contorno oscuro de la base del ala
+    d.ellipse([cx + sentido * 7 * _S - 3 * _S, cy - 3 * _S, cx + sentido * 7 * _S + 3 * _S, cy + 3 * _S],
+              fill=(214, 150, 40, 255), outline=(150, 96, 20, 255))
+
+
+def _cara_jefe(img, ox, oy):
+    """Cara de Claude Golden (12 x 12 px de interfaz): cabeza dorada como la de su skin,
+    ojos blancos, el ojo derecho brillando y la corona."""
+    d = ImageDraw.Draw(img)
+    S = _S
+    # Corona
+    d.rectangle([ox + 1 * S, oy + 1.5 * S, ox + 11 * S - 1, oy + 3 * S - 1], fill=(255, 196, 40, 255))
+    for x in (1.5, 6, 10.5):
+        d.polygon([(ox + (x - 1.2) * S, oy + 1.6 * S), (ox + (x + 1.2) * S, oy + 1.6 * S), (ox + x * S, oy - 0.4 * S)],
+                  fill=(255, 220, 90, 255))
+    d.rectangle([ox + 5.5 * S, oy + 2 * S, ox + 6.5 * S - 1, oy + 3 * S - 1], fill=(230, 40, 60, 255))
+    # Cabeza (degradado dorado, más claro arriba a la izquierda)
+    for y in range(int(3 * S), int(12 * S)):
+        for x in range(int(1 * S), int(11 * S)):
+            t = ((x - S) / (10 * S)) * 0.45 + ((y - 3 * S) / (9 * S)) * 0.55
+            img.putpixel((ox + x, oy + y), _mezcla((255, 236, 150), (226, 160, 46), t) + (255,))
+    d.rectangle([ox + 1 * S, oy + 3 * S, ox + 11 * S - 1, oy + 12 * S - 1], outline=(150, 96, 20, 255))
+    # Ojos blancos (como en su skin)
+    for ex in (3, 7.5):
+        d.rectangle([ox + ex * S, oy + 6 * S, ox + (ex + 1.5) * S - 1, oy + 9 * S - 1], fill=(255, 255, 250, 255))
+    # Ojo derecho luminoso (a la izquierda en la imagen) con destello
+    cx, cy = ox + int(3.75 * S), oy + int(7.5 * S)
+    for k in range(-5, 6):
+        a = 255 if abs(k) <= 2 else 150 if abs(k) <= 4 else 70
+        for p in ((cx + k, cy), (cx, cy + k)):
+            base = img.getpixel(p)
+            img.putpixel(p, _mezcla(base[:3], (255, 255, 214), a / 255) + (max(base[3], a),))
+
+
+def barra_jefe_texturas():
+    """RP/textures/ui/claudenpc/jefe_marco.png y jefe_lleno.png (diseño propio)."""
+    W, H = JEFE_ANCHO * _S, JEFE_ALTO * _S
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    S = _S
+    # Adornos de los extremos (plumas pequeñas hacia afuera)
+    for izquierda in (True, False):
+        x0 = 16 * S if izquierda else (JEFE_ANCHO - 16) * S
+        for i in range(3):
+            ang = math.radians((180 + (i - 1) * 24) if izquierda else (-(i - 1) * 24))
+            col = (255, clamp(214 - 30 * i), clamp(96 - 30 * i), 255)
+            _pluma(d, (x0, 16 * S), ang, (15 - i * 2) * S, 2.2 * S, col, (255, 246, 210, 255))
+    # Placa: oscura y casi opaca, con borde dorado
+    x0, y0, x1, y1 = 14 * S, 4 * S, (JEFE_ANCHO - 14) * S - 1, JEFE_ALTO * S - 1
+    for y in range(y0, y1 + 1):
+        t = (y - y0) / max(1, y1 - y0)
+        d.line([(x0, y), (x1, y)], fill=_mezcla((46, 32, 14), (20, 13, 6), t) + (244,))
+    d.rounded_rectangle([x0, y0, x1, y1], radius=3 * S, outline=(206, 154, 54, 255), width=S)
+    d.line([(x0 + 3 * S, y0 + S), (x1 - 3 * S, y0 + S)], fill=(255, 228, 140, 255))
+    d.line([(x0 + 3 * S, y1 - S), (x1 - 3 * S, y1 - S)], fill=(120, 80, 24, 255))
+    # Ranura de la barra (vacía): marco dorado y fondo oscuro
+    bx, by, bw, bh = JEFE_BARRA
+    d.rectangle([(bx - 1) * S, (by - 1) * S, (bx + bw + 1) * S - 1, (by + bh + 1) * S - 1], fill=(206, 154, 54, 255))
+    d.rectangle([bx * S, by * S, (bx + bw) * S - 1, (by + bh) * S - 1], fill=(22, 14, 6, 255))
+    d.line([(bx * S, by * S), ((bx + bw) * S - 1, by * S)], fill=(8, 5, 2, 255))
+    d.line([(bx * S, (by + bh) * S - 1), ((bx + bw) * S - 1, (by + bh) * S - 1)], fill=(52, 36, 16, 255))
+    # Alas y medallón con la cara, arriba al centro (donde iba el nombre)
+    cx, cy = JEFE_ANCHO // 2 * S, 10 * S
+    _ala_jefe(d, cx, cy, True)
+    _ala_jefe(d, cx, cy, False)
+    d.ellipse([cx - 10 * S, cy - 10 * S, cx + 10 * S - 1, cy + 10 * S - 1], fill=(206, 154, 54, 255))
+    d.ellipse([cx - 9 * S, cy - 9 * S, cx + 9 * S - 1, cy + 9 * S - 1], fill=(255, 226, 132, 255))
+    d.ellipse([cx - 8 * S, cy - 8 * S, cx + 8 * S - 1, cy + 8 * S - 1], fill=(30, 20, 8, 255))
+    _cara_jefe(img, cx - 6 * S, cy - 6 * S)
+    marco = img.resize((W * 2, H * 2), Image.NEAREST)
+
+    # Relleno: oro con brillo arriba y marcas cada décimo de vida
+    rw, rh = bw * S, bh * S
+    lleno = Image.new("RGBA", (rw, rh), (0, 0, 0, 0))
+    filas = [(255, 248, 204), (255, 232, 120), (255, 210, 70), (255, 200, 56), (248, 182, 40),
+             (236, 160, 32), (222, 140, 26), (200, 118, 20), (176, 98, 16), (150, 82, 14)]
+    for y in range(rh):
+        col = filas[min(len(filas) - 1, int(y * len(filas) / rh))]
+        for x in range(rw):
+            lleno.putpixel((x, y), col + (255,))
+    for k in range(1, 10):
+        x = round(k * rw / 10)
+        for y in range(1, rh):
+            r, g, b, a = lleno.getpixel((x, y))
+            lleno.putpixel((x, y), (clamp(r * 0.72), clamp(g * 0.66), clamp(b * 0.6), a))
+    lleno = lleno.resize((rw * 2, rh * 2), Image.NEAREST)
+    return marco, lleno
+
+
+def _no_es_golden(prop):
+    # El jefe NO es Golden (su nombre no tiene "laude" ni "olden"): sirve tanto si el
+    # nombre llega como texto ("Claude Golden") como si llega como clave de idioma.
+    return f"(((#{prop} - 'olden') = #{prop}) or ((#{prop} - 'laude') = #{prop}))"
+
+
+def _es_golden(prop):
+    return f"(not {_no_es_golden(prop)})"
+
+
+def _visible_si(expresion):
+    return [
+        {"binding_name": "#bossName", "binding_type": "collection", "binding_collection_name": "boss_bars",
+         "binding_condition": "always"},
+        {"binding_type": "view", "source_property_name": expresion, "target_property_name": "#visible",
+         "binding_condition": "always"},
+    ]
+
+
+def ui_barra_jefe():
+    """JSON UI de la barra de jefe propia (sin tocar el resto del HUD):
+    - RP/ui/claudenpc_jefe.json (espacio de nombres propio): la barra dorada con su cara.
+    - RP/ui/hud_screen.json: un solo punto de entrada (insert_back en boss_health_panel) y
+      la condición que oculta el nombre y la barra morada vanilla solo cuando el jefe es
+      Claude Golden. Los demás jefes (el robot, el Wither...) se ven como siempre."""
+    marco, lleno = barra_jefe_texturas()
+    carpeta = RP / "textures/ui/claudenpc"
+    carpeta.mkdir(parents=True, exist_ok=True)
+    marco.save(carpeta / "jefe_marco.png")
+    lleno.save(carpeta / "jefe_lleno.png")
+    bx, by, bw, bh = JEFE_BARRA
+    write_json(RP / "ui/_ui_defs.json", {"ui_defs": ["ui/claudenpc_jefe.json"]})
+    write_json(RP / "ui/claudenpc_jefe.json", {
+        "namespace": "claudenpc_jefe",
+        "barra_golden": {
+            "type": "panel",
+            "size": [JEFE_ANCHO, JEFE_ALTO],
+            "anchor_from": "top_middle",
+            "anchor_to": "top_middle",
+            "layer": 30,
+            "bindings": _visible_si(_es_golden("bossName")),
+            "controls": [
+                {"marco": {"type": "image", "texture": "textures/ui/claudenpc/jefe_marco",
+                           "size": [JEFE_ANCHO, JEFE_ALTO], "layer": 1}},
+                {"vida": {
+                    "type": "image",
+                    "texture": "textures/ui/claudenpc/jefe_lleno",
+                    "size": [bw, bh],
+                    "anchor_from": "top_left",
+                    "anchor_to": "top_left",
+                    "offset": [bx, by],
+                    "layer": 2,
+                    "clip_direction": "left",
+                    "clip_pixelperfect": False,
+                    "bindings": [{"binding_name": "#progress_percentage", "binding_name_override": "#clip_ratio",
+                                  "binding_type": "collection", "binding_collection_name": "boss_bars"}],
+                }},
+            ],
+        },
+    })
+    write_json(RP / "ui/hud_screen.json", {
+        "namespace": "hud",
+        "boss_name_panel": {"bindings": _visible_si(_no_es_golden("bossName"))},
+        "boss_health_panel/progress_bar_for_collections": {"bindings": _visible_si(_no_es_golden("bossName"))},
+        "boss_health_panel": {"modifications": [{
+            "array_name": "controls",
+            "operation": "insert_back",
+            "value": [{"claudenpc_barra_golden@claudenpc_jefe.barra_golden": {}}],
+        }]},
+    })
+
+
+def vista_barra_jefe(ruta):
+    """Vista previa de la barra (a 4x) con 100 %, 62 % y 18 % de vida."""
+    marco, lleno = barra_jefe_texturas()
+    bx, by, bw, bh = JEFE_BARRA
+    E = 4
+    lienzo = Image.new("RGBA", (JEFE_ANCHO * E + 40, (JEFE_ALTO * E + 24) * 3 + 20), (88, 120, 168, 255))
+    for i, frac in enumerate((1.0, 0.62, 0.18)):
+        y0 = 20 + i * (JEFE_ALTO * E + 24)
+        lienzo.alpha_composite(marco, (20, y0))
+        corte = lleno.crop((0, 0, max(1, round(lleno.width * frac)), lleno.height))
+        lienzo.alpha_composite(corte, (20 + bx * E, y0 + by * E))
+    lienzo.save(ruta)
 
 
 # =============================================================================
@@ -658,9 +804,13 @@ def particulas():
     # que el script dibuja en una curva ondulante desde la mano de Golden hasta cada corazón.
     efecto("hilo_punto", "brillo", {**inst(1), **unavez(0.0), **punto, **vida(0.14), **vel(0), **mov()},
            {"0.0": "#FFFFF5B4", "0.5": "#FFFFD24B", "1.0": "#00FFB41E"}, [0.075, 0.075])
-    # Ojos dorados de las marionetas (los pone el script en los ojos del mob en cada tick).
-    efecto("ojo_dorado", "brillo", {**inst(1), **unavez(0.0), **punto, **vida(0.1), **vel(0), **mov()},
-           {"0.0": "#FFFFF0A0", "1.0": "#CCFFC832"}, [0.07, 0.07])
+    # Ojos dorados de las marionetas: núcleo nítido de 2 x 1 px sobre el ojo del mob y halo
+    # amarillo (opacos, sin sumar luz). El script los pone donde el juego muestra al mob y
+    # les da su misma velocidad ("variable.mov" y "variable.rapidez"), así no se quedan atrás.
+    efecto("ojo_dorado", "ojo", {**inst(1), **unavez(0.0),
+                                 "minecraft:emitter_shape_point": {"direction": ["variable.mov.x", "variable.mov.y", "variable.mov.z"]},
+                                 **vida(0.1), **vel("variable.rapidez"), **mov()},
+           [1.0, 0.9, 0.31, 1.0], [0.125, 0.125], material="particles_blend")
     # Corazón dorado: brillo grande que late y destellos.
     efecto("brillo_corazon", "brillo", {**pegado, **fijo(12, 8), **bucle, **punto, **vida(0.35), **vel(0), **mov()},
            {"0.0": "#AAFFE070", "1.0": "#00FFB020"}, ["1.3 + math.sin(variable.particle_age * 900) * 0.15"] * 2)
@@ -1026,6 +1176,7 @@ def generar():
     icono_corazon().save(RP / "textures/items/corazon_dorado.png")
     (RP / "font").mkdir(parents=True, exist_ok=True)
     hoja_glifos().save(RP / "font/glyph_E9.png")
+    ui_barra_jefe()
     particulas()
     for viejo in ("hilo", "ojos_marioneta", "brillo_corazon_fuerte"):
         (RP / f"particles/{viejo}.particle.json").unlink(missing_ok=True)
@@ -1219,12 +1370,17 @@ Z3 = [0, 0, 0]
 # a la otra con una transición suave), sin depender de propiedades de la entidad.
 POSES = {
     0: ("ninguna", {"root": {"rotation": [0, 0, 0]}}),
-    1: ("herido", {"root": {"position": [0, -10, 0]}, "rightLeg": {"rotation": [86, 0, 4]}, "leftLeg": {"rotation": [86, 0, -4]},
-                   "body": {"rotation": [20, 0, 0]}, "head": {"rotation": [38, 0, 0]},
-                   "rightArm": {"rotation": [-30, 0, 8]}, "leftArm": {"rotation": [-4, 0, -8]},
-                   "ala_der": {"rotation": [0, 14, -18]}, "ala_izq": {"rotation": [0, -14, 18]}}),
-    2: ("cabizbajo", {"head": {"rotation": [24, 0, 0]}, "body": {"rotation": [6, 0, 0]},
-                      "rightArm": {"rotation": [6, 0, 4]}, "leftArm": {"rotation": [6, 0, -4]}}),
+    # Herido en el suelo: agachado bajo (se dobla por la cintura, una pierna adelante y otra
+    # atrás, la mano hacia el suelo). Los pies quedan justo en el suelo: no se hunde.
+    1: ("herido", {"root": {"position": [0, -2, 0]}, "waist": {"rotation": [40, 0, 0]}, "head": {"rotation": [10, 0, 0]},
+                   "rightLeg": {"rotation": [-30, 0, 10]}, "leftLeg": {"rotation": [34, 0, -8]},
+                   "rightArm": {"rotation": [-16, 0, 16]}, "leftArm": {"rotation": [10, 0, -16]},
+                   "ala_der": {"rotation": [0, 18, -24]}, "ala_izq": {"rotation": [0, -18, 24]}}),
+    # Agachado (como agacharse en Minecraft): mientras baja herido y al levantarse.
+    2: ("agachado", {"root": {"position": [0, -0.4, 0]}, "waist": {"rotation": [30, 0, 0]}, "head": {"rotation": [14, 0, 0]},
+                     "rightArm": {"rotation": [-26, 0, 10]}, "leftArm": {"rotation": [-18, 0, -10]},
+                     "rightLeg": {"rotation": [-12, 0, 6]}, "leftLeg": {"rotation": [4, 0, -6]},
+                     "ala_der": {"rotation": [0, 14, -18]}, "ala_izq": {"rotation": [0, -14, 18]}}),
     3: ("alzar_derecho", {"rightArm": {"rotation": [-172, 0, 4]}, "head": {"rotation": [-20, 0, 0]},
                           "body": {"rotation": [-4, 0, 0]}, "leftArm": {"rotation": [4, 0, -10]}}),
     4: ("mano_pecho", {"rightArm": {"rotation": [-80, -44, 0]}, "leftArm": {"rotation": [-72, 42, 0]},
@@ -1401,7 +1557,7 @@ def controladores_golden_final():
 # Sonidos (música de Golden y efectos propios) y textos
 # =============================================================================
 
-MARCO = ""
+NOMBRE_GOLDEN = "Claude Golden"
 NOMBRES = {
     "es": {"corazon_dorado": "Corazón dorado", "orbe": "Orbe", "orbe_azul": "Orbe azul", "orbe_definitiva": "Orbe definitiva",
            "reloj": "Reloj", "signo": "Signo", "rayo": "Rayo",
@@ -1429,8 +1585,8 @@ def sonidos_y_textos():
         ruta = RP / f"texts/{archivo}.lang"
         lineas = ruta.read_text(encoding="utf-8").splitlines()
         claves = {}
-        claves["entity.claudenpc:claude_golden.name"] = MARCO
-        claves["entity.claudenpc:espejismo.name"] = MARCO
+        claves["entity.claudenpc:claude_golden.name"] = NOMBRE_GOLDEN
+        claves["entity.claudenpc:espejismo.name"] = NOMBRE_GOLDEN
         for ident, texto in NOMBRES[idioma].items():
             claves[f"entity.claudenpc:{ident}.name"] = texto
         salida = []

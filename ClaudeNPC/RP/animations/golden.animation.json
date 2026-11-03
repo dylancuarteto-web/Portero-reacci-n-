@@ -999,50 +999,118 @@
         "root": {
           "position": [
             0,
-            -10,
+            -2,
             0
           ]
         },
-        "rightLeg": {
+        "waist": {
           "rotation": [
-            86,
-            0,
-            4
-          ]
-        },
-        "leftLeg": {
-          "rotation": [
-            86,
-            0,
-            -4
-          ]
-        },
-        "body": {
-          "rotation": [
-            20,
+            40,
             0,
             0
           ]
         },
         "head": {
           "rotation": [
-            38,
+            10,
+            0,
+            0
+          ]
+        },
+        "rightLeg": {
+          "rotation": [
+            -30,
+            0,
+            10
+          ]
+        },
+        "leftLeg": {
+          "rotation": [
+            34,
+            0,
+            -8
+          ]
+        },
+        "rightArm": {
+          "rotation": [
+            -16,
+            0,
+            16
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            10,
+            0,
+            -16
+          ]
+        },
+        "ala_der": {
+          "rotation": [
+            0,
+            18,
+            -24
+          ]
+        },
+        "ala_izq": {
+          "rotation": [
+            0,
+            -18,
+            24
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.golden.pose_agachado": {
+      "loop": true,
+      "bones": {
+        "root": {
+          "position": [
+            0,
+            -0.4,
+            0
+          ]
+        },
+        "waist": {
+          "rotation": [
+            30,
+            0,
+            0
+          ]
+        },
+        "head": {
+          "rotation": [
+            14,
             0,
             0
           ]
         },
         "rightArm": {
           "rotation": [
-            -30,
+            -26,
             0,
-            8
+            10
           ]
         },
         "leftArm": {
           "rotation": [
-            -4,
+            -18,
             0,
-            -8
+            -10
+          ]
+        },
+        "rightLeg": {
+          "rotation": [
+            -12,
+            0,
+            6
+          ]
+        },
+        "leftLeg": {
+          "rotation": [
+            4,
+            0,
+            -6
           ]
         },
         "ala_der": {
@@ -1057,39 +1125,6 @@
             0,
             -14,
             18
-          ]
-        }
-      }
-    },
-    "animation.claudenpc.golden.pose_cabizbajo": {
-      "loop": true,
-      "bones": {
-        "head": {
-          "rotation": [
-            24,
-            0,
-            0
-          ]
-        },
-        "body": {
-          "rotation": [
-            6,
-            0,
-            0
-          ]
-        },
-        "rightArm": {
-          "rotation": [
-            6,
-            0,
-            4
-          ]
-        },
-        "leftArm": {
-          "rotation": [
-            6,
-            0,
-            -4
           ]
         }
       }

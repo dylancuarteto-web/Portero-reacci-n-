@@ -155,7 +155,7 @@ export function toqueDefinitivo(p, orbe) {
 
 function chocaConBloque(dim, p) {
   const b = blockAt(dim, p);
-  return !!b && !b.isAir && !b.isLiquid && !/(grass|fern|flower|torch|candle|snow_layer|carpet|vine|bush|sapling)/.test(b.typeId);
+  return !!b && !b.isAir && !b.isLiquid && !/(_grass$|^minecraft:grass$|seagrass|fern|flower|torch|candle|snow_layer|carpet|vine|bush|sapling)/.test(b.typeId);
 }
 
 system.runInterval(() => {

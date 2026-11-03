@@ -1,8 +1,8 @@
 pack.description=Claudes con personalidad propia: pelean con espada y escudo, construyen, pescan, cultivan, van a clase con Claude Maestro, suben de IQ y se fusionan en Claude Golden. Bedrock 26.60.
 entity.claudenpc:claude.name=Claude
 entity.claudenpc:maestro.name=Claude Maestro
-entity.claudenpc:claude_golden.name=
-entity.claudenpc:espejismo.name=
+entity.claudenpc:claude_golden.name=Claude Golden
+entity.claudenpc:espejismo.name=Claude Golden
 entity.claudenpc:robot.name=Robot de los Claudes
 entity.claudenpc:misil.name=Misil
 entity.claudenpc:eco.name=Eco de Claude
