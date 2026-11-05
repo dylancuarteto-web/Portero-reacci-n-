@@ -1,0 +1,65 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.claudenpc_ojos_marioneta": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.default"
+      ]
+    },
+    "controller.render.claudenpc_aldeano_base": {
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Texture.base"
+      ]
+    },
+    "controller.render.claudenpc_aldeano_oficio": {
+      "arrays": {
+        "textures": {
+          "Array.oficios": [
+            "Texture.farmer",
+            "Texture.librarian",
+            "Texture.cleric",
+            "Texture.fisherman",
+            "Texture.butcher",
+            "Texture.armorer"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.masked"
+        }
+      ],
+      "textures": [
+        "Texture.plains",
+        "Array.oficios[query.variant]"
+      ]
+    },
+    "controller.render.claudenpc_inundacion": {
+      "geometry": "Geometry.default",
+      "textures": [
+        "Texture.default"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "superficie": "Material.agua"
+        }
+      ]
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { HudVisibility, InputPermissionCategory, Player, system, world } from "@minecraft/server";
-import { DIMENSIONES, FINAL, GOLDEN_FINAL, GOLDEN_NOMBRE } from "../../config.js";
+import { DIMENSIONES, FINAL, GOLDEN_FINAL } from "../../config.js";
 import { enCinematica } from "../../robot/cinematica.js";
 import { now } from "../../util.js";
 import { goldens } from "../comun.js";
@@ -11,6 +11,7 @@ import { iniciarMuerte, tickMuerte } from "./muerte.js";
 import { orbes } from "./orbes.js";
 import { cerebroFinal, empezarPelea, participantes, terminarMusica, tickPelea, vidaDe } from "./pelea.js";
 import { iniciarCineEspadas, tickCineEspadas } from "./poderes/espadas.js";
+import { iniciarParkour, quitarTorre, tickParkour } from "./parkour.js";
 import { limpiarMarionetasHuerfanas, tickMarionetas } from "./poderes/marionetas.js";
 import { descongelarTodos } from "./poderes/pausa.js";
 
@@ -36,7 +37,14 @@ system.runInterval(() => {
           if (f.espadasPendiente && !f.curando && !f.definitiva) {
             f.espadasPendiente = false;
             iniciarCineEspadas(g, participantes(g));
+          } else if (f.parkourPendiente && !f.curando && !f.definitiva && !f.relojes && now() >= (f.ocupadoHasta ?? 0)) {
+            f.parkourPendiente = false;
+            iniciarParkour(g);
           }
+          break;
+        case "parkour":
+          tickParkour(g);
+          tickMarionetas(g, participantes(g));
           break;
         case "espadas":
           tickCineEspadas(g);
@@ -63,6 +71,14 @@ export function controlarDano(g, ev, alHerir) {
   if (f) {
     if (f.etapa !== "pelea" || f.curando) {
       ev.cancel = true;
+      return;
+    }
+    // Con 200 de vida, el parkour: no baja de 200 (ni muere) hasta hacerlo.
+    if (!f.parkourHecho && actual - ev.damage <= GOLDEN_FINAL.parkour) {
+      ev.damage = Math.max(0, Math.min(ev.damage, actual - GOLDEN_FINAL.parkour));
+      f.parkourPendiente = true;
+      if (!f.espadasHechas) f.espadasPendiente = true;
+      if (ev.damage <= 0) ev.cancel = true;
       return;
     }
     if (ev.damage >= actual) {
@@ -104,7 +120,7 @@ export function reanudarFinal(g) {
   }
   if (!datos) return false;
   g.final = { etapa: "pelea", t: 0, control: false, jugadores: new Set(), musica: new Set(), curando: 0, yaw: datos.yaw ?? 0,
-    espadasHechas: !!datos.espadas, ocupadoHasta: now() + 100,
+    espadasHechas: !!datos.espadas, parkourHecho: !!datos.parkourHecho, ocupadoHasta: now() + 100,
     cd: { poder: now() + 100, relojes: now() + 400, pausa: now() + 500, marionetas: now() + 400, ilusiones: now() + 300, espadas: 0 } };
   if (datos.centro) {
     const a = crearArena(e.id, e.dimension, datos.centro);
@@ -118,14 +134,19 @@ export function reanudarFinal(g) {
   forma(e, datos.espadas ? 2 : 1);
   pose(g, 0);
   try {
-    e.nameTag = GOLDEN_NOMBRE; // su barra de jefe (también si venía de la v8.0)
+    e.nameTag = ""; // sin nombre sobre la cabeza (en la v8.0 y v8.1 tenía uno)
   } catch {
     // Sin nombre.
   }
   if (datos.etapa === "muerte") system.run(() => iniciarMuerte(g));
+  // Se cerró a la mitad del parkour: se quita la torre y el parkour vuelve a empezar.
+  if (datos.parkour && datos.centro) {
+    quitarTorre(e.dimension, datos.centro);
+    g.final.parkourPendiente = !datos.parkourHecho;
+  }
   // Objetos de la cinemática o de poderes que quedaron sueltos al cerrar el mundo.
   try {
-    for (const tipo of [FINAL.corazon, FINAL.fondo, FINAL.signo, FINAL.rayo, FINAL.reloj]) {
+    for (const tipo of [FINAL.corazon, FINAL.fondo, FINAL.signo, FINAL.rayo, FINAL.reloj, FINAL.inundacion]) {
       for (const x of e.dimension.getEntities({ type: tipo, location: e.location, maxDistance: 128 })) x.remove();
     }
   } catch {
@@ -162,7 +183,7 @@ function hayBatalla(id) {
 configurarCaidos(
   (p) => {
     for (const g of goldens.values()) {
-      if (g.final && ["pelea", "espadas", "muerte"].includes(g.final.etapa) && g.final.jugadores.has(p.id)) return g.entidad.id;
+      if (g.final && ["pelea", "espadas", "parkour", "muerte"].includes(g.final.etapa) && g.final.jugadores.has(p.id)) return g.entidad.id;
     }
     return undefined;
   },
@@ -195,7 +216,7 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
 
 // Limpieza: objetos de la fase final que quedaron sueltos (mundo cerrado a la mitad) y
 // arenas sin su Golden.
-const SUELTOS = [FINAL.corazon, FINAL.fondo, FINAL.reloj, FINAL.signo, FINAL.rayo];
+const SUELTOS = [FINAL.corazon, FINAL.fondo, FINAL.reloj, FINAL.signo, FINAL.rayo, FINAL.inundacion];
 let revisiones = 0;
 system.runInterval(() => {
   revisiones++;
@@ -204,7 +225,7 @@ system.runInterval(() => {
   for (const g of goldens.values()) {
     for (const x of g.final?.marionetas ?? []) {
       vigentes.add(x.m.id);
-      if (x.hilos) vigentes.add(x.hilos.id);
+      if (x.cuerda) vigentes.add(x.cuerda.id);
     }
   }
   for (const id of DIMENSIONES) {

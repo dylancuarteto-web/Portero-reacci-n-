@@ -139,7 +139,8 @@
         "textures": {
           "Array.colores": [
             "Texture.default",
-            "Texture.azul"
+            "Texture.azul",
+            "Texture.morado"
           ]
         }
       },

@@ -1,4 +1,4 @@
-# Especificación de interfaz: barra de jefe de Claude Golden (v8.1)
+# Especificación de interfaz: barra de jefe de Claude Golden (v8.1, nombre arreglado en v8.2)
 
 ## Usuarios y plataforma
 - Minecraft Bedrock 26.60, pensado primero para **celular** (pantalla horizontal, controles táctiles) y válido en PC y consola.
@@ -47,12 +47,12 @@
 - `RP/ui/hud_screen.json` tiene **un solo punto de entrada**: `modifications` → `insert_back` en `boss_health_panel` (la plantilla de cada barra de jefe) agrega `claudenpc_jefe.barra_golden`.
 - Cada barra de jefe lee `#bossName` de la colección `boss_bars`. La barra dorada se muestra solo si el nombre contiene "laude" y "olden" (sirve con el nombre en texto o como clave de idioma). Con la misma condición, invertida, se ocultan `boss_name_panel` y `boss_health_panel/progress_bar_for_collections` (el nombre y la barra morada).
 - El relleno usa el mismo enlace que la barra vanilla: `#progress_percentage` → `#clip_ratio` con `clip_direction: left`.
-- El script pone el nombre `§6Claude Golden` al empezar la batalla (y al cargar el mundo en plena batalla). Ya no usa caracteres de la fuente en el nombre: eso era lo que salía como "Desconocido".
+- El nombre de la barra ("Claude Golden") está en la entidad, en el campo `name` de `minecraft:boss` (grupo `claudenpc:final`). Sin ese campo Minecraft mostraba "Desconocido" (v8.0 y v8.1): la barra se agrega a mitad de la partida con un grupo de componentes y no toma ni la etiqueta de nombre ni el nombre del idioma. El Robot de los Claudes sí lo tenía, por eso su barra siempre salió bien. Golden no lleva etiqueta sobre la cabeza.
 - Texturas: `RP/textures/ui/claudenpc/jefe_marco.png` (928 x 112) y `jefe_lleno.png` (728 x 20), dibujadas a 4 px por píxel de interfaz para que se vean nítidas en cualquier escala.
 
 ## Respaldo y compatibilidad
 - JSON UI no tiene versiones: una actualización de Minecraft que renombre `boss_health_panel`, `boss_name_panel` o `progress_bar_for_collections` puede romper la barra. Por eso:
-  - si la interfaz no carga, se ve la barra normal de Minecraft con el nombre **Claude Golden** (en dorado), nunca "Desconocido";
+  - si la interfaz no carga, se ve la barra normal de Minecraft con el nombre **Claude Golden**, nunca "Desconocido";
   - si solo fallara ocultar lo vanilla, la placa opaca de la barra dorada lo tapa.
 - Otros paquetes de recursos que cambien la barra de jefe pueden chocar con este; el cambio es mínimo (un `insert_back` y dos enlaces de visibilidad).
 

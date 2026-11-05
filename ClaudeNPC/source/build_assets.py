@@ -1901,6 +1901,9 @@ def render_controllers():
                 {"corona": "query.mark_variant >= 1"}, {"halo": "query.mark_variant == 0"},
                 {"alas": "query.mark_variant >= 1"}, {"ala_*": "query.mark_variant >= 1"},
                 {"espada_*": "query.mark_variant == 2"},
+                # Espada morada (variant 1: la derecha, 2: la izquierda): capa morada sobre la hoja.
+                {"espada_der_morada": "query.mark_variant == 2 && query.variant == 1"},
+                {"espada_izq_morada": "query.mark_variant == 2 && query.variant == 2"},
                 {"orbe_mano_*": "query.skin_id == 2"}]},
         "controller.render.claudenpc_robot": {
             "arrays": {"textures": {"Array.fases": ["Texture.default", "Texture.turbo", "Texture.genio"]}},
@@ -1968,7 +1971,8 @@ def client_entities():
     from golden_final_assets import POSES
     for name in ("flotar", "halo", "aura", "poder", "chasquido", "dirigir", "pensar", "ojo", "golpe", "aturdido", "risa", "picada",
                  "alas", "alas_batir", "chasquido_izq", "chasquido_der", "lanzar_orbe", "combo", "sacar_espadas", "temblor_final",
-                 "corte_der", "corte_izq", "corte_x") + tuple(f"pose_{n}" for n, _ in POSES.values()):
+                 "corte_der", "corte_izq", "corte_x", "corte_der_morada", "corte_izq_morada", "corte_x_morada_der",
+                 "corte_x_morada_izq") + tuple(f"pose_{n}" for n, _ in POSES.values()):
         golden_anims[name] = f"animation.claudenpc.golden.{name}"
     golden_anims["ctrl_ojo"] = "controller.animation.claudenpc.golden.ojo"
     golden_anims["ctrl_orbes"] = "controller.animation.claudenpc.golden.orbes_mano"
@@ -1984,6 +1988,7 @@ def client_entities():
             "animations": golden_anims,
             "particle_effects": {"ojo": "claudenpc:ojo_golden", "halo_ojo": "claudenpc:ojo_halo",
                                  "estela_am": "claudenpc:estela_amarilla", "estela_az": "claudenpc:estela_azul",
+                                 "estela_mo": "claudenpc:estela_morada",
                                  "destello_corte": "claudenpc:destello_corte", "chasquido": "claudenpc:chasquido_destello",
                                  "plumas": "claudenpc:plumas_doradas", "mano_am": "claudenpc:mano_amarilla",
                                  "mano_az": "claudenpc:mano_azul"},

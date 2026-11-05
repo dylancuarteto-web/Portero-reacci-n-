@@ -63,6 +63,11 @@
           "value": 1
         }
       },
+      "claudenpc:morado": {
+        "minecraft:variant": {
+          "value": 2
+        }
+      },
       "claudenpc:forma_0": {
         "minecraft:mark_variant": {
           "value": 0
@@ -124,6 +129,30 @@
         "add": {
           "component_groups": [
             "claudenpc:azul",
+            "claudenpc:forma_2"
+          ]
+        }
+      },
+      "claudenpc:morado_0": {
+        "add": {
+          "component_groups": [
+            "claudenpc:morado",
+            "claudenpc:forma_0"
+          ]
+        }
+      },
+      "claudenpc:morado_1": {
+        "add": {
+          "component_groups": [
+            "claudenpc:morado",
+            "claudenpc:forma_1"
+          ]
+        }
+      },
+      "claudenpc:morado_2": {
+        "add": {
+          "component_groups": [
+            "claudenpc:morado",
             "claudenpc:forma_2"
           ]
         }

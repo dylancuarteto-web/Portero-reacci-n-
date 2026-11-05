@@ -129,6 +129,17 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "claudenpc.golden.rayo_morado": {
+      "category": "hostile",
+      "max_distance": 48.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/rayo_morado",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }

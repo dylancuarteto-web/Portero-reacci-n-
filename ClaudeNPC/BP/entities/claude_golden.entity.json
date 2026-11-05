@@ -90,7 +90,8 @@
         },
         "minecraft:boss": {
           "hud_range": 64,
-          "should_darken_sky": true
+          "should_darken_sky": true,
+          "name": "Claude Golden"
         }
       },
       "claudenpc:forma_normal": {
@@ -120,6 +121,21 @@
       },
       "claudenpc:detalle_orbes": {
         "minecraft:skin_id": {
+          "value": 2
+        }
+      },
+      "claudenpc:morada_nada": {
+        "minecraft:variant": {
+          "value": 0
+        }
+      },
+      "claudenpc:morada_der": {
+        "minecraft:variant": {
+          "value": 1
+        }
+      },
+      "claudenpc:morada_izq": {
+        "minecraft:variant": {
           "value": 2
         }
       }
@@ -207,6 +223,45 @@
           "component_groups": [
             "claudenpc:detalle_nada",
             "claudenpc:detalle_sombra"
+          ]
+        }
+      },
+      "claudenpc:morada_0": {
+        "add": {
+          "component_groups": [
+            "claudenpc:morada_nada"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:morada_der",
+            "claudenpc:morada_izq"
+          ]
+        }
+      },
+      "claudenpc:morada_1": {
+        "add": {
+          "component_groups": [
+            "claudenpc:morada_der"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:morada_nada",
+            "claudenpc:morada_izq"
+          ]
+        }
+      },
+      "claudenpc:morada_2": {
+        "add": {
+          "component_groups": [
+            "claudenpc:morada_izq"
+          ]
+        },
+        "remove": {
+          "component_groups": [
+            "claudenpc:morada_nada",
+            "claudenpc:morada_der"
           ]
         }
       }

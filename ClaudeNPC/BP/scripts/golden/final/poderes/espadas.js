@@ -11,7 +11,8 @@ import {
 // amarilla y otra azul. Después las usa así: aparecen signos de pregunta donde va a caer un
 // rayo; con un corte rapidísimo (estilo Dusttrust: anticipación, corte explosivo en diagonal
 // y estela) caen los rayos. Rayo AMARILLO: daña si estás QUIETO. Rayo AZUL: daña si te estás
-// MOVIENDO (caminando, corriendo o saltando).
+// MOVIENDO (caminando, corriendo o saltando). Rayo MORADO (v8.2, cuando vuelve morada una de
+// las espadas): daña SIEMPRE, quieto o en movimiento.
 
 const RADIO = 2.4;
 
@@ -47,16 +48,27 @@ export function seMueve(p) {
   return false;
 }
 
-function marca(dim, lugar, azul) {
+// Color de un rayo o signo: "amarillo", "azul" o "morado".
+const IMPACTO = { amarillo: PARTICLES.impactoAmarillo, azul: PARTICLES.impactoAzul, morado: PARTICLES.impactoMorado };
+export const AVISO = { amarillo: PARTICLES.avisoAmarillo, azul: PARTICLES.avisoAzul, morado: PARTICLES.avisoMorado };
+
+export function marca(dim, lugar, color) {
   try {
-    return dim.spawnEntity(FINAL.signo, { x: lugar.x, y: lugar.y + 1.7, z: lugar.z }, { spawnEvent: azul ? "claudenpc:azul" : "claudenpc:amarillo" });
+    return dim.spawnEntity(FINAL.signo, { x: lugar.x, y: lugar.y + 1.7, z: lugar.z }, { spawnEvent: `claudenpc:${color}` });
   } catch {
     return undefined;
   }
 }
 
-function rayo(dim, lugar, azul, golden, conDano = true) {
-  const color = azul ? "azul" : "amarillo";
+// ¿Le hace daño este rayo a este jugador? Amarillo si está quieto, azul si se mueve, morado
+// siempre.
+function alcanza(color, p) {
+  if (color === "morado") return true;
+  const mueve = seMueve(p);
+  return color === "azul" ? mueve : !mueve;
+}
+
+export function rayo(dim, lugar, color, golden, conDano = true) {
   let r;
   try {
     r = dim.spawnEntity(FINAL.rayo, { x: lugar.x, y: lugar.y, z: lugar.z }, { spawnEvent: `claudenpc:${color}_${Math.floor(Math.random() * 3)}` });
@@ -70,18 +82,18 @@ function rayo(dim, lugar, azul, golden, conDano = true) {
       // Ya no existe.
     }
   }, 12);
-  particleAt(dim, azul ? PARTICLES.impactoAzul : PARTICLES.impactoAmarillo, { x: lugar.x, y: lugar.y + 0.1, z: lugar.z });
+  particleAt(dim, IMPACTO[color] ?? PARTICLES.impactoAmarillo, { x: lugar.x, y: lugar.y + 0.1, z: lugar.z });
   particleAt(dim, PARTICLES.fusionDestello, { x: lugar.x, y: lugar.y + 1, z: lugar.z });
-  soundAt(dim, lugar, "ambient.weather.lightning.impact", azul ? 1.3 : 1.0, 1);
+  soundAt(dim, lugar, "ambient.weather.lightning.impact", color === "azul" ? 1.3 : color === "morado" ? 0.8 : 1.0, 1);
   if (!conDano) return;
   try {
     for (const p of dim.getPlayers({ location: lugar, maxDistance: RADIO + 2, excludeGameModes: [GameMode.Creative, GameMode.Spectator] })) {
       const d = Math.hypot(p.location.x - lugar.x, p.location.z - lugar.z);
       if (d > RADIO || Math.abs(p.location.y - lugar.y) > 3) continue;
-      const mueve = seMueve(p);
-      if ((azul && mueve) || (!azul && !mueve)) {
-        danar(p, GOLDEN_FINAL.danoRayo, golden);
+      if (alcanza(color, p)) {
+        danar(p, color === "morado" ? GOLDEN_FINAL.danoMorado : GOLDEN_FINAL.danoRayo, golden);
         soundAt(dim, p.location, "random.fizz", 1.6, 0.6);
+        if (color === "morado") particleAt(dim, PARTICLES.descargaMorada, { x: p.location.x, y: p.location.y + 1, z: p.location.z });
       }
     }
   } catch {
@@ -89,7 +101,7 @@ function rayo(dim, lugar, azul, golden, conDano = true) {
   }
 }
 
-function lugares(dim, j, n, arena) {
+export function lugares(dim, j, n, arena) {
   const lista = [sueloBajo(dim, { x: j.location.x, y: j.location.y + 1, z: j.location.z }, 8)];
   for (let i = 1; i < n; i++) {
     const a = Math.random() * Math.PI * 2;
@@ -111,9 +123,9 @@ export default {
     const f = g.final;
     g.quietoHasta = now() + 72;
     pose(g, 12);
-    const olas = [{ azul: false }, { azul: true }];
+    const olas = [{ color: "amarillo" }, { color: "azul" }];
     if (Math.random() < 0.4) olas.reverse();
-    if (f.espadasHechas && Math.random() < 0.45) olas.push({ azul: Math.random() < 0.5, x: true });
+    if (f.espadasHechas && Math.random() < 0.45) olas.push({ color: Math.random() < 0.5 ? "azul" : "amarillo", x: true });
     let t = 0;
     const marcas = [];
     const id = system.runInterval(() => {
@@ -125,17 +137,17 @@ export default {
           if (t === t0) {
             ola.lugares = lugares(dim, j, ola.x ? 6 : 4, f.arena);
             for (const l of ola.lugares) {
-              const m = marca(dim, l, ola.azul);
+              const m = marca(dim, l, ola.color);
               if (m) marcas.push(m);
             }
-            soundAt(dim, ola.lugares[0], "note.pling", ola.azul ? 0.7 : 1.4, 1);
+            soundAt(dim, ola.lugares[0], "note.pling", ola.color === "azul" ? 0.7 : 1.4, 1);
           }
           if (ola.lugares && t > t0 && t < t0 + 22 && t % 4 === 0) {
-            for (const l of ola.lugares) particula(dim, ola.azul ? PARTICLES.avisoAzul : PARTICLES.avisoAmarillo, { x: l.x, y: l.y + 0.06, z: l.z }, { "variable.radio": RADIO });
+            for (const l of ola.lugares) particula(dim, AVISO[ola.color], { x: l.x, y: l.y + 0.06, z: l.z }, { "variable.radio": RADIO });
           }
-          if (t === t0 + 16) cortar(e, ola.x ? 0 : ola.azul ? 2 : 1); // el corte; los rayos caen en lo más rápido
+          if (t === t0 + 16) cortar(e, ola.x ? 0 : ola.color === "azul" ? 2 : 1); // el corte; los rayos caen en lo más rápido
           if (t === t0 + 20) {
-            for (const l of ola.lugares) rayo(dim, l, ola.azul, e);
+            for (const l of ola.lugares) rayo(dim, l, ola.color, e);
             for (const m of marcas.splice(0)) {
               try {
                 if (m.isValid) m.remove();
@@ -226,7 +238,7 @@ export function tickCineEspadas(g) {
     for (let i = 0; i < 4; i++) {
       const a = yaw * (Math.PI / 180) + Math.PI + (i - 1.5) * 0.5;
       const l = sueloBajo(dim, { x: P.x + Math.sin(a) * 7, y: P.y + 2, z: P.z - Math.cos(a) * 7 }, 10);
-      rayo(dim, l, i % 2 === 1, e, false);
+      rayo(dim, l, i % 2 === 1 ? "azul" : "amarillo", e, false);
     }
     sonar(v, "ambient.weather.thunder", 1, 0.8);
   }

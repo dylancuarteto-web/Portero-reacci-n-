@@ -8,7 +8,8 @@
       },
       "textures": {
         "default": "textures/entity/claudenpc/signo_amarillo",
-        "azul": "textures/entity/claudenpc/signo_azul"
+        "azul": "textures/entity/claudenpc/signo_azul",
+        "morado": "textures/entity/claudenpc/signo_morado"
       },
       "geometry": {
         "default": "geometry.claudenpc.signo"

@@ -8,7 +8,8 @@
       },
       "textures": {
         "default": "textures/entity/claudenpc/rayo_amarillo",
-        "azul": "textures/entity/claudenpc/rayo_azul"
+        "azul": "textures/entity/claudenpc/rayo_azul",
+        "morado": "textures/entity/claudenpc/rayo_morado"
       },
       "geometry": {
         "default": "geometry.claudenpc.rayo"

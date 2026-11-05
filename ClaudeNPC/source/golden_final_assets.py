@@ -794,23 +794,13 @@ def particulas():
 
     # Estelas de las espadas (salen de la punta mientras corta y se quedan en el aire).
     for nombre, col in (("estela_amarilla", {"0.0": "#FFFFFFFF", "0.25": "#FFFFE45A", "1.0": "#00FF9A10"}),
-                        ("estela_azul", {"0.0": "#FFFFFFFF", "0.25": "#FF7CD2FF", "1.0": "#001E6EFF"})):
+                        ("estela_azul", {"0.0": "#FFFFFFFF", "0.25": "#FF7CD2FF", "1.0": "#001E6EFF"}),
+                        ("estela_morada", {"0.0": "#FFFFFFFF", "0.25": "#FFC27CFF", "1.0": "#005A14A0"})):
         efecto(nombre, "brillo", {**mundo, **fijo(700, 160), **unavez(0.16), **punto, **vida(0.24), **vel(0), **mov()},
                col, baja(0.2))
     efecto("destello_corte", "estrella", {**inst(5), "minecraft:emitter_shape_sphere": {"radius": 0.2, "direction": "outwards"},
                                           **unavez(), **vida(0.25), **vel(4), **mov(linear_drag_coefficient=8)},
            {"0.0": "#FFFFFFFF", "1.0": "#00FFE6A0"}, sube(0.5, 0.1))
-    # Hilo 3D de las marionetas: cuentas de luz muy juntas (se ven redondas desde cualquier lado)
-    # que el script dibuja en una curva ondulante desde la mano de Golden hasta cada corazón.
-    efecto("hilo_punto", "brillo", {**inst(1), **unavez(0.0), **punto, **vida(0.14), **vel(0), **mov()},
-           {"0.0": "#FFFFF5B4", "0.5": "#FFFFD24B", "1.0": "#00FFB41E"}, [0.075, 0.075])
-    # Ojos dorados de las marionetas: núcleo nítido de 2 x 1 px sobre el ojo del mob y halo
-    # amarillo (opacos, sin sumar luz). El script los pone donde el juego muestra al mob y
-    # les da su misma velocidad ("variable.mov" y "variable.rapidez"), así no se quedan atrás.
-    efecto("ojo_dorado", "ojo", {**inst(1), **unavez(0.0),
-                                 "minecraft:emitter_shape_point": {"direction": ["variable.mov.x", "variable.mov.y", "variable.mov.z"]},
-                                 **vida(0.1), **vel("variable.rapidez"), **mov()},
-           [1.0, 0.9, 0.31, 1.0], [0.125, 0.125], material="particles_blend")
     # Corazón dorado: brillo grande que late y destellos.
     efecto("brillo_corazon", "brillo", {**pegado, **fijo(12, 8), **bucle, **punto, **vida(0.35), **vel(0), **mov()},
            {"0.0": "#AAFFE070", "1.0": "#00FFB020"}, ["1.3 + math.sin(variable.particle_age * 900) * 0.15"] * 2)
@@ -849,13 +839,31 @@ def particulas():
            {"0.0": "#FFFFFFFF", "0.3": "#FFFFE070", "0.6": "#FF7CD2FF", "1.0": "#00145AFF"}, sube(1.2, 0.1))
     # Rayos: aviso en el suelo (amarillo o azul) e impacto.
     for nombre, col in (("aviso_amarillo", {"0.0": "#FFFFE45A", "1.0": "#44FFB020"}),
-                        ("aviso_azul", {"0.0": "#FF7CD2FF", "1.0": "#441E6EFF"})):
+                        ("aviso_azul", {"0.0": "#FF7CD2FF", "1.0": "#441E6EFF"}),
+                        ("aviso_morado", {"0.0": "#FFC27CFF", "1.0": "#445A14A0"})):
         efecto(nombre, "anillo", {**inst(1), **unavez(), **punto, **vida(0.3), **vel(0), **mov()}, col,
                ["variable.radio", "variable.radio"], facing="emitter_transform_xz")
     for nombre, col in (("impacto_amarillo", {"0.0": "#FFFFFFFF", "0.3": "#FFFFE45A", "1.0": "#00FF9A10"}),
-                        ("impacto_azul", {"0.0": "#FFFFFFFF", "0.3": "#FF7CD2FF", "1.0": "#001E6EFF"})):
+                        ("impacto_azul", {"0.0": "#FFFFFFFF", "0.3": "#FF7CD2FF", "1.0": "#001E6EFF"}),
+                        ("impacto_morado", {"0.0": "#FFFFFFFF", "0.3": "#FFC27CFF", "1.0": "#005A14A0"})):
         efecto(nombre, "chispa", {**inst(24), **unavez(), "minecraft:emitter_shape_disc": {"radius": 0.5, "plane_normal": "y", "direction": "outwards"},
                                   **vida(0.5), **vel(7), **mov(linear_acceleration=[0, 4, 0], linear_drag_coefficient=4)}, col, baja(0.16))
+    # Espada morada (v8.2): chispas que giran y se juntan en la hoja al volverse morada, y la
+    # descarga morada sobre quien toca un rayo morado o la inundación.
+    efecto("chispas_moradas", "estrella", {**inst(30), **unavez(),
+                                           "minecraft:emitter_shape_sphere": {"radius": 1.6, "surface_only": True, "direction": "inwards"},
+                                           **vida(0.6), **vel(3), **mov(linear_drag_coefficient=1.2)},
+           {"0.0": "#00C27CFF", "0.3": "#FFC27CFF", "1.0": "#FFFFFFFF"}, baja(0.14))
+    efecto("descarga_morada", "chispa", {**inst(16), **unavez(), "minecraft:emitter_shape_box": {"half_dimensions": [0.35, 0.9, 0.35], "direction": "outwards"},
+                                         **vida(0.35), **vel(4), **mov(linear_drag_coefficient=6)},
+           {"0.0": "#FFFFFFFF", "0.4": "#FFC27CFF", "1.0": "#005A14A0"}, baja(0.12))
+    # Inundación de rayos del parkour: chispas moradas sobre la superficie (salen de la entidad
+    # de la inundación, que sube con el nivel).
+    efecto("inundacion_chispas", "chispa", {**pegado, **fijo(90, 90), **bucle,
+                                            "minecraft:emitter_shape_disc": {"radius": 5.6, "plane_normal": "y", "direction": [0, 1, 0]},
+                                            **vida("0.4 + variable.particle_random_1 * 0.4"), **vel(2.5),
+                                            **mov(linear_drag_coefficient=3)},
+           {"0.0": "#FFFFFFFF", "0.3": "#FFC27CFF", "1.0": "#008A2CE0"}, baja(0.13))
     # Reloj apagado (humo), pausa del tiempo (onda gris), arena que se rompe (trozos de oro).
     efecto("humo_reloj", "humo", {**inst(10), **unavez(), "minecraft:emitter_shape_sphere": {"radius": 0.4, "direction": "outwards"},
                                   **vida(0.9), **vel(0.8), **mov(linear_acceleration=[0, 0.8, 0], linear_drag_coefficient=2)},
@@ -1015,11 +1023,13 @@ def entidades_cliente():
              "apagado": "animation.claudenpc.reloj.apagado", "ctrl_estado": "controller.animation.claudenpc.reloj.estado"},
             animar=["ctrl_estado"], particulas={"humo": "claudenpc:humo_reloj"}, controlador="controller.render.claudenpc_reloj")
     cliente("claudenpc:signo", "signo", {"default": "entity_emissive_alpha"},
-            {"default": "textures/entity/claudenpc/signo_amarillo", "azul": "textures/entity/claudenpc/signo_azul"},
+            {"default": "textures/entity/claudenpc/signo_amarillo", "azul": "textures/entity/claudenpc/signo_azul",
+             "morado": "textures/entity/claudenpc/signo_morado"},
             "geometry.claudenpc.signo", {"flotar": "animation.claudenpc.signo.flotar"},
             controlador="controller.render.claudenpc_signo")
     cliente("claudenpc:rayo", "rayo", {"default": "entity_emissive_alpha"},
-            {"default": "textures/entity/claudenpc/rayo_amarillo", "azul": "textures/entity/claudenpc/rayo_azul"},
+            {"default": "textures/entity/claudenpc/rayo_amarillo", "azul": "textures/entity/claudenpc/rayo_azul",
+             "morado": "textures/entity/claudenpc/rayo_morado"},
             "geometry.claudenpc.rayo", {"destello": "animation.claudenpc.rayo.destello"},
             controlador="controller.render.claudenpc_signo")
     cliente("claudenpc:marioneta", "marioneta", {"default": "entity_emissive_alpha"},
@@ -1048,7 +1058,7 @@ def render_controllers():
             "geometry": "Geometry.default", "textures": ["Array.pieles[query.mark_variant == 2 ? 1 : 0]"],
             "materials": [{"*": "Material.default"}]},
         "controller.render.claudenpc_signo": {
-            "arrays": {"textures": {"Array.colores": ["Texture.default", "Texture.azul"]}},
+            "arrays": {"textures": {"Array.colores": ["Texture.default", "Texture.azul", "Texture.morado"]}},
             "geometry": "Geometry.default", "textures": ["Array.colores[query.variant]"],
             "materials": [{"*": "Material.default"}]},
         "controller.render.claudenpc_ilusion": {
@@ -1120,14 +1130,16 @@ def entidades_bp():
     eventos = {f"claudenpc:{n}": evento([n], [x for x in estados if x != n]) for n in estados}
     entidad_bp("claudenpc:reloj", ["claudenpc_reloj"], caja=(1.0, 1.4), golpeable=True, grupos=grupos, eventos=eventos)
     # Signo: color amarillo o azul (variant), puesto al aparecer.
-    grupos = {**grupo("amarillo", **{"minecraft:variant": {"value": 0}}), **grupo("azul", **{"minecraft:variant": {"value": 1}})}
-    eventos = {"claudenpc:amarillo": evento(["amarillo"]), "claudenpc:azul": evento(["azul"])}
+    grupos = {**grupo("amarillo", **{"minecraft:variant": {"value": 0}}), **grupo("azul", **{"minecraft:variant": {"value": 1}}),
+              **grupo("morado", **{"minecraft:variant": {"value": 2}})}
+    eventos = {"claudenpc:amarillo": evento(["amarillo"]), "claudenpc:azul": evento(["azul"]), "claudenpc:morado": evento(["morado"])}
     entidad_bp("claudenpc:signo", ["claudenpc_signo"], grupos=grupos, eventos=eventos)
     # Rayo: color (variant) y forma (mark_variant 0-2).
-    grupos = {**grupo("amarillo", **{"minecraft:variant": {"value": 0}}), **grupo("azul", **{"minecraft:variant": {"value": 1}})}
+    grupos = {**grupo("amarillo", **{"minecraft:variant": {"value": 0}}), **grupo("azul", **{"minecraft:variant": {"value": 1}}),
+              **grupo("morado", **{"minecraft:variant": {"value": 2}})}
     for v in range(3):
         grupos.update(grupo(f"forma_{v}", **{"minecraft:mark_variant": {"value": v}}))
-    eventos = {f"claudenpc:{c}_{v}": evento([c, f"forma_{v}"]) for c in ("amarillo", "azul") for v in range(3)}
+    eventos = {f"claudenpc:{c}_{v}": evento([c, f"forma_{v}"]) for c in ("amarillo", "azul", "morado") for v in range(3)}
     entidad_bp("claudenpc:rayo", ["claudenpc_rayo"], grupos=grupos, eventos=eventos)
     entidad_bp("claudenpc:marioneta", ["claudenpc_marioneta"], caja=(0.05, 0.05))
     entidad_bp("claudenpc:ilusion_jugador", ["claudenpc_ilusion"], caja=(0.5, 1.8),
@@ -1146,7 +1158,8 @@ def item_corazon():
             "minecraft:cooldown": {"category": "claudenpc_corazon", "duration": 25},
         }}})
     write_json(RP / "textures/item_texture.json", {"resource_pack_name": "claudenpc", "texture_name": "atlas.items",
-                                                   "texture_data": {"claudenpc_corazon_dorado": {"textures": "textures/items/corazon_dorado"}}})
+                                                   "texture_data": {"claudenpc_corazon_dorado": {"textures": "textures/items/corazon_dorado"},
+                                                                    "claudenpc_ojos_marioneta": {"textures": "textures/items/ojos_marioneta"}}})
 
 
 # =============================================================================
@@ -1168,8 +1181,10 @@ def generar():
     reloj_textura(apagado=True).save(TEX / "reloj_apagado.png")
     signo_textura((255, 214, 60)).save(TEX / "signo_amarillo.png")
     signo_textura((70, 170, 255)).save(TEX / "signo_azul.png")
+    signo_textura((186, 84, 255)).save(TEX / "signo_morado.png")
     rayo_textura((255, 210, 50)).save(TEX / "rayo_amarillo.png")
     rayo_textura((60, 160, 255)).save(TEX / "rayo_azul.png")
+    rayo_textura((176, 70, 255)).save(TEX / "rayo_morado.png")
     marioneta_textura().save(TEX / "marioneta.png")
     ilusion_textura().save(TEX / "ilusion.png")
     (RP / "textures/items").mkdir(parents=True, exist_ok=True)
@@ -1178,7 +1193,7 @@ def generar():
     hoja_glifos().save(RP / "font/glyph_E9.png")
     ui_barra_jefe()
     particulas()
-    for viejo in ("hilo", "ojos_marioneta", "brillo_corazon_fuerte"):
+    for viejo in ("hilo", "ojos_marioneta", "brillo_corazon_fuerte", "hilo_punto", "ojo_dorado"):
         (RP / f"particles/{viejo}.particle.json").unlink(missing_ok=True)
     niebla_pausa()
     niebla_dorada()
@@ -1187,6 +1202,7 @@ def generar():
     render_controllers()
     entidades_bp()
     item_corazon()
+    v82()
     sonidos_y_textos()
 
 
@@ -1207,6 +1223,9 @@ REG_G = {
     "pomo_am": (92, 28, 2, 2), "pomo_az": (94, 28, 2, 2),
     "hoja_am_filo": (100, 0, 1, 18), "hoja_az_filo": (102, 0, 1, 18), "fantasma_am_filo": (104, 0, 1, 18), "fantasma_az_filo": (106, 0, 1, 18),
     "orbe_mano_am": (108, 0, 4, 4), "orbe_mano_az": (112, 0, 4, 4),
+    # Espada morada (v8.2): una capa morada sobre la hoja amarilla o la azul.
+    "hoja_mo_lado": (64, 40, 18, 2), "hoja_mo_filo": (84, 40, 1, 18), "hoja_mo_cabo": (86, 40, 1, 2),
+    "punta_mo": (88, 40, 2, 2), "pomo_mo": (90, 40, 2, 2),
 }
 GRIP = {"der": (-6.0, 11.0, 0.0), "izq": (6.0, 11.0, 0.0)}
 HOMBRO = {"der": (-5.0, 22.0, 0.0), "izq": (5.0, 22.0, 0.0)}
@@ -1302,7 +1321,24 @@ def huesos_golden_final():
         sx = -1 if lado == "der" else 1
         huesos.append({"name": f"espada_{lado}", "parent": brazo, "pivot": g, "cubes": espada_cubos(lado),
                        "locators": {f"punta_{lado}": [6 * sx, 11, -23.5], f"medio_{lado}": [6 * sx, 11, -13]}})
+        huesos.append({"name": f"espada_{lado}_morada", "parent": f"espada_{lado}", "pivot": g, "cubes": espada_morada_cubos(lado)})
     return huesos
+
+
+def espada_morada_cubos(lado):
+    """Capa morada (un poco más grande) sobre la hoja, la punta y el pomo de una espada: así la
+    espada amarilla o la azul se ve morada sin cambiar sus animaciones."""
+    s = -1 if lado == "der" else 1
+
+    def x(x0, w):
+        return round(x0 if s < 0 else -(x0 + w), 3)
+    hoja = ug(east="hoja_mo_lado", west="hoja_mo_lado", up="hoja_mo_filo", down="hoja_mo_filo",
+              north="hoja_mo_cabo", south="hoja_mo_cabo")
+    return [
+        {"origin": [x(-6.4, 0.8), 10.0, -21.5], "size": [0.8, 2.0, 18.0], "uv": hoja, "inflate": 0.08},
+        {"origin": [x(-6.3, 0.6), 10.25, -23.5], "size": [0.6, 1.5, 2.0], "uv": ug(resto="punta_mo"), "inflate": 0.08},
+        {"origin": [x(-6.75, 1.5), 10.25, 1.5], "size": [1.5, 1.5, 1.0], "uv": ug(resto="pomo_mo"), "inflate": 0.08},
+    ]
 
 
 def pintar_golden_final(img):
@@ -1340,6 +1376,10 @@ def pintar_golden_final(img):
         return f
     reg("hoja_am_lado", hoja((255, 214, 50), (255, 255, 222), 0))
     reg("hoja_az_lado", hoja((60, 160, 255), (232, 248, 255), 0))
+    reg("hoja_mo_lado", hoja((170, 60, 255), (246, 226, 255), 0))
+    for n, col in (("hoja_mo_filo", (252, 240, 255)), ("hoja_mo_cabo", (206, 130, 255)), ("punta_mo", (255, 255, 255)),
+                   ("pomo_mo", (180, 80, 255))):
+        reg(n, lambda x, y, w, h, col=col: col + (0,))
     reg("fantasma_am_lado", hoja((255, 220, 90), (255, 250, 220), 95))
     reg("fantasma_az_lado", hoja((110, 190, 255), (230, 246, 255), 95))
     for n, col, a in (("hoja_am_filo", (255, 255, 240), 0), ("hoja_az_filo", (240, 252, 255), 0),
@@ -1434,7 +1474,7 @@ def _num(x):
     return round(x, 2)
 
 
-def corte_dusttrust(lados, p):
+def corte_dusttrust(lados, p, colores=None):
     """Animación de corte rápido reutilizable (para cualquier espada en la mano de un humanoide).
     lados: ["der"], ["izq"] o ["der", "izq"].
     p: dur (duración en s: la velocidad), dist (distancia del desplazamiento en px), dir (vector
@@ -1475,7 +1515,7 @@ def corte_dusttrust(lados, p):
     t_final = 0.45 * dur
     particulas = {}
     for i, lado in enumerate(lados):
-        color = "am" if lado == "der" else "az"
+        color = (colores or {}).get(lado) or ("am" if lado == "der" else "az")
         # Estela luminosa en la punta y en el medio de la hoja (una cinta de luz que se apaga).
         particulas.setdefault(f"{t_explota - 0.012 + i * 0.001:.3f}", []).extend([
             {"effect": f"estela_{color}", "locator": f"punta_{lado}"}, {"effect": f"estela_{color}", "locator": f"medio_{lado}"}])
@@ -1540,6 +1580,12 @@ def animaciones_golden_final():
     a["animation.claudenpc.golden.corte_der"] = corte_dusttrust(["der"], base)
     a["animation.claudenpc.golden.corte_izq"] = corte_dusttrust(["izq"], base)
     a["animation.claudenpc.golden.corte_x"] = corte_dusttrust(["der", "izq"], {**base, "dur": 0.7, "cuerpo": 0, "inclina": 14})
+    # Con la espada morada (v8.2): la misma curva, con estela morada en esa espada.
+    a["animation.claudenpc.golden.corte_der_morada"] = corte_dusttrust(["der"], base, {"der": "mo"})
+    a["animation.claudenpc.golden.corte_izq_morada"] = corte_dusttrust(["izq"], base, {"izq": "mo"})
+    for lado in ("der", "izq"):
+        a[f"animation.claudenpc.golden.corte_x_morada_{lado}"] = corte_dusttrust(
+            ["der", "izq"], {**base, "dur": 0.7, "cuerpo": 0, "inclina": 14}, {lado: "mo"})
     return a
 
 
@@ -1561,10 +1607,12 @@ NOMBRE_GOLDEN = "Claude Golden"
 NOMBRES = {
     "es": {"corazon_dorado": "Corazón dorado", "orbe": "Orbe", "orbe_azul": "Orbe azul", "orbe_definitiva": "Orbe definitiva",
            "reloj": "Reloj", "signo": "Signo", "rayo": "Rayo",
-           "marioneta": "Hilos de marioneta", "ilusion_jugador": "Ilusión", "fondo": "Fondo"},
+           "marioneta": "Hilos de marioneta", "ilusion_jugador": "Ilusión", "fondo": "Fondo",
+           "cuerda": "Cuerda de marioneta", "aldeano_marioneta": "Aldeano marioneta", "inundacion": "Inundación de rayos"},
     "en": {"corazon_dorado": "Golden Heart", "orbe": "Orb", "orbe_azul": "Blue Orb", "orbe_definitiva": "Ultimate Orb",
            "reloj": "Clock", "signo": "Mark", "rayo": "Lightning",
-           "marioneta": "Puppet Strings", "ilusion_jugador": "Illusion", "fondo": "Backdrop"},
+           "marioneta": "Puppet Strings", "ilusion_jugador": "Illusion", "fondo": "Backdrop",
+           "cuerda": "Puppet String", "aldeano_marioneta": "Puppet Villager", "inundacion": "Lightning Flood"},
 }
 
 
@@ -1577,7 +1625,7 @@ def sonidos_y_textos():
         defs[f"claudenpc.golden.{nombre}"] = {"category": "music", "sounds": [
             {"name": f"sounds/claudenpc/golden/{nombre}", "stream": True, "volume": vol, "load_on_low_memory": True}]}
     for nombre, vol in (("chasquido", 1.0), ("tictac", 0.8), ("pausa", 1.0), ("reanudar", 1.0), ("latido", 1.0),
-                        ("corte", 0.9), ("carga", 0.9)):
+                        ("corte", 0.9), ("carga", 0.9), ("rayo_morado", 1.0)):
         defs[f"claudenpc.golden.{nombre}"] = {"category": "hostile", "max_distance": 48.0, "sounds": [
             {"name": f"sounds/claudenpc/golden/{nombre}", "volume": vol, "load_on_low_memory": True}]}
     write_json(ruta, datos)
@@ -1598,3 +1646,266 @@ def sonidos_y_textos():
                 salida.append(ln)
         salida += [f"{c}={v}" for c, v in claves.items()]
         ruta.write_text("\n".join(salida) + "\n", encoding="utf-8")
+
+
+# =============================================================================
+# v8.2: cuerdas amarillas de verdad, ojos y corazón pegados al mob (como un casco), aldeano
+# marioneta que ataca e inundación de rayos morados del parkour
+# =============================================================================
+
+PASO_CUERDA = 0.25      # bloques de largo por animación
+LARGOS_CUERDA = 192     # hasta 48 bloques
+OFICIOS = ("farmer", "librarian", "cleric", "fisherman", "butcher", "armorer")
+
+
+def cuerda_geo():
+    """Cuerda amarilla de 1 bloque hacia adelante (-z: hacia donde "mira" la entidad). El hueso
+    "giro" apunta como la cabeza de un mob (con la rotación de la entidad) y "cuerda" se estira
+    con las animaciones de largo. Dos prismas cruzados a 45° la hacen redonda de cualquier lado."""
+    g = 1.1
+    uv = {"north": {"uv": [20, 0], "uv_size": [2, 2]}, "south": {"uv": [20, 0], "uv_size": [2, 2]},
+          "east": {"uv": [0, 0], "uv_size": [16, 2]}, "west": {"uv": [0, 0], "uv_size": [16, 2]},
+          "up": {"uv": [16, 0], "uv_size": [2, 16]}, "down": {"uv": [16, 0], "uv_size": [2, 16]}}
+    cubos = [{"origin": r3([-g / 2, -g / 2, -16]), "size": r3([g, g, 16]), "uv": uv},
+             {"origin": r3([-g / 2, -g / 2, -16]), "size": r3([g, g, 16]), "uv": uv, "pivot": [0, 0, 0], "rotation": [0, 0, 45]}]
+    huesos = [{"name": "giro", "pivot": [0, 0, 0]},
+              {"name": "cuerda", "parent": "giro", "pivot": [0, 0, 0], "cubes": cubos}]
+    return geo("geometry.claudenpc.cuerda", huesos, 32, 16, bounds=(100, 100, 0))
+
+
+def cuerda_textura():
+    """Amarillo de cuerda: claro arriba, más oscuro abajo (alfa 170: brilla un poco, pero se ve
+    sólida, no de luz)."""
+    img = Image.new("RGBA", (32, 16), (0, 0, 0, 0))
+    px = img.load()
+    claro, medio, oscuro = (255, 230, 120), (244, 192, 52), (200, 140, 26)
+    for x in range(16):
+        px[x, 0] = claro + (170,)
+        px[x, 1] = oscuro + (170,)
+    for y in range(16):
+        px[16, y] = claro + (170,)
+        px[17, y] = medio + (170,)
+    for x in range(2):
+        for y in range(2):
+            px[20 + x, y] = medio + (170,)
+    return img
+
+
+def ojos_marioneta_geo():
+    """Ojos dorados y corazón enredado como si fueran un casco: el juego los pega a la cabeza
+    ("head") y al pecho ("body") del mob por el nombre de sus huesos, así se mueven con él
+    sin retraso ni parpadeo (zombis, husks, ahogados, aldeanos zombi, esqueletos, strays,
+    bogged y el aldeano marioneta: todos tienen los ojos a 27,5 px y la cara a 4 px)."""
+    ojo = {f: {"uv": [16, 0], "uv_size": [2, 1]} for f in FACES}
+    uv_hilo = {f: {"uv": [18, 0], "uv_size": [1, 1]} for f in FACES}
+    cx, cy, cz = 1.3, 19.6, -4.3  # delante del pecho, un poco a su izquierda (como un corazón)
+    corazon = []
+    for c in corazon_cubos(0, 0, (20, 0, 2, 2), y0=-CH / 2 * 0.42, escala=0.42):
+        o = c["origin"]
+        corazon.append({**c, "origin": r3([o[0] + cx, o[1] + cy, o[2] + cz])})
+    hilos = []
+    for ang, inc in ((0, 20), (60, -35), (120, 50)):
+        r = 3.0
+        for k in range(4):
+            hilos.append({"origin": r3([cx - r, cy - 0.12, cz - r]), "size": r3([2 * r, 0.24, 0.24]), "uv": uv_hilo,
+                          "pivot": r3([cx, cy, cz]), "rotation": [inc, ang + k * 90, 0]})
+    huesos = [
+        {"name": "body", "pivot": [0, 24, 0], "cubes": corazon + hilos},
+        {"name": "head", "pivot": [0, 24, 0], "cubes": [
+            {"origin": [-3.2, 26.8, -4.72], "size": [2.4, 1.4, 0.2], "uv": ojo},
+            {"origin": [0.8, 26.8, -4.72], "size": [2.4, 1.4, 0.2], "uv": ojo}]},
+    ]
+    return geo("geometry.claudenpc.ojos_marioneta", huesos, 32, 16, bounds=(2, 3, 1.5))
+
+
+def ojos_marioneta_textura():
+    img = marioneta_textura()
+    px = img.load()
+    for x in range(2):
+        px[16 + x, 0] = (255, 236, 96, 0)  # ojos amarillos que brillan (emisivos)
+    return img
+
+
+def icono_ojos():
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([1, 3, 14, 12], radius=3, fill=(40, 30, 16, 255), outline=(200, 150, 40, 255))
+    for x0 in (3, 9):
+        d.rectangle([x0, 6, x0 + 3, 8], fill=(255, 236, 96, 255))
+        d.point((x0 + 1, 6), fill=(255, 255, 230, 255))
+    return img
+
+
+def inundacion_geo():
+    """Inundación de rayos del parkour: una superficie morada redonda (radio 5,7 bloques) con
+    rayos en zigzag que cuelgan hacia abajo y parpadean. El script la sube poco a poco."""
+    rnd = random.Random(23)
+    agua = {"up": {"uv": [0, 0], "uv_size": [8, 8]}, "down": {"uv": [0, 0], "uv_size": [8, 8]}}
+    uv_rayo = {f: {"uv": [8, 0], "uv_size": [4, 4]} for f in FACES}
+    R = 91.0
+    tiras = []
+    for k in range(-4, 5):
+        z0 = k * 20.0 - 10
+        zc = abs(k * 20.0) + (10 if k else 0)
+        w = math.sqrt(max(0.0, R * R - zc * zc)) if abs(zc) < R else 0
+        if w <= 4:
+            continue
+        tiras.append({"origin": r3([-w, 0, z0]), "size": r3([2 * w, 0, 20]), "uv": agua})
+    huesos = [{"name": "raiz", "pivot": [0, 0, 0], "locators": {"centro": [0, 1, 0]}},
+              {"name": "superficie", "parent": "raiz", "pivot": [0, 0, 0], "cubes": tiras}]
+
+    def segmento(a, b, grueso):
+        dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
+        largo = math.sqrt(dx * dx + dy * dy + dz * dz)
+        rz = math.degrees(math.atan2(dx, dy))
+        rx = math.degrees(math.atan2(-dz, math.hypot(dx, dy)))
+        return {"origin": r3([a[0] - grueso / 2, a[1], a[2] - grueso / 2]), "size": r3([grueso, largo, grueso]),
+                "uv": uv_rayo, "pivot": r3(a), "rotation": r3([rx, 0, rz])}
+    for i in range(18):
+        ang = rnd.uniform(0, math.tau)
+        rad = math.sqrt(rnd.uniform(0.02, 1.0)) * 80
+        x, z = math.cos(ang) * rad, math.sin(ang) * rad
+        pts = [(x, 6.0, z)]
+        y = 6.0
+        while y > -56:
+            y -= rnd.uniform(10, 18)
+            pts.append((x + rnd.uniform(-7, 7), y, z + rnd.uniform(-7, 7)))
+        cubos = [segmento(b, a, 1.3) for a, b in zip(pts, pts[1:])]
+        huesos.append({"name": f"rayo_{i}", "parent": "raiz", "pivot": r3(pts[0]), "cubes": cubos})
+    return geo("geometry.claudenpc.inundacion", huesos, 16, 8, bounds=(14, 8, -1))
+
+
+def inundacion_textura():
+    img = Image.new("RGBA", (16, 8), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(8):
+        for x in range(8):
+            t = math.hypot(x - 3.5, y - 3.5) / 5
+            px[x, y] = (clamp(150 + 60 * (1 - t)), clamp(50 + 40 * (1 - t)), 255, 120)
+    for y in range(4):
+        for x in range(4):
+            px[8 + x, y] = (246, 226, 255, 0) if 0 < x < 3 and 0 < y < 3 else (186, 84, 255, 0)
+    return img
+
+
+def v82():
+    m = RP / "models/entity"
+    write_json(m / "cuerda.geo.json", cuerda_geo())
+    write_json(m / "ojos_marioneta.geo.json", ojos_marioneta_geo())
+    write_json(m / "inundacion.geo.json", inundacion_geo())
+    cuerda_textura().save(TEX / "cuerda.png")
+    ojos_marioneta_textura().save(TEX / "ojos_marioneta.png")
+    inundacion_textura().save(TEX / "inundacion.png")
+    icono_ojos().save(RP / "textures/items/ojos_marioneta.png")
+    # Animaciones: cuerda (apuntar y largo), aldeano marioneta (brazos de marioneta y golpe) e
+    # inundación (rayos que parpadean y superficie que se mueve).
+    anims = {"animation.claudenpc.cuerda.mirar": {"loop": True, "bones": {"giro": {
+        "rotation": ["query.target_x_rotation", "query.target_y_rotation", 0]}}}}
+    for n in range(1, LARGOS_CUERDA + 1):
+        anims[f"animation.claudenpc.cuerda.largo_{n}"] = {"loop": True, "bones": {"cuerda": {"scale": [1, 1, round(n * PASO_CUERDA, 3)]}}}
+    anims["animation.claudenpc.aldeano.marioneta"] = {"loop": True, "bones": {
+        "arms": {"rotation": ["-112 + math.sin(query.life_time * 240) * 7", "math.sin(query.life_time * 170) * 5", 0]},
+        "head": {"rotation": [0, 0, "math.sin(query.life_time * 130) * 6"]}}}
+    anims["animation.claudenpc.aldeano.golpe"] = {"loop": True, "bones": {
+        "body": {"rotation": ["math.sin(variable.attack_time * 180) * 22", 0, 0]},
+        "arms": {"rotation": ["-math.sin(variable.attack_time * 180) * 40", 0, 0]}}}
+    rnd = random.Random(5)
+    vivir = {"superficie": {"rotation": [0, "query.life_time * 24", 0], "position": [0, "math.sin(query.life_time * 300) * 0.5", 0]}}
+    for i in range(18):
+        f = round(rnd.uniform(5, 11), 2)
+        fase = round(rnd.uniform(0, 1), 2)
+        vivir[f"rayo_{i}"] = {"scale": f"math.mod(query.life_time * {f} + {fase}, 1.0) < 0.5 ? 1.0 : 0.0"}
+    anims["animation.claudenpc.inundacion.vivir"] = {"loop": True, "bones": vivir}
+    write_json(RP / "animations/marionetas_v82.animation.json", {"format_version": "1.8.0", "animations": anims})
+    write_json(RP / "animation_controllers/marionetas_v82.animation_controllers.json", {"format_version": "1.10.0", "animation_controllers": {
+        "controller.animation.claudenpc.inundacion.chispas": {"initial_state": "viva", "states": {"viva": {
+            "particle_effects": [{"effect": "chispas", "locator": "centro"}]}}}}})
+    # Entidades de cliente.
+    anim_cuerda = {"mirar": "animation.claudenpc.cuerda.mirar",
+                   **{f"largo_{n}": f"animation.claudenpc.cuerda.largo_{n}" for n in range(1, LARGOS_CUERDA + 1)}}
+    write_json(RP / "entity/cuerda.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:cuerda", "materials": {"default": "entity_emissive_alpha"},
+        "textures": {"default": "textures/entity/claudenpc/cuerda"}, "geometry": {"default": "geometry.claudenpc.cuerda"},
+        "animations": anim_cuerda, "scripts": {"animate": ["mirar"]}, "render_controllers": ["controller.render.default"]}}})
+    write_json(RP / "entity/aldeano_marioneta.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:aldeano_marioneta",
+        "materials": {"default": "villager_v2", "masked": "villager_v2_masked"},
+        "textures": {"base": "textures/entity/villager2/villager", "plains": "textures/entity/villager2/biomes/biome_plains",
+                     **{o: f"textures/entity/villager2/professions/{o}" for o in OFICIOS}},
+        "geometry": {"default": "geometry.villager_v2"},
+        "animations": {"mirar": "animation.common.look_at_target", "mover": "animation.villager.move",
+                       "marioneta": "animation.claudenpc.aldeano.marioneta", "golpe": "animation.claudenpc.aldeano.golpe"},
+        "scripts": {"scale": "0.9375", "animate": ["mirar", {"mover": "query.modified_move_speed"}, "marioneta", "golpe"]},
+        "render_controllers": ["controller.render.claudenpc_aldeano_base", "controller.render.claudenpc_aldeano_oficio"],
+        "enable_attachables": True}}})
+    write_json(RP / "entity/inundacion.entity.json", {"format_version": "1.10.0", "minecraft:client_entity": {"description": {
+        "identifier": "claudenpc:inundacion", "materials": {"default": "entity_emissive_alpha", "agua": "entity_alphablend"},
+        "textures": {"default": "textures/entity/claudenpc/inundacion"}, "geometry": {"default": "geometry.claudenpc.inundacion"},
+        "animations": {"vivir": "animation.claudenpc.inundacion.vivir", "ctrl_chispas": "controller.animation.claudenpc.inundacion.chispas"},
+        "particle_effects": {"chispas": "claudenpc:inundacion_chispas"},
+        "scripts": {"animate": ["vivir", "ctrl_chispas"]},
+        "render_controllers": ["controller.render.claudenpc_inundacion"]}}})
+    write_json(RP / "attachables/ojos_marioneta.json", {"format_version": "1.10.0", "minecraft:attachable": {"description": {
+        "identifier": "claudenpc:ojos_marioneta",
+        "materials": {"default": "entity_emissive_alpha", "enchanted": "entity_emissive_alpha"},
+        "textures": {"default": "textures/entity/claudenpc/ojos_marioneta", "enchanted": "textures/misc/enchanted_actor_glint"},
+        "geometry": {"default": "geometry.claudenpc.ojos_marioneta"},
+        "render_controllers": ["controller.render.claudenpc_ojos_marioneta"]}}})
+    write_json(RP / "render_controllers/marionetas_v82.render_controllers.json", {"format_version": "1.8.0", "render_controllers": {
+        "controller.render.claudenpc_ojos_marioneta": {"geometry": "Geometry.default", "materials": [{"*": "Material.default"}],
+                                                       "textures": ["Texture.default"]},
+        "controller.render.claudenpc_aldeano_base": {"geometry": "Geometry.default", "materials": [{"*": "Material.default"}],
+                                                     "textures": ["Texture.base"]},
+        "controller.render.claudenpc_aldeano_oficio": {
+            "arrays": {"textures": {"Array.oficios": [f"Texture.{o}" for o in OFICIOS]}},
+            "geometry": "Geometry.default", "materials": [{"*": "Material.masked"}],
+            "textures": ["Texture.plains", "Array.oficios[query.variant]"]},
+        "controller.render.claudenpc_inundacion": {"geometry": "Geometry.default", "textures": ["Texture.default"],
+                                                   "materials": [{"*": "Material.default"}, {"superficie": "Material.agua"}]},
+    }})
+    # Comportamiento.
+    entidad_bp("claudenpc:cuerda", ["claudenpc_cuerda"], caja=(0.05, 0.05))
+    entidad_bp("claudenpc:inundacion", ["claudenpc_inundacion"], caja=(0.05, 0.05))
+    write_json(BP / "items/ojos_marioneta.json", {"format_version": "1.21.40", "minecraft:item": {
+        "description": {"identifier": "claudenpc:ojos_marioneta", "menu_category": {"category": "none"}},
+        "components": {
+            "minecraft:icon": "claudenpc_ojos_marioneta",
+            "minecraft:display_name": {"value": "§eOjos de marioneta"},
+            "minecraft:max_stack_size": 1,
+            "minecraft:wearable": {"slot": "slot.armor.head", "protection": 0},
+        }}})
+    oficios = {f"claudenpc:oficio_{i}": {"minecraft:variant": {"value": i}} for i in range(len(OFICIOS))}
+    jugadores = {"test": "is_family", "subject": "other", "value": "player"}
+    write_json(BP / "entities/aldeano_marioneta.entity.json", {"format_version": "1.21.0", "minecraft:entity": {
+        "description": {"identifier": "claudenpc:aldeano_marioneta", "is_spawnable": False, "is_summonable": True},
+        "component_groups": oficios,
+        "components": {
+            # Sin la familia "villager": los zombis y los illagers no lo persiguen.
+            "minecraft:type_family": {"family": ["claudenpc", "claudenpc_aldeano_marioneta", "mob"]},
+            "minecraft:collision_box": {"width": 0.6, "height": 1.9},
+            "minecraft:health": {"value": 24, "max": 24},
+            "minecraft:movement": {"value": 0.32},
+            "minecraft:navigation.walk": {"can_path_over_water": True, "avoid_water": True, "avoid_damage_blocks": True},
+            "minecraft:movement.basic": {},
+            "minecraft:jump.static": {},
+            "minecraft:can_climb": {},
+            "minecraft:physics": {},
+            "minecraft:pushable": {"is_pushable": True, "is_pushable_by_piston": True},
+            "minecraft:breathable": {"total_supply": 15, "suffocate_time": 0},
+            "minecraft:nameable": {},
+            "minecraft:persistent": {},
+            "minecraft:attack": {"damage": 4},
+            "minecraft:follow_range": {"value": 48, "max": 48},
+            "minecraft:behavior.float": {"priority": 0},
+            # Solo ataca a jugadores (nunca a otros mobs).
+            "minecraft:behavior.nearest_attackable_target": {"priority": 1, "must_see": False, "reselect_targets": True,
+                                                             "within_radius": 48.0,
+                                                             "entity_types": [{"filters": jugadores, "max_dist": 48}]},
+            "minecraft:behavior.melee_attack": {"priority": 2, "speed_multiplier": 1.25, "track_target": True},
+            "minecraft:behavior.random_stroll": {"priority": 6, "speed_multiplier": 0.8},
+            "minecraft:behavior.look_at_player": {"priority": 7, "look_distance": 8},
+            "minecraft:behavior.random_look_around": {"priority": 8},
+        },
+        "events": {"minecraft:entity_spawned": {"randomize": [
+            {"weight": 1, "add": {"component_groups": [f"claudenpc:oficio_{i}"]}} for i in range(len(OFICIOS))]}},
+    }})

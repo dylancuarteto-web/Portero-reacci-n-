@@ -123,6 +123,12 @@
           "espada_*": "query.mark_variant == 2"
         },
         {
+          "espada_der_morada": "query.mark_variant == 2 && query.variant == 1"
+        },
+        {
+          "espada_izq_morada": "query.mark_variant == 2 && query.variant == 2"
+        },
+        {
           "orbe_mano_*": "query.skin_id == 2"
         }
       ]

@@ -62,6 +62,11 @@
         "minecraft:variant": {
           "value": 1
         }
+      },
+      "claudenpc:morado": {
+        "minecraft:variant": {
+          "value": 2
+        }
       }
     },
     "events": {
@@ -76,6 +81,13 @@
         "add": {
           "component_groups": [
             "claudenpc:azul"
+          ]
+        }
+      },
+      "claudenpc:morado": {
+        "add": {
+          "component_groups": [
+            "claudenpc:morado"
           ]
         }
       }

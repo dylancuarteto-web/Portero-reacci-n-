@@ -3,11 +3,9 @@
 export const NPC = "claudenpc:claude";
 export const MAESTRO = "claudenpc:maestro";
 export const GOLDEN = "claudenpc:claude_golden";
-// Nombre de Claude Golden en su barra de jefe (fase final). La interfaz del paquete
-// (RP/ui/hud_screen.json) reconoce este nombre y, en lugar del nombre y la barra morada,
-// dibuja su barra dorada con alas y su cara (sin letras). Si la interfaz no cargara, se ve
-// la barra normal con este nombre (en texto, para que nunca salga "Desconocido").
-export const GOLDEN_NOMBRE = "§6Claude Golden";
+// El nombre de su barra de jefe ("Claude Golden") está en su entidad, en el campo "name" de
+// minecraft:boss (sin él Minecraft mostraba "Desconocido"). La interfaz del paquete
+// (RP/ui/hud_screen.json) reconoce ese nombre y dibuja su barra dorada con alas y su cara.
 export const ESPEJISMO = "claudenpc:espejismo";
 export const ROBOT = "claudenpc:robot";
 export const MISIL = "claudenpc:misil";
@@ -78,8 +76,6 @@ export const PARTICLES = {
   tornillo: "claudenpc:tornillo",
   converge: "claudenpc:converge_dorado",
   lluviaDorada: "claudenpc:lluvia_dorada",
-  hiloPunto: "claudenpc:hilo_punto",
-  ojoDorado: "claudenpc:ojo_dorado",
   motas: "claudenpc:motas_doradas",
   destelloCorazon: "claudenpc:destello_corazon",
   explosionDorada: "claudenpc:explosion_dorada",
@@ -89,6 +85,10 @@ export const PARTICLES = {
   avisoAzul: "claudenpc:aviso_azul",
   impactoAmarillo: "claudenpc:impacto_amarillo",
   impactoAzul: "claudenpc:impacto_azul",
+  avisoMorado: "claudenpc:aviso_morado",
+  impactoMorado: "claudenpc:impacto_morado",
+  chispasMoradas: "claudenpc:chispas_moradas",
+  descargaMorada: "claudenpc:descarga_morada",
   ondaPausa: "claudenpc:onda_pausa",
   fragmento: "claudenpc:fragmento_dorado",
   curacion: "claudenpc:curacion_dorada",
@@ -307,6 +307,13 @@ export const GOLDEN_FINAL = {
   danoGolpe: 8,
   relojes: { cantidad: 4, tiempo: 400, golpes: 2 }, // ticks para apagarlos y golpes para apagar cada uno
   marionetas: { cantidad: 6, duran: 2400 }, // 2 minutos
+  danoMorado: 7, // rayo morado: daña quieto o en movimiento
+  // Con 200 de vida: parkour de escalera caracol (torre cerrada en el centro de la arena) y la
+  // inundación de rayos morados que sube. gracia: ticks antes de que empiece a subir; subida:
+  // bloques por tick (unos 53 s hasta arriba: hay que saltar cada 2 s más o menos); dano: daño
+  // cada 4 ticks si te alcanza.
+  parkour: 200,
+  parkourCfg: { gracia: 100, subida: 0.01, dano: 8 },
   revivirAlTerminar: true, // los caídos vuelven al terminar la pelea (false: se quedan como espectadores)
   volumenMusica: 1.0,
 };
@@ -314,12 +321,16 @@ export const FINAL = {
   corazon: "claudenpc:corazon_dorado", fondo: "claudenpc:fondo", orbe: "claudenpc:orbe", orbeAzul: "claudenpc:orbe_azul",
   orbeDefinitiva: "claudenpc:orbe_definitiva", reloj: "claudenpc:reloj",
   signo: "claudenpc:signo", rayo: "claudenpc:rayo", marioneta: "claudenpc:marioneta", ilusion: "claudenpc:ilusion_jugador",
+  cuerda: "claudenpc:cuerda", inundacion: "claudenpc:inundacion", aldeano: "claudenpc:aldeano_marioneta",
 };
 export const ITEM_CORAZON = "claudenpc:corazon_dorado";
+// Ojos y corazón de las marionetas: se ponen como casco y el juego los pega a su cabeza y pecho.
+export const ITEM_OJOS = "claudenpc:ojos_marioneta";
 export const SONIDO = {
   corazon: "claudenpc.golden.corazon", combate: "claudenpc.golden.combate", chasquido: "claudenpc.golden.chasquido",
   tictac: "claudenpc.golden.tictac", pausa: "claudenpc.golden.pausa", reanudar: "claudenpc.golden.reanudar",
   latido: "claudenpc.golden.latido", corte: "claudenpc.golden.corte", carga: "claudenpc.golden.carga",
+  rayoMorado: "claudenpc.golden.rayo_morado", // el sonido que mandó el usuario (corte de Dusttrust)
 };
 
 // Claude Maestro: IQ fijo, alcance de la campana, cada cuánto da clase, cuánto

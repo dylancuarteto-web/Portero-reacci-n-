@@ -1,0 +1,18 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.claudenpc.inundacion.chispas": {
+      "initial_state": "viva",
+      "states": {
+        "viva": {
+          "particle_effects": [
+            {
+              "effect": "chispas",
+              "locator": "centro"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

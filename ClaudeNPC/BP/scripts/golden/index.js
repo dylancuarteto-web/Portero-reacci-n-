@@ -16,8 +16,8 @@ import { limitar } from "./final/arena.js";
 const LUZ = "minecraft:light_block_15";
 
 
-// --- Nombre: sin etiqueta antes de la fase final. En la fase final su nombre es
-// GOLDEN_NOMBRE y la interfaz del paquete (RP/ui) dibuja con él su barra de jefe dorada.
+// --- Nombre: sin etiqueta sobre la cabeza. El nombre de su barra de jefe ("Claude Golden")
+// está en su entidad (minecraft:boss) y con él la interfaz del paquete dibuja su barra dorada.
 
 // --- Registro y luz ------------------------------------------------------------------
 
@@ -381,6 +381,8 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
 // Devuelve la mayoría de las flechas (dorada, hacia quien la tiró); aturdido recibe el doble.
 // Después, la fase final decide (con menos de 100 empieza; en cinemáticas no recibe daño).
 world.beforeEvents.entityHurt.subscribe((event) => {
+  // Ya cancelado (por ejemplo, una flecha de una de sus marionetas): nada que hacer.
+  if (event.cancel) return;
   const g = goldens.get(event.hurtEntity.id);
   if (g && now() < g.aturdidoHasta) event.damage *= 2;
   const refleja = event.damageSource.cause === EntityDamageCause.projectile && Math.random() <= GOLDEN_CFG.reflejo[(g?.fase ?? 1) - 1];

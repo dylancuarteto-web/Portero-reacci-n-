@@ -25,3 +25,6 @@ entity.claudenpc:ilusion_jugador.name=Illusion
 entity.claudenpc:fondo.name=Backdrop
 entity.claudenpc:orbe_azul.name=Blue Orb
 entity.claudenpc:orbe_definitiva.name=Ultimate Orb
+entity.claudenpc:cuerda.name=Puppet String
+entity.claudenpc:aldeano_marioneta.name=Puppet Villager
+entity.claudenpc:inundacion.name=Lightning Flood

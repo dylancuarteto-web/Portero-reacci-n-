@@ -3,12 +3,13 @@ import { todosLosJugadores } from "./comun.js";
 import espadas, { anotarMovimiento } from "./poderes/espadas.js";
 import ilusiones from "./poderes/ilusiones.js";
 import marionetas, { tickMarionetas } from "./poderes/marionetas.js";
+import morada from "./poderes/morada.js";
 import pausa from "./poderes/pausa.js";
 import relojes, { tickRelojes } from "./poderes/relojes.js";
 import volea from "./poderes/volea.js";
 
 // Poderes de la fase final de Claude Golden (cada uno en golden/final/poderes).
-export const PODERES_FINALES = [volea, relojes, ilusiones, pausa, marionetas, espadas];
+export const PODERES_FINALES = [volea, relojes, ilusiones, pausa, marionetas, espadas, morada];
 
 function participantes(g) {
   const ids = g.final.jugadores;

@@ -63,12 +63,27 @@ export function pose(g, n) {
 }
 
 // Corte rápido de espada: 1 amarilla (derecha), 2 azul (izquierda), 0 las dos en X.
-export function cortar(e, variante) {
-  const nombre = ["corte_x", "corte_der", "corte_izq"][variante] ?? "corte_der";
+export function cortar(e, variante, morada = 0) {
+  // variante: 0 corte en X, 1 derecha, 2 izquierda. morada: 0 ninguna, 1 la derecha, 2 la
+  // izquierda (la estela de esa espada sale morada).
+  let nombre = ["corte_x", "corte_der", "corte_izq"][variante] ?? "corte_der";
+  if (morada && variante === 0) nombre = `corte_x_morada_${morada === 1 ? "der" : "izq"}`;
+  else if (morada && variante === morada) nombre = `${nombre}_morada`;
   try {
     e.playAnimation(`animation.claudenpc.golden.${nombre}`, { controller: "claudenpc_golden_corte", blendOutTime: 0.05 });
   } catch {
-    // Paquete de recursos no activo.
+    // Sin animación.
+  }
+}
+
+// Espada morada: 0 ninguna, 1 la derecha (la amarilla), 2 la izquierda (la azul).
+export function morada(g, n) {
+  if (g.morada === n) return;
+  g.morada = n;
+  try {
+    g.entidad.triggerEvent(`claudenpc:morada_${n}`);
+  } catch {
+    // Paquete antiguo.
   }
 }
 

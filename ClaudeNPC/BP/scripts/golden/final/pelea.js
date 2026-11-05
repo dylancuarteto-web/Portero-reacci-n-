@@ -1,5 +1,5 @@
 import { GameMode, system } from "@minecraft/server";
-import { ANIM, GOLDEN_FINAL, GOLDEN_NOMBRE, PARTICLES, SONIDO } from "../../config.js";
+import { ANIM, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../config.js";
 import { now, particleAt, rand, soundAt, sortear } from "../../util.js";
 import { animar, barra, detalle, jugadoresCerca, musica, pararMusica, particula, pose, todosLosJugadores, vivos } from "./comun.js";
 import { PODERES_FINALES, tickPoderes } from "./poderes.js";
@@ -22,7 +22,7 @@ export function guardarFinal(g) {
   const f = g.final;
   try {
     g.entidad.setDynamicProperty("claudenpc:final", JSON.stringify({ etapa: f.etapa === "muerte" ? "muerte" : "pelea",
-      espadas: !!f.espadasHechas, centro: f.arena?.centro, yaw: f.yaw }));
+      espadas: !!f.espadasHechas, parkourHecho: !!f.parkourHecho, parkour: f.etapa === "parkour", centro: f.arena?.centro, yaw: f.yaw }));
   } catch {
     // Sin propiedades dinámicas.
   }
@@ -53,8 +53,8 @@ export function empezarPelea(g) {
   g.cd.golpe = now() + 40;
   g.ocupadoHasta = now() + 50;
   try {
-    e.triggerEvent("claudenpc:fase_final"); // 1000 de vida y barra de jefe
-    e.nameTag = GOLDEN_NOMBRE; // la interfaz lo reconoce y dibuja su barra dorada arriba
+    e.nameTag = ""; // sin letras sobre la cabeza: el nombre de la barra está en su entidad
+    e.triggerEvent("claudenpc:fase_final"); // 1000 de vida y barra de jefe "Claude Golden"
   } catch {
     // Paquete antiguo.
   }
