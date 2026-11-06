@@ -1,4 +1,4 @@
-import { EntityDamageCause, Player, system, world } from "@minecraft/server";
+import { Player, system, world } from "@minecraft/server";
 import { ANIM, ESCUDO, NPC, PARTICLES } from "./config.js";
 import { estados } from "./estado.js";
 import { nivelHab, practicar } from "./habilidades.js";
@@ -146,21 +146,6 @@ system.runInterval(() => {
     }
   }
 }, 2);
-
-// Se usa dentro de beforeEvents.entityHurt (solo lectura): ¿la flecha llega por delante
-// con el escudo levantado?
-export function bloqueaProyectil(npc, s, damageSource) {
-  if (!s.escudoArriba || damageSource.cause !== EntityDamageCause.projectile) return false;
-  const origen = damageSource.damagingEntity ?? damageSource.damagingProjectile;
-  if (!origen) return true;
-  const v = npc.getViewDirection();
-  const dx = origen.location.x - npc.location.x;
-  const dz = origen.location.z - npc.location.z;
-  const d = Math.hypot(dx, dz);
-  const h = Math.hypot(v.x, v.z);
-  if (d < 0.01 || h < 0.01) return true;
-  return (v.x * dx + v.z * dz) / (d * h) > -0.15; // unos 100° a cada lado
-}
 
 export function efectoBloqueo(npc, s, origen) {
   if (!npc.isValid) return;

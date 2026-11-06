@@ -1,18 +1,21 @@
 import { GameMode, system } from "@minecraft/server";
-import { ANIM, FINAL, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../../config.js";
+import { ANIM, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../../config.js";
 import { now, particleAt, soundAt } from "../../../util.js";
 import { danar } from "../../comun.js";
 import { limitar } from "../arena.js";
 import {
   NEGRO, animar, bloquear, camara, cortar, forma, fundido, musica, pararMusica, particula, pose, punto, soltar, sonar, sueloBajo, vivos, yawHacia,
 } from "../comun.js";
+import { avisoExcl, cargar, laser, tajos } from "../laser.js";
 
 // Espadas: con 500 de vida, una cinemática (se apaga la música) en la que saca una espada
-// amarilla y otra azul. Después las usa así: aparecen signos de pregunta donde va a caer un
-// rayo; con un corte rapidísimo (estilo Dusttrust: anticipación, corte explosivo en diagonal
-// y estela) caen los rayos. Rayo AMARILLO: daña si estás QUIETO. Rayo AZUL: daña si te estás
-// MOVIENDO (caminando, corriendo o saltando). Rayo MORADO (v8.2, cuando vuelve morada una de
-// las espadas): daña SIEMPRE, quieto o en movimiento.
+// amarilla y otra azul. Después las usa así: aparecen avisos "!" (partículas: no se pueden
+// golpear) y un círculo donde va a pegar; la energía se junta en la espada, hace un corte
+// rapidísimo (estilo Dusttrust: anticipación, corte explosivo y un ABANICO DE LÁSERES que sale
+// de la hoja siguiendo el corte) y caen COLUMNAS DE LÁSER desde arriba. Láser AMARILLO: daña si
+// estás QUIETO. Láser AZUL: daña si te estás MOVIENDO (caminando, corriendo o saltando). Láser
+// MORADO (cuando vuelve morada una de las espadas): daña SIEMPRE, quieto o en movimiento.
+// (Hasta la v8.2 eran rayos eléctricos en zigzag y signos de pregunta que eran entidades.)
 
 const RADIO = 2.4;
 
@@ -48,43 +51,37 @@ export function seMueve(p) {
   return false;
 }
 
-// Color de un rayo o signo: "amarillo", "azul" o "morado".
+// Color de un láser o aviso: "amarillo", "azul" o "morado".
 const IMPACTO = { amarillo: PARTICLES.impactoAmarillo, azul: PARTICLES.impactoAzul, morado: PARTICLES.impactoMorado };
 export const AVISO = { amarillo: PARTICLES.avisoAmarillo, azul: PARTICLES.avisoAzul, morado: PARTICLES.avisoMorado };
 
-export function marca(dim, lugar, color) {
-  try {
-    return dim.spawnEntity(FINAL.signo, { x: lugar.x, y: lugar.y + 1.7, z: lugar.z }, { spawnEvent: `claudenpc:${color}` });
-  } catch {
-    return undefined;
+// Aviso donde va a pegar: un "!" que flota y late (partículas) y el círculo en el suelo.
+export function avisar(dim, sitios, color, t = 0) {
+  for (const l of sitios ?? []) {
+    avisoExcl(dim, l, color, t);
+    particula(dim, AVISO[color] ?? AVISO.amarillo, { x: l.x, y: l.y + 0.06, z: l.z }, { "variable.radio": RADIO });
   }
 }
 
-// ¿Le hace daño este rayo a este jugador? Amarillo si está quieto, azul si se mueve, morado
+// ¿Le hace daño este láser a este jugador? Amarillo si está quieto, azul si se mueve, morado
 // siempre.
-function alcanza(color, p) {
+export function alcanza(color, p) {
   if (color === "morado") return true;
   const mueve = seMueve(p);
   return color === "azul" ? mueve : !mueve;
 }
 
-export function rayo(dim, lugar, color, golden, conDano = true) {
-  let r;
-  try {
-    r = dim.spawnEntity(FINAL.rayo, { x: lugar.x, y: lugar.y, z: lugar.z }, { spawnEvent: `claudenpc:${color}_${Math.floor(Math.random() * 3)}` });
-  } catch {
-    r = undefined;
-  }
-  system.runTimeout(() => {
-    try {
-      if (r?.isValid) r.remove();
-    } catch {
-      // Ya no existe.
-    }
-  }, 12);
+// Columna de láser que cae desde lo alto sobre "lugar" (reemplaza al rayo). Daña en un círculo
+// de 2,4 bloques (como el rayo), según su color.
+export function columna(dim, lugar, color, golden, conDano = true, op = {}) {
+  const alto = op.alto ?? 24;
+  const arriba = { x: lugar.x, y: lugar.y + alto, z: lugar.z };
+  laser(dim, arriba, { x: lugar.x, y: lugar.y, z: lugar.z }, { color, grosor: op.grosor ?? 2, vida: op.vida ?? 9, sonido: false });
+  particula(dim, `claudenpc:laser_impacto_${color}`, { x: lugar.x, y: lugar.y + 0.08, z: lugar.z });
+  particula(dim, `claudenpc:laser_destello_${color}`, { x: lugar.x, y: lugar.y + 0.5, z: lugar.z });
+  particula(dim, `claudenpc:laser_chispas_${color}`, { x: lugar.x, y: lugar.y + 0.3, z: lugar.z });
   particleAt(dim, IMPACTO[color] ?? PARTICLES.impactoAmarillo, { x: lugar.x, y: lugar.y + 0.1, z: lugar.z });
-  particleAt(dim, PARTICLES.fusionDestello, { x: lugar.x, y: lugar.y + 1, z: lugar.z });
-  soundAt(dim, lugar, "ambient.weather.lightning.impact", color === "azul" ? 1.3 : color === "morado" ? 0.8 : 1.0, 1);
+  soundAt(dim, lugar, SONIDO.laserDisparo, color === "azul" ? 1.25 : color === "morado" ? 0.78 : 1.0, 1);
   if (!conDano) return;
   try {
     for (const p of dim.getPlayers({ location: lugar, maxDistance: RADIO + 2, excludeGameModes: [GameMode.Creative, GameMode.Spectator] })) {
@@ -93,11 +90,22 @@ export function rayo(dim, lugar, color, golden, conDano = true) {
       if (alcanza(color, p)) {
         danar(p, color === "morado" ? GOLDEN_FINAL.danoMorado : GOLDEN_FINAL.danoRayo, golden);
         soundAt(dim, p.location, "random.fizz", 1.6, 0.6);
+        particula(dim, `claudenpc:laser_chispas_${color}`, { x: p.location.x, y: p.location.y + 1, z: p.location.z });
         if (color === "morado") particleAt(dim, PARTICLES.descargaMorada, { x: p.location.x, y: p.location.y + 1, z: p.location.z });
       }
     }
   } catch {
     // Sin jugadores.
+  }
+}
+
+// Punta de la espada que va a cortar (para juntar la energía).
+export function espada(g, lado) {
+  const e = g.entidad;
+  try {
+    return punto(e.location, e.getRotation().y, 0.75, 1.6, lado === 2 ? -0.5 : 0.5);
+  } catch {
+    return { ...e.location };
   }
 }
 
@@ -127,35 +135,26 @@ export default {
     if (Math.random() < 0.4) olas.reverse();
     if (f.espadasHechas && Math.random() < 0.45) olas.push({ color: Math.random() < 0.5 ? "azul" : "amarillo", x: true });
     let t = 0;
-    const marcas = [];
     const id = system.runInterval(() => {
       t++;
       try {
         if (!e.isValid || f.etapa !== "pelea" || !j.isValid) return fin();
         olas.forEach((ola, i) => {
           const t0 = 4 + i * 24;
+          const lado = ola.x ? 0 : ola.color === "azul" ? 2 : 1;
           if (t === t0) {
             ola.lugares = lugares(dim, j, ola.x ? 6 : 4, f.arena);
-            for (const l of ola.lugares) {
-              const m = marca(dim, l, ola.color);
-              if (m) marcas.push(m);
-            }
+            avisar(dim, ola.lugares, ola.color, t);
             soundAt(dim, ola.lugares[0], "note.pling", ola.color === "azul" ? 0.7 : 1.4, 1);
           }
-          if (ola.lugares && t > t0 && t < t0 + 22 && t % 4 === 0) {
-            for (const l of ola.lugares) particula(dim, AVISO[ola.color], { x: l.x, y: l.y + 0.06, z: l.z }, { "variable.radio": RADIO });
+          if (ola.lugares && t > t0 && t < t0 + 20 && t % 4 === 0) avisar(dim, ola.lugares, ola.color, t);
+          if (t === t0 + 10) cargar(dim, espada(g, lado === 0 ? 1 : lado), ola.color);
+          if (t === t0 + 16) {
+            // El corte y el abanico de láseres que sale de la hoja; las columnas caen enseguida.
+            cortar(e, lado);
+            tajos(g, lado, lado === 0 ? ["amarillo", "azul"] : ola.color);
           }
-          if (t === t0 + 16) cortar(e, ola.x ? 0 : ola.color === "azul" ? 2 : 1); // el corte; los rayos caen en lo más rápido
-          if (t === t0 + 20) {
-            for (const l of ola.lugares) rayo(dim, l, ola.color, e);
-            for (const m of marcas.splice(0)) {
-              try {
-                if (m.isValid) m.remove();
-              } catch {
-                // Ya no existe.
-              }
-            }
-          }
+          if (t === t0 + 20) for (const l of ola.lugares) columna(dim, l, ola.color, e);
         });
         if (t > 4 + olas.length * 24 + 4) fin();
       } catch {
@@ -164,13 +163,6 @@ export default {
     }, 1);
     function fin() {
       system.clearRun(id);
-      for (const m of marcas) {
-        try {
-          if (m.isValid) m.remove();
-        } catch {
-          // Ya no existe.
-        }
-      }
     }
     return 8 + olas.length * 24;
   },
@@ -218,7 +210,7 @@ export function tickCineEspadas(g) {
   }
   if (t === 1) {
     fundido(v, NEGRO, 0.2, 0.2, 0.5);
-    sonar(v, "ambient.weather.thunder", 0.5, 0.4);
+    sonar(v, SONIDO.laserCarga, 0.5, 0.5);
   }
   if (t === 6) camara(v, punto(P, yaw, 5.2, 0.4, 0), punto(P, yaw, 0, 1.4, 0), 2.6, punto(P, yaw, 4.2, 0.9, 0.6));
   if (t === 22) {
@@ -233,14 +225,21 @@ export function tickCineEspadas(g) {
   if (t === 38) camara(v, punto(P, yaw, 1.7, 1.5, 2.1), punto(P, yaw, 0.5, 1.2, 0), 1.4, punto(P, yaw, 1.9, 1.7, 1.6));
   if (t === 46) pose(g, 12);
   if (t === 62) camara(v, punto(P, yaw, 3.8, 1.3, 0), punto(P, yaw, 0, 1.3, 0));
-  if (t === 68) cortar(e, 0); // corte en X
+  if (t === 60) {
+    cargar(dim, espada(g, 1), "amarillo", v);
+    cargar(dim, espada(g, 2), "azul");
+  }
+  if (t === 68) {
+    cortar(e, 0); // corte en X: dos abanicos de láseres, uno amarillo y otro azul
+    tajos(g, 0, ["amarillo", "azul"], { largo: 26, pasos: 5 });
+  }
   if (t === 72) {
     for (let i = 0; i < 4; i++) {
       const a = yaw * (Math.PI / 180) + Math.PI + (i - 1.5) * 0.5;
       const l = sueloBajo(dim, { x: P.x + Math.sin(a) * 7, y: P.y + 2, z: P.z - Math.cos(a) * 7 }, 10);
-      rayo(dim, l, i % 2 === 1 ? "azul" : "amarillo", e, false);
+      columna(dim, l, i % 2 === 1 ? "azul" : "amarillo", e, false, { grosor: 3, vida: 14 });
     }
-    sonar(v, "ambient.weather.thunder", 1, 0.8);
+    sonar(v, SONIDO.laserDisparo, 0.7, 1);
   }
   if (t === 96) fundido(v, NEGRO, 0.2, 0.15, 0.5);
   if (t >= 100) {

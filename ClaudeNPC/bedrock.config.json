@@ -5,19 +5,20 @@
     "namespace": "claudenpc"
   },
   "compatibility": {
-    "minimumBedrock": "26.60",
-    "latestStableVerifiedAtBuild": "26.60",
-    "snapshotDate": "2026-10-30",
-    "policy": "1.21+; test every target version; create separate Script API profiles when required"
+    "minimumBedrock": "1.21.132",
+    "latestStableVerifiedAtBuild": "1.21.132",
+    "snapshotDate": "2026-11-06",
+    "policy": "1.21.132+ (Script API 2.4.0 / server-ui 2.0.0, también corre en 26.x); test every target version"
   },
   "scriptApi": {
     "enabled": true,
     "modules": {
-      "@minecraft/server": "2.11.0"
+      "@minecraft/server": "2.4.0",
+      "@minecraft/server-ui": "2.0.0"
     }
   },
   "audio": {
     "included": false,
-    "note": "El usuario a\u00f1adir\u00e1 archivos de sonido manualmente."
+    "note": "El usuario añadirá archivos de sonido manualmente."
   }
 }

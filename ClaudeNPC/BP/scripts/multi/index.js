@@ -15,6 +15,7 @@ import { protegido } from "../estructuras.js";
 import { planLiberar } from "./liberar.js";
 import { tomarPendientes } from "./restaurar.js";
 import { empezarPlataforma, planPlataforma, techoSobre, terminar as terminarPlataforma, tickPlataforma } from "./plataforma.js";
+import { alSensor, EVENTO, ponerVida, vida } from "../dano.js";
 
 // Robot multi: robot constructor de apoyo (distinto del robot de pelea). Vuela con
 // propulsores, pica con el taladro y coloca con la pinza. Lleva su batería encima del
@@ -1032,25 +1033,18 @@ system.runInterval(() => {
   }
 }, 200);
 
-// Nunca se rompe: si un golpe lo dejaría sin vida, se apaga (y un Claude lo reparará).
-world.beforeEvents.entityHurt.subscribe((event) => {
-  const e = event.hurtEntity;
-  let vida = 1;
-  try {
-    vida = e.getComponent("minecraft:health")?.currentValue ?? 1;
-  } catch {
-    vida = 1;
-  }
-  if (event.damage < vida - 1) return;
-  event.cancel = true;
-  system.run(() => {
-    if (!e.isValid) return;
-    try {
-      e.getComponent("minecraft:health")?.setCurrentValue(1);
-    } catch {
-      // Sin vida.
-    }
-    const r = multis.get(e.id);
-    if (r) sinBateria(r, "¡me dejaste sin energía!");
-  });
-}, { entityFilter: { type: MULTI } });
+// Nunca se rompe: el golpe que lo dejaría sin vida no se aplica (sensor de
+// robot_multi.entity.json) y lo apaga; un Claude lo reparará. Si un golpe lo deja con menos
+// de 1, también se apaga.
+function apagarPorGolpe(e) {
+  if (!e.isValid) return;
+  if (vida(e).actual < 1) ponerVida(e, 1);
+  const r = multis.get(e.id);
+  if (r && !r.apagado) sinBateria(r, "¡me dejaste sin energía!");
+}
+
+alSensor(EVENTO.fatal, [MULTI], (e) => apagarPorGolpe(e));
+
+world.afterEvents.entityHurt.subscribe(({ hurtEntity }) => {
+  if (hurtEntity.typeId === MULTI && vida(hurtEntity).actual < 1) system.run(() => apagarPorGolpe(hurtEntity));
+}, { entityTypes: [MULTI] });

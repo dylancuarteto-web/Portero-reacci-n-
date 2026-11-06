@@ -1,5 +1,6 @@
 import { EasingType, HudVisibility, InputPermissionCategory, Player, system, world } from "@minecraft/server";
 import { ANIM, PARTICLES, PROP } from "../config.js";
+import { protegerJugador } from "../dano.js";
 import { sostener } from "../equipo.js";
 import { estados } from "../estado.js";
 import { animate, avisar, blockAt, FRENTES, mirarA, now, particleAt, reemplazable, soundAt } from "../util.js";
@@ -23,9 +24,11 @@ const HERRAMIENTAS = [0, 2, 1, 3, 1]; // 0 nada (bloque de hierro), 1 martillo, 
 // Jugadores que están viendo una cinemática (no reciben daño mientras tanto).
 export const enCinematica = new Set();
 
-world.beforeEvents.entityHurt.subscribe((event) => {
-  if (event.hurtEntity instanceof Player && enCinematica.has(event.hurtEntity.id)) event.cancel = true;
-});
+// (Resistencia V mientras dure: en la 1.21.132 no se puede cancelar el golpe antes.)
+system.runInterval(() => {
+  if (!enCinematica.size) return;
+  for (const p of world.getAllPlayers()) if (enCinematica.has(p.id)) protegerJugador(p, 20);
+}, 10);
 
 // Punto con ejes del sitio: a hacia el jugador (frente), b a la derecha, h hacia arriba.
 function local(o, a, h, b) {

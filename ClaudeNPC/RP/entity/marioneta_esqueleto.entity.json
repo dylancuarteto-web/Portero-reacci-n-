@@ -1,0 +1,61 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:marioneta_esqueleto",
+      "materials": {
+        "default": "skeleton",
+        "ropa": "stray_clothes",
+        "ojos": "entity_emissive_alpha"
+      },
+      "textures": {
+        "aspecto_0": "textures/entity/skeleton/skeleton",
+        "aspecto_1": "textures/entity/skeleton/stray",
+        "aspecto_2": "textures/entity/skeleton/bogged",
+        "ropa_0": "textures/entity/skeleton/stray_overlay",
+        "ropa_1": "textures/entity/skeleton/bogged_clothes",
+        "ojos": "textures/entity/claudenpc/ojos_marioneta_v9"
+      },
+      "geometry": {
+        "aspecto_0": "geometry.skeleton.v1.8",
+        "aspecto_1": "geometry.skeleton.stray.v1.8",
+        "aspecto_2": "geometry.skeleton.bogged",
+        "ropa_0": "geometry.stray.armor.v1.8",
+        "ropa_1": "geometry.bogged.armor",
+        "ojos": "geometry.claudenpc.ojos_humanoide"
+      },
+      "animations": {
+        "mirar": "animation.common.look_at_target",
+        "mover": "animation.humanoid.move",
+        "tirones": "animation.claudenpc.marioneta_v9.tirones",
+        "arco": "animation.humanoid.bow_and_arrow",
+        "golpe": "animation.humanoid.attack.rotations"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "mover",
+          {
+            "arco": "query.has_target"
+          },
+          {
+            "golpe": "variable.attack_time > 0"
+          },
+          "tirones"
+        ],
+        "pre_animation": [
+          "variable.gliding_speed_value = 1.0;",
+          "variable.tcos0 = (Math.cos(query.modified_distance_moved * 38.17) * query.modified_move_speed / variable.gliding_speed_value) * 57.3;"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_marioneta_esqueleto",
+        {
+          "controller.render.claudenpc_marioneta_esqueleto_ropa": "query.variant > 0"
+        },
+        "controller.render.claudenpc_marioneta_esqueleto_ojos"
+      ],
+      "enable_attachables": true
+    }
+  }
+}

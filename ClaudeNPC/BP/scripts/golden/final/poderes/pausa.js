@@ -4,6 +4,7 @@ import { particleAt, soundAt } from "../../../util.js";
 import { danar, estallido } from "../../comun.js";
 import { PLOMO, animar, fundido, lerp, pose, sonar } from "../comun.js";
 import { pausarOrbes } from "../orbes.js";
+import { niebla } from "../../../dano.js";
 
 // Pausa del tiempo: chasquea los dedos y la pantalla se vuelve plomo (niebla gris). Nadie
 // se mueve salvo Claude Golden: se acerca, te da un combo de golpes y vuelve a chasquear;
@@ -17,8 +18,7 @@ function congelar(p, si) {
   try {
     p.inputPermissions.setPermissionCategory(InputPermissionCategory.Movement, !si);
     p.inputPermissions.setPermissionCategory(InputPermissionCategory.Jump, !si);
-    if (si) p.fogSettings.push(NIEBLA, TAG);
-    else p.fogSettings.remove(TAG);
+    niebla(p, NIEBLA, TAG, si);
   } catch {
     // Jugador no disponible.
   }
@@ -30,11 +30,7 @@ function congelar(p, si) {
 export function descongelarTodos(jugadores) {
   for (const p of jugadores) {
     if (!congelados.has(p.id)) {
-      try {
-        p.fogSettings.remove(TAG);
-      } catch {
-        // Sin niebla.
-      }
+      niebla(p, NIEBLA, TAG, false);
       continue;
     }
     congelar(p, false);

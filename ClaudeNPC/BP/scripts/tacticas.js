@@ -1,4 +1,4 @@
-import { EntityDamageCause, system } from "@minecraft/server";
+import { EntityDamageCause, EquipmentSlot, system } from "@minecraft/server";
 import { ANIM, ARMAS, CONSTRUCCION, MODIFICA_MUNDO, PARTICLES } from "./config.js";
 import { ponerElytra, quitarElytra, sostener } from "./equipo.js";
 import { estados } from "./estado.js";
@@ -20,11 +20,43 @@ function volverAlArma(npc, state) {
   if (npc.isValid) sostener(npc, armaActual(state));
 }
 
+// ¿El jugador se cubre con el escudo (agachado, escudo en una mano y mirando al Claude)? Los
+// golpes del script no pasan por el escudo del juego, así que se revisa aquí (v9.0): como en
+// Minecraft, de frente lo para; con un hacha el Claude se lo desactiva 5 segundos.
+function seCubre(jugador, npc) {
+  try {
+    if (jugador.typeId !== "minecraft:player" || !jugador.isSneaking) return false;
+    const eq = jugador.getComponent("minecraft:equippable");
+    const escudo = [EquipmentSlot.Offhand, EquipmentSlot.Mainhand].some((k) => eq?.getEquipment(k)?.typeId === "minecraft:shield");
+    if (!escudo) return false;
+    const v = jugador.getViewDirection();
+    const d = flat(jugador.location, npc.location);
+    return v.x * d.x + v.z * d.z > -0.1;
+  } catch {
+    return false;
+  }
+}
+
 export function golpear(npc, jugador, dano, empuje, alto) {
   try {
     const s = estados.get(npc.id);
     if (s) s.ultimoGolpe = now(); // la táctica ya tiene su propia animación
     const dir = flat(npc.location, jugador.location);
+    if (seCubre(jugador, npc)) {
+      const hacha = (ARMAS[s?.arma ?? 0] ?? ARMAS[0]).tipo === "hacha";
+      npc.dimension.playSound("item.shield.block", jugador.location, { pitch: 0.9 + Math.random() * 0.2, volume: 1 });
+      jugador.applyKnockback({ x: dir.x * empuje * 0.35, z: dir.z * empuje * 0.35 }, 0.1);
+      if (hacha) {
+        try {
+          jugador.startItemCooldown("shield", 100);
+        } catch {
+          // Sin enfriamiento.
+        }
+        npc.dimension.playSound("random.break", jugador.location, { pitch: 0.8, volume: 1 });
+        jugador.onScreenDisplay?.setActionBar("§c¡Te rompió la guardia con el hacha!");
+      }
+      return false;
+    }
     jugador.applyDamage(dano, { cause: EntityDamageCause.entityAttack, damagingEntity: npc });
     jugador.applyKnockback({ x: dir.x * empuje, z: dir.z * empuje }, alto);
     return true;

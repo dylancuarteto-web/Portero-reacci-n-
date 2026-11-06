@@ -108,10 +108,29 @@ const MOVIMIENTOS = {
     });
     return 12;
   },
+  // Combo (v9.0): si estás a un paso, se acerca y encadena dos golpes (ida y vuelta); con IQ
+  // alto agrega un remate que empuja más (estocada con chispas de crítico).
   combo(npc, s, jugador) {
-    golpe(npc, s, jugador, 0.9, 0.15);
-    system.runTimeout(() => golpe(npc, s, jugador, 0.9, 0.5), 6);
-    return 10;
+    const d = flat(npc.location, jugador.location);
+    if (d.d > 2.4) {
+      const l = npc.location;
+      const paso = Math.min(1.2, d.d - 1.6);
+      deslizar(npc, { x: l.x + d.x * paso, y: l.y, z: l.z + d.z * paso }, 3);
+    }
+    const remate = nivel(s) >= 0.55;
+    system.runTimeout(() => golpe(npc, s, jugador, 0.85, 0.12), d.d > 2.4 ? 3 : 0);
+    system.runTimeout(() => golpe(npc, s, jugador, 0.9, 0.2), d.d > 2.4 ? 9 : 6);
+    if (remate) {
+      system.runTimeout(() => {
+        if (!npc.isValid || !jugador.isValid) return;
+        animate(npc, ANIM.lanzar);
+        if (golpe(npc, s, jugador, 1.25, 0.9)) {
+          particleAt(npc.dimension, "minecraft:critical_hit_emitter", { x: jugador.location.x, y: jugador.location.y + 1, z: jugador.location.z });
+          sound(npc, "game.player.attack.strong", 0.75, 1);
+        }
+      }, d.d > 2.4 ? 15 : 12);
+    }
+    return remate ? 18 : 12;
   },
   curarse(npc, s, jugador) {
     s.cd.curar = now() + DUELO.curarCada;
@@ -162,7 +181,7 @@ export function duelo(npc, s, jugador, c) {
   if (c.dist < 3.2) opciones.push({ id: "esquivar", p: 1 + n * 2 + nivelHab(npc, s, "reflejos") * 0.5 });
   if (c.dist > 2.6) opciones.push({ id: "embestida", p: 2.5 + n * 1.5 });
   if (c.dist > 1.8 && c.dist < 4.2 && npc.isOnGround) opciones.push({ id: "critico", p: 1.5 + n * 2.5 });
-  if (c.dist < 2.7) opciones.push({ id: "combo", p: 1.5 + n * 2 });
+  if (c.dist < 3.4) opciones.push({ id: "combo", p: 1.8 + n * 2.4 });
   // Muchas veces lo mejor es seguir peleando normal (la IA del juego golpea sola).
   opciones.push({ id: null, p: 5 - n * 2 });
   const elegido = sortear(opciones);

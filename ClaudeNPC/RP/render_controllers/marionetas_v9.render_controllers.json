@@ -1,0 +1,147 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.claudenpc_marioneta_zombi": {
+      "arrays": {
+        "geometries": {
+          "Array.geos": [
+            "Geometry.aspecto_0",
+            "Geometry.aspecto_1",
+            "Geometry.aspecto_2",
+            "Geometry.aspecto_3"
+          ]
+        },
+        "textures": {
+          "Array.pieles": [
+            "Texture.aspecto_0",
+            "Texture.aspecto_1",
+            "Texture.aspecto_2",
+            "Texture.aspecto_3"
+          ]
+        }
+      },
+      "geometry": "Array.geos[query.variant]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Array.pieles[query.variant]"
+      ]
+    },
+    "controller.render.claudenpc_marioneta_zombi_ojos": {
+      "arrays": {
+        "geometries": {
+          "Array.ojos": [
+            "Geometry.ojos",
+            "Geometry.ojos",
+            "Geometry.ojos",
+            "Geometry.ojos_az"
+          ]
+        }
+      },
+      "geometry": "Array.ojos[query.variant]",
+      "materials": [
+        {
+          "*": "Material.ojos"
+        }
+      ],
+      "textures": [
+        "Texture.ojos"
+      ]
+    },
+    "controller.render.claudenpc_marioneta_esqueleto": {
+      "arrays": {
+        "geometries": {
+          "Array.geos": [
+            "Geometry.aspecto_0",
+            "Geometry.aspecto_1",
+            "Geometry.aspecto_2"
+          ]
+        },
+        "textures": {
+          "Array.pieles": [
+            "Texture.aspecto_0",
+            "Texture.aspecto_1",
+            "Texture.aspecto_2"
+          ]
+        }
+      },
+      "geometry": "Array.geos[query.variant]",
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "textures": [
+        "Array.pieles[query.variant]"
+      ]
+    },
+    "controller.render.claudenpc_marioneta_esqueleto_ropa": {
+      "arrays": {
+        "geometries": {
+          "Array.ropas": [
+            "Geometry.ropa_0",
+            "Geometry.ropa_0",
+            "Geometry.ropa_1"
+          ]
+        },
+        "textures": {
+          "Array.telas": [
+            "Texture.ropa_0",
+            "Texture.ropa_0",
+            "Texture.ropa_1"
+          ]
+        }
+      },
+      "geometry": "Array.ropas[query.variant]",
+      "materials": [
+        {
+          "*": "Material.ropa"
+        }
+      ],
+      "textures": [
+        "Array.telas[query.variant]"
+      ]
+    },
+    "controller.render.claudenpc_marioneta_esqueleto_ojos": {
+      "arrays": {
+        "geometries": {
+          "Array.ojos": [
+            "Geometry.ojos",
+            "Geometry.ojos",
+            "Geometry.ojos"
+          ]
+        }
+      },
+      "geometry": "Array.ojos[query.variant]",
+      "materials": [
+        {
+          "*": "Material.ojos"
+        }
+      ],
+      "textures": [
+        "Texture.ojos"
+      ]
+    },
+    "controller.render.claudenpc_aldeano_ojos": {
+      "arrays": {
+        "geometries": {
+          "Array.ojos": [
+            "Geometry.ojos"
+          ]
+        }
+      },
+      "geometry": "Geometry.ojos",
+      "materials": [
+        {
+          "*": "Material.ojos"
+        }
+      ],
+      "textures": [
+        "Texture.ojos"
+      ]
+    }
+  }
+}

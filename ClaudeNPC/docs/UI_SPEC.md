@@ -1,7 +1,7 @@
 # Especificación de interfaz: barra de jefe de Claude Golden (v8.1, nombre arreglado en v8.2)
 
 ## Usuarios y plataforma
-- Minecraft Bedrock 26.60, pensado primero para **celular** (pantalla horizontal, controles táctiles) y válido en PC y consola.
+- Minecraft Bedrock 1.21.132 en adelante (también 26.x), pensado primero para **celular** (pantalla horizontal, controles táctiles) y válido en PC y consola.
 - Se ve durante la batalla final de Claude Golden (desde el chasquido que lo cura a 1000 hasta su muerte).
 - Multijugador: cada jugador en el alcance de la barra de jefe (64 bloques) ve la misma barra.
 

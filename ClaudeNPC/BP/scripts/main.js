@@ -7,7 +7,7 @@ import { animarGolpe, tickCombate } from "./combate.js";
 import { registrarComandos } from "./comandos.js";
 import { paradaCuerpo } from "./duelo.js";
 import { vestir } from "./equipo.js";
-import { bajarEscudo, bloqueaProyectil, efectoBloqueo } from "./escudo.js";
+import { bajarEscudo, efectoBloqueo } from "./escudo.js";
 import { estados, obtenerEstado } from "./estado.js";
 import { nivelHab } from "./habilidades.js";
 import { contraataque } from "./habilidades/reflejos.js";
@@ -28,6 +28,8 @@ import { iniciarTorre } from "./obras/torre.js";
 import { hostil } from "./postura.js";
 import { bloquePropio, golpear, perlaHasta, vigilarCaida } from "./tacticas.js";
 import { cada, now, superficie } from "./util.js";
+import { alSensor, devolverVida, etiqueta, EVENTO, ponerVida, TAG, vida } from "./dano.js";
+import { ayudarse, pedirAyuda } from "./ayuda.js";
 
 // Cerebro de cada Claude. Prioridades en cada turno:
 // fusión > clase > bote > agua (nadar a la orilla) > reunión de genios > obra corta
@@ -107,6 +109,7 @@ function cerebro(npc) {
     s.hogarCargado = true;
   }
   if (s.fusion) return;
+  if (cada(s, "reflejos5", 40)) s.reflejos5 = nivelHab(npc, s, "reflejos") >= 5;
   if (s.robot) return tickPiloto(npc, s);
   // Fuera de la pelea: se cura solo y se pone la armadura que le toca por su IQ (cuero,
   // cota, hierro, diamante, netherita). Al morir no la suelta.
@@ -225,6 +228,7 @@ function cerebro(npc) {
     s.objetivo = jugador;
     ponerHaciendo(npc, s, "§c¡a pelear!");
     tickCombate(npc, s, jugador);
+    ayudarse(npc, s);
     if (cada(s, "xpPelea", 20)) aprender(npc, s, 0.02); // experiencia por tiempo de pelea
     return;
   }
@@ -273,18 +277,42 @@ world.afterEvents.playerBreakBlock.subscribe(({ player }) => {
 });
 
 // Golpes: aprende de los que recibe y de los que acierta. Si un jugador lo ataca,
-// pelea aunque estuviera tranquilo.
-world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
+// pelea aunque estuviera tranquilo (y los Claudes de cerca vienen a ayudarlo).
+function golpeDeJugador(npc, s, jugador, flecha) {
+  if (flecha) s.memoria.arco++;
+  else s.memoria.golpes++;
+  // Si estaba en clase, la clase se suspende y todos (alumnos y Claudes cercanos) te atacan.
+  if (s.clase) suspenderPorAtaque(s.clase.sesion);
+  s.provocadoHasta = now() + 1200;
+  aprender(npc, s, 0.4);
+  pedirAyuda(npc, s, jugador);
+}
+
+function tieneHacha(jugador) {
+  try {
+    return /_axe$/.test(jugador.getComponent("minecraft:equippable")?.getEquipment(EquipmentSlot.Mainhand)?.typeId ?? "");
+  } catch {
+    return false;
+  }
+}
+
+world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource, damage }) => {
   const atacante = damageSource.damagingEntity;
   if (hurtEntity.typeId === NPC && atacante instanceof Player) {
     const s = estados.get(hurtEntity.id);
     if (!s) return;
-    if (damageSource.cause === EntityDamageCause.projectile) s.memoria.arco++;
-    else s.memoria.golpes++;
-    // Si estaba en clase, la clase se suspende y todos (alumnos y Claudes cercanos) te atacan.
-    if (s.clase) suspenderPorAtaque(s.clase.sesion);
-    s.provocadoHasta = now() + 1200;
-    aprender(hurtEntity, s, 0.4);
+    // Ningún golpe tuyo le quita más de DUELO.maxGolpe (una maza desde lo alto no lo mata de uno).
+    if (damage > DUELO.maxGolpe) devolverVida(hurtEntity, damage - DUELO.maxGolpe);
+    // Con un hacha le rompes el escudo (el sensor deja pasar los golpes con hacha).
+    if (damageSource.cause === EntityDamageCause.entityAttack && s.escudoArriba && deFrente(hurtEntity, atacante) && tieneHacha(atacante)) {
+      bajarEscudo(hurtEntity, s, 100);
+      try {
+        hurtEntity.dimension.playSound("random.break", hurtEntity.location, { pitch: 0.8, volume: 1 });
+      } catch {
+        // Sin sonido.
+      }
+    }
+    golpeDeJugador(hurtEntity, s, atacante, damageSource.cause === EntityDamageCause.projectile);
   } else if (hurtEntity instanceof Player && atacante?.typeId === NPC) {
     const s = estados.get(atacante.id);
     if (!s) return;
@@ -302,61 +330,92 @@ world.afterEvents.entityDie.subscribe(({ deadEntity, damageSource }) => {
   }
 });
 
-// Escudo: solo para flechas y proyectiles que llegan por delante con el escudo
-// levantado. Tras un water drop, un clutch o una picada con maza no recibe daño
-// por caída. Durante la fusión es intocable.
-world.beforeEvents.entityHurt.subscribe((event) => {
-  const s = estados.get(event.hurtEntity.id);
-  if (!s) return;
-  if (s.fusion) {
-    event.cancel = true;
-    return;
+// Escudo, reflejos, caídas y fusión (los sensores de daño de claude.entity.json leen
+// estas etiquetas; ver dano.js). Se ponen cada tick:
+//   - intocable durante la fusión;
+//   - sin daño por caída tras un water drop, un clutch o una picada con maza;
+//   - escudo: con el escudo arriba y quien lo amenaza enfrente para los golpes sin hacha
+//     (unos 70° a cada lado) y las flechas (unos 100° a cada lado);
+//   - esquiva (reflejos 5): el 35 % de los golpes le da a un reflejo y él contraataca.
+function amenaza(npc, s) {
+  if (s.objetivo?.isValid) return s.objetivo;
+  try {
+    return npc.dimension.getPlayers({ location: npc.location, maxDistance: 16, closest: 1,
+      excludeGameModes: [GameMode.Creative, GameMode.Spectator] })[0];
+  } catch {
+    return undefined;
   }
-  const cause = event.damageSource.cause;
-  if (cause === EntityDamageCause.fall && now() < s.sinCaidaHasta) {
-    event.cancel = true;
-    return;
+}
+
+function frente(npc, quien) {
+  try {
+    const v = npc.getViewDirection();
+    const dx = quien.location.x - npc.location.x;
+    const dz = quien.location.z - npc.location.z;
+    const d = Math.hypot(dx, dz);
+    const h = Math.hypot(v.x, v.z);
+    if (d < 0.01 || h < 0.01) return 1;
+    return (v.x * dx + v.z * dz) / (d * h);
+  } catch {
+    return -1;
   }
-  const npc = event.hurtEntity;
-  const quien = event.damageSource.damagingEntity;
-  // Ningún golpe tuyo le quita más de DUELO.maxGolpe (una maza desde lo alto no lo mata de uno).
-  if (quien instanceof Player && event.damage > DUELO.maxGolpe) event.damage = DUELO.maxGolpe;
-  // Escudo arriba y el golpe le llega por delante: lo para (con un hacha se lo rompes).
-  if (cause === EntityDamageCause.entityAttack && quien instanceof Player && s.escudoArriba && deFrente(npc, quien)) {
-    let hacha = false;
+}
+
+system.runInterval(() => {
+  const t = now();
+  for (const s of estados.values()) {
+    const npc = s.npc;
     try {
-      hacha = /_axe$/.test(quien.getComponent("minecraft:equippable")?.getEquipment(EquipmentSlot.Mainhand)?.typeId ?? "");
+      if (!npc?.isValid) continue;
+      etiqueta(npc, TAG.intocable, !!s.fusion);
+      etiqueta(npc, TAG.sinCaida, t < (s.sinCaidaHasta ?? 0));
+      let cono = -1;
+      if (s.escudoArriba) {
+        const q = amenaza(npc, s);
+        cono = q ? frente(npc, q) : 1;
+      }
+      etiqueta(npc, TAG.escudo, s.escudoArriba && cono > 0.3);
+      etiqueta(npc, TAG.escudoFlechas, s.escudoArriba && cono > -0.15);
+      etiqueta(npc, TAG.esquiva, !!s.reflejos5 && t >= (s.cd.contra ?? 0) && !s.robot && !s.clase && Math.random() < 0.35);
     } catch {
-      hacha = false;
-    }
-    if (hacha) {
-      system.run(() => {
-        if (!npc.isValid) return;
-        bajarEscudo(npc, s, 100);
-        npc.dimension.playSound("random.break", npc.location, { pitch: 0.8, volume: 1 });
-      });
-    } else {
-      event.cancel = true;
-      s.memoria.bloqueos = (s.memoria.bloqueos ?? 0) + 1;
-      system.run(() => paradaCuerpo(npc, s, quien));
-      return;
+      // NPC descargado.
     }
   }
-  if (bloqueaProyectil(npc, s, event.damageSource)) {
-    event.cancel = true;
-    const origen = event.damageSource.damagingEntity;
-    system.run(() => efectoBloqueo(npc, s, origen));
+}, 1);
+
+// El sensor paró el golpe con el escudo: una flecha (efecto de bloqueo, y con escudo 3 la
+// devuelve) o un golpe sin hacha (parada con el cuerpo, como un jugador).
+alSensor(EVENTO.bloqueo, [NPC], (npc, golpe) => {
+  const s = estados.get(npc.id);
+  if (!s) return;
+  if (golpe?.proyectil || !(golpe?.quien instanceof Player)) {
+    efectoBloqueo(npc, s, golpe?.quien);
     return;
   }
-  // Reflejos 5: a veces el golpe le da a un reflejo; él esquiva y contraataca.
-  const atacante = event.damageSource.damagingEntity;
-  if (cause === EntityDamageCause.entityAttack && atacante instanceof Player && now() >= (s.cd.contra ?? 0)
-    && !s.robot && !s.clase && Math.random() < 0.35 && nivelHab(npc, s, "reflejos") >= 5) {
-    event.cancel = true;
-    s.cd.contra = now() + 80;
-    system.run(() => npc.isValid && atacante.isValid && contraataque(npc, s, atacante, golpear));
+  s.memoria.bloqueos = (s.memoria.bloqueos ?? 0) + 1;
+  paradaCuerpo(npc, s, golpe.quien);
+  s.provocadoHasta = now() + 1200;
+});
+
+// Reflejos 5: el golpe le dio a un reflejo; él esquiva y contraataca.
+alSensor(EVENTO.esquiva, [NPC], (npc, golpe) => {
+  const s = estados.get(npc.id);
+  if (!s) return;
+  s.cd.contra = now() + 80;
+  etiqueta(npc, TAG.esquiva, false);
+  const atacante = golpe?.quien;
+  if (atacante instanceof Player && atacante.isValid) {
+    s.provocadoHasta = now() + 1200;
+    contraataque(npc, s, atacante, golpear);
   }
-}, { entityFilter: { type: NPC } });
+});
+
+// Un golpe tuyo que lo mataría, con más de 24 de vida: le quita solo 24.
+alSensor(EVENTO.fatal, [NPC], (npc, golpe) => {
+  const s = estados.get(npc.id);
+  ponerVida(npc, vida(npc).actual - DUELO.maxGolpe);
+  if (s && golpe?.quien instanceof Player) golpeDeJugador(npc, s, golpe.quien, !!golpe.proyectil);
+});
 
 world.afterEvents.entityRemove.subscribe(({ removedEntityId }) => estados.delete(removedEntityId));
 

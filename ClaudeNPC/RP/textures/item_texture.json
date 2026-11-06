@@ -4,9 +4,6 @@
   "texture_data": {
     "claudenpc_corazon_dorado": {
       "textures": "textures/items/corazon_dorado"
-    },
-    "claudenpc_ojos_marioneta": {
-      "textures": "textures/items/ojos_marioneta"
     }
   }
 }

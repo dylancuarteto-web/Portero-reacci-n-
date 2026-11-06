@@ -134,26 +134,6 @@
         }
       ]
     },
-    "controller.render.claudenpc_signo": {
-      "arrays": {
-        "textures": {
-          "Array.colores": [
-            "Texture.default",
-            "Texture.azul",
-            "Texture.morado"
-          ]
-        }
-      },
-      "geometry": "Geometry.default",
-      "textures": [
-        "Array.colores[query.variant]"
-      ],
-      "materials": [
-        {
-          "*": "Material.default"
-        }
-      ]
-    },
     "controller.render.claudenpc_ilusion": {
       "geometry": "Geometry.default",
       "textures": [

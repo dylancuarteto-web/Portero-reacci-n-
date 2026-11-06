@@ -1,0 +1,31 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.claudenpc.marioneta_v9.tirones": {
+      "loop": true,
+      "bones": {
+        "head": {
+          "rotation": [
+            0,
+            0,
+            "math.sin(query.life_time * 140) * 7 + (math.mod(query.life_time, 1.7) < 0.12 ? 9 : 0)"
+          ]
+        },
+        "rightArm": {
+          "rotation": [
+            "math.sin(query.life_time * 210) * 6",
+            0,
+            "math.cos(query.life_time * 160) * 4"
+          ]
+        },
+        "leftArm": {
+          "rotation": [
+            "-math.sin(query.life_time * 190) * 6",
+            0,
+            "-math.cos(query.life_time * 170) * 4"
+          ]
+        }
+      }
+    }
+  }
+}

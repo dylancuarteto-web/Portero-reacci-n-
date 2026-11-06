@@ -7,9 +7,11 @@ import morada from "./poderes/morada.js";
 import pausa from "./poderes/pausa.js";
 import relojes, { tickRelojes } from "./poderes/relojes.js";
 import volea from "./poderes/volea.js";
+import { miras, prisma, relojSol, sinfonia, ultimoAliento } from "./poderes/epicos.js";
 
 // Poderes de la fase final de Claude Golden (cada uno en golden/final/poderes).
-export const PODERES_FINALES = [volea, relojes, ilusiones, pausa, marionetas, espadas, morada];
+// v9.0: miras, reloj de sol, prisma, sinfonía y el último aliento (ver poderes/epicos.js).
+export const PODERES_FINALES = [volea, relojes, ilusiones, pausa, marionetas, espadas, morada, miras, relojSol, prisma, sinfonia, ultimoAliento];
 
 function participantes(g) {
   const ids = g.final.jugadores;

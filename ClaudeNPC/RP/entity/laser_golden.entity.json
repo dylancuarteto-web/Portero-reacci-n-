@@ -1,0 +1,34 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:laser_golden",
+      "materials": {
+        "nucleo": "entity_emissive_alpha",
+        "halo": "charged_creeper"
+      },
+      "textures": {
+        "amarillo": "textures/entity/claudenpc/laser_amarillo",
+        "azul": "textures/entity/claudenpc/laser_azul",
+        "morado": "textures/entity/claudenpc/laser_morado",
+        "oro": "textures/entity/claudenpc/laser_oro"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.laser"
+      },
+      "animations": {
+        "forma": "animation.claudenpc.laser.forma",
+        "apagar": "animation.claudenpc.laser.apagar"
+      },
+      "scripts": {
+        "animate": [
+          "forma"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_laser_nucleo",
+        "controller.render.claudenpc_laser_halo"
+      ]
+    }
+  }
+}

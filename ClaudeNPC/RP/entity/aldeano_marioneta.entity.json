@@ -5,7 +5,8 @@
       "identifier": "claudenpc:aldeano_marioneta",
       "materials": {
         "default": "villager_v2",
-        "masked": "villager_v2_masked"
+        "masked": "villager_v2_masked",
+        "ojos": "entity_emissive_alpha"
       },
       "textures": {
         "base": "textures/entity/villager2/villager",
@@ -15,10 +16,12 @@
         "cleric": "textures/entity/villager2/professions/cleric",
         "fisherman": "textures/entity/villager2/professions/fisherman",
         "butcher": "textures/entity/villager2/professions/butcher",
-        "armorer": "textures/entity/villager2/professions/armorer"
+        "armorer": "textures/entity/villager2/professions/armorer",
+        "ojos": "textures/entity/claudenpc/ojos_marioneta_v9"
       },
       "geometry": {
-        "default": "geometry.villager_v2"
+        "default": "geometry.villager_v2",
+        "ojos": "geometry.claudenpc.ojos_aldeano"
       },
       "animations": {
         "mirar": "animation.common.look_at_target",
@@ -39,7 +42,8 @@
       },
       "render_controllers": [
         "controller.render.claudenpc_aldeano_base",
-        "controller.render.claudenpc_aldeano_oficio"
+        "controller.render.claudenpc_aldeano_oficio",
+        "controller.render.claudenpc_aldeano_ojos"
       ],
       "enable_attachables": true
     }

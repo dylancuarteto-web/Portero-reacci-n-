@@ -4,15 +4,15 @@ import { blockAt, now, particleAt, soundAt } from "../../util.js";
 import { danar } from "../comun.js";
 import { NEGRO, cortar, forma, fundido, morada, particula, pose, sonar, vivos, yawHacia } from "./comun.js";
 import { guardarFinal, participantes } from "./pelea.js";
-import { rayo } from "./poderes/espadas.js";
+import { columna } from "./poderes/espadas.js";
 import { cambiarAMorada, sonarRayoMorado } from "./poderes/morada.js";
 
 // Parkour de los 200 de vida (inspirado en Dusttrust): en el centro de la arena se levanta una
 // torre CERRADA (pared de vidrio morado, pilar de oro al centro) con una escalera caracol de
 // cubos sueltos: hay que saltar de bloque en bloque (a veces para subir, a veces en plano).
 // Golden vuelve morada una espada y, desde afuera, con cortes que suenan fuerte, crea una
-// INUNDACIÓN DE RAYOS morados que sube poco a poco desde el piso. Si te caes o vas lento, los
-// rayos te alcanzan y te matan. Arriba de todo (la meta, bajo el techo) estás a salvo. Cuando
+// INUNDACIÓN DE ENERGÍA morada (v9.0: haces rectos de láser, sin rayos en zigzag) que sube poco a
+// poco desde el piso. Si te caes o vas lento, la energía te alcanza y te mata. Arriba de todo (la meta, bajo el techo) estás a salvo. Cuando
 // la inundación llega arriba, la torre se deshace (bajas flotando) y sigue la pelea.
 
 const TAU = Math.PI * 2;
@@ -51,6 +51,7 @@ export const ESCALERA = (() => {
   const n = 24;
   const subidas = 10;
   const L = ANILLO.length;
+  /** @type {{ x: number, z: number, h: number, meta?: boolean }[]} */
   const pasos = [{ ...ANILLO[0], h: 0 }];
   let i = 0;
   let h = 0;
@@ -207,7 +208,7 @@ export function tickParkour(g) {
     } catch {
       P.agua = undefined;
     }
-    rayos(g, c, 4);
+    haces(g, c, 4);
     sonarRayoMorado(dim, centro, 48);
   }
   if (t < T_INUNDA) return;
@@ -221,10 +222,10 @@ export function tickParkour(g) {
   } catch {
     // Descargado.
   }
-  // Golden corta con la espada morada: rayos que caen en la inundación (sonido fuerte).
+  // Golden corta con la espada morada: láseres que caen en la inundación (sonido fuerte).
   if ((t - T_INUNDA) % CADA_CORTE === CADA_CORTE - 4) cortar(e, Math.random() < 0.3 ? 0 : P.lado, P.lado);
   if ((t - T_INUNDA) % CADA_CORTE === 0 && t > T_INUNDA) {
-    rayos(g, c, 3);
+    haces(g, c, 3);
     sonarRayoMorado(dim, { x: centro.x, y: c.y + P.nivel, z: centro.z }, 48);
   }
   if (t % 3 === 0) particula(dim, PARTICLES.impactoMorado, { x: centro.x + (Math.random() - 0.5) * 9, y: c.y + P.nivel, z: centro.z + (Math.random() - 0.5) * 9 });
@@ -256,8 +257,8 @@ export function tickParkour(g) {
   if (P.fin && t >= P.fin) terminarParkour(g);
 }
 
-// Rayos morados (de adorno) que caen en la inundación, lejos de los jugadores.
-function rayos(g, c, n) {
+// Láseres morados (de adorno) que bajan desde el techo hasta la inundación, lejos de los jugadores.
+function haces(g, c, n) {
   const e = g.entidad;
   const dim = e.dimension;
   const P = g.final.parkour;
@@ -268,7 +269,7 @@ function rayos(g, c, n) {
       const r = 1.8 + Math.random() * 3.6;
       const l = { x: c.x + 0.5 + Math.cos(a) * r, y: c.y + P.nivel, z: c.z + 0.5 + Math.sin(a) * r };
       if (jug.some((p) => Math.hypot(p.location.x - l.x, p.location.z - l.z) < 2)) continue;
-      rayo(dim, l, "morado", e, false);
+      columna(dim, l, "morado", e, false, { alto: Math.max(2, 12.5 - P.nivel), grosor: 1, vida: 7 });
       break;
     }
   }

@@ -2,6 +2,7 @@ import { HudVisibility, InputPermissionCategory, Player, system, world } from "@
 import { DIMENSIONES, FINAL, GOLDEN_FINAL } from "../../config.js";
 import { enCinematica } from "../../robot/cinematica.js";
 import { now } from "../../util.js";
+import { ponerVida } from "../../dano.js";
 import { goldens } from "../comun.js";
 import { arenas, crearArena, ponerArena, revisarArenasHuerfanas, romperArena } from "./arena.js";
 import { configurarCaidos, revivirCaidos } from "./caidos.js";
@@ -62,41 +63,77 @@ system.runInterval(() => {
   }
 }, 1);
 
-// Daño a Claude Golden (desde el beforeEvents.entityHurt de golden/index.js).
-//  - Antes de la fase final: con menos de 100 empieza (nunca muere de un golpe antes).
-//  - En cinemáticas no recibe daño; en la batalla, el golpe mortal empieza su muerte.
-export function controlarDano(g, ev, alHerir) {
+// Daño a Claude Golden (1.21.132: sin evento "antes del golpe"). Su sensor de daño
+// (claude_golden.entity.json) lo hace intocable en las cinemáticas y curándose (etiqueta) y
+// nunca deja pasar un golpe que lo mataría: avisa con "claudenpc:golpe_fatal" (golpeFatal).
+// Los demás golpes ya se aplicaron y aquí se ajusta la vida (despuesDelGolpe).
+export function intocable(g) {
   const f = g.final;
-  const { actual } = vidaDe(g.entidad);
-  if (f) {
-    if (f.etapa !== "pelea" || f.curando) {
-      ev.cancel = true;
-      return;
-    }
-    // Con 200 de vida, el parkour: no baja de 200 (ni muere) hasta hacerlo.
-    if (!f.parkourHecho && actual - ev.damage <= GOLDEN_FINAL.parkour) {
-      ev.damage = Math.max(0, Math.min(ev.damage, actual - GOLDEN_FINAL.parkour));
-      f.parkourPendiente = true;
-      if (!f.espadasHechas) f.espadasPendiente = true;
-      if (ev.damage <= 0) ev.cancel = true;
-      return;
-    }
-    if (ev.damage >= actual) {
-      ev.cancel = true;
-      system.run(() => g.final?.etapa === "pelea" && iniciarMuerte(g));
-      return;
-    }
-    if (!f.espadasHechas && actual - ev.damage <= GOLDEN_FINAL.espadas) f.espadasPendiente = true;
-    return;
-  }
-  if (actual - ev.damage >= GOLDEN_FINAL.umbral) return;
-  ev.damage = Math.max(0, Math.min(ev.damage, actual - 10));
-  const quien = ev.damageSource.damagingEntity;
+  return !!f && (f.etapa !== "pelea" || !!f.curando);
+}
+
+// Antes de la fase final: no baja de 10 y empieza la fase final.
+function herirAntesDelFinal(g, quien, alHerir) {
+  const e = g.entidad;
+  if (vidaDe(e).actual < 10) ponerVida(e, 10);
   system.run(() => {
-    if (g.final || !g.entidad.isValid) return;
+    if (g.final || !e.isValid) return;
     alHerir?.(g);
     iniciarHerido(g, quien instanceof Player ? quien : undefined);
   });
+}
+
+// Con 200 de vida, el parkour: no baja de 200 (ni muere) hasta hacerlo.
+function frenarEnParkour(g) {
+  const f = g.final;
+  const e = g.entidad;
+  if (vidaDe(e).actual < GOLDEN_FINAL.parkour) ponerVida(e, GOLDEN_FINAL.parkour);
+  f.parkourPendiente = true;
+  if (!f.espadasHechas) f.espadasPendiente = true;
+}
+
+// Un golpe que no lo mató. "extra": daño de más (aturdido recibe el doble).
+export function despuesDelGolpe(g, extra, quien, alHerir) {
+  const e = g.entidad;
+  let { actual } = vidaDe(e);
+  if (extra > 0) {
+    if (actual - extra <= 0) {
+      golpeFatal(g, quien, alHerir);
+      return;
+    }
+    actual -= extra;
+    ponerVida(e, actual);
+  }
+  const f = g.final;
+  if (f) {
+    if (intocable(g)) return;
+    if (!f.parkourHecho && actual <= GOLDEN_FINAL.parkour) {
+      frenarEnParkour(g);
+      return;
+    }
+    if (!f.espadasHechas && actual <= GOLDEN_FINAL.espadas) f.espadasPendiente = true;
+    return;
+  }
+  if (actual >= GOLDEN_FINAL.umbral) return;
+  herirAntesDelFinal(g, quien, alHerir);
+}
+
+// Un golpe que lo habría matado (no se aplicó).
+export function golpeFatal(g, quien, alHerir) {
+  const f = g.final;
+  if (f) {
+    if (intocable(g)) return;
+    if (!f.parkourHecho) {
+      // El golpe lo habría matado: queda justo en 200 (ni más ni menos) y viene el parkour.
+      if (vidaDe(g.entidad).actual > GOLDEN_FINAL.parkour) ponerVida(g.entidad, GOLDEN_FINAL.parkour);
+      frenarEnParkour(g);
+      return;
+    }
+    system.run(() => g.final?.etapa === "pelea" && iniciarMuerte(g));
+    return;
+  }
+  ponerVida(g.entidad, Math.min(vidaDe(g.entidad).actual, 10));
+  herirAntesDelFinal(g, quien, alHerir);
 }
 
 // Por si la vida bajó de 100 sin pasar por el evento (comandos, etc.).
@@ -120,7 +157,7 @@ export function reanudarFinal(g) {
   }
   if (!datos) return false;
   g.final = { etapa: "pelea", t: 0, control: false, jugadores: new Set(), musica: new Set(), curando: 0, yaw: datos.yaw ?? 0,
-    espadasHechas: !!datos.espadas, parkourHecho: !!datos.parkourHecho, ocupadoHasta: now() + 100,
+    espadasHechas: !!datos.espadas, parkourHecho: !!datos.parkourHecho, ultimoAliento: !!datos.ultimo, ocupadoHasta: now() + 100,
     cd: { poder: now() + 100, relojes: now() + 400, pausa: now() + 500, marionetas: now() + 400, ilusiones: now() + 300, espadas: 0 } };
   if (datos.centro) {
     const a = crearArena(e.id, e.dimension, datos.centro);
@@ -146,7 +183,7 @@ export function reanudarFinal(g) {
   }
   // Objetos de la cinemática o de poderes que quedaron sueltos al cerrar el mundo.
   try {
-    for (const tipo of [FINAL.corazon, FINAL.fondo, FINAL.signo, FINAL.rayo, FINAL.reloj, FINAL.inundacion]) {
+    for (const tipo of [FINAL.corazon, FINAL.fondo, FINAL.laser, FINAL.reloj, FINAL.inundacion]) {
       for (const x of e.dimension.getEntities({ type: tipo, location: e.location, maxDistance: 128 })) x.remove();
     }
   } catch {
@@ -216,17 +253,14 @@ world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
 
 // Limpieza: objetos de la fase final que quedaron sueltos (mundo cerrado a la mitad) y
 // arenas sin su Golden.
-const SUELTOS = [FINAL.corazon, FINAL.fondo, FINAL.reloj, FINAL.signo, FINAL.rayo, FINAL.inundacion];
+const SUELTOS = [FINAL.corazon, FINAL.fondo, FINAL.reloj, FINAL.laser, FINAL.inundacion];
 let revisiones = 0;
 system.runInterval(() => {
   revisiones++;
   const enCurso = [...goldens.values()].some((g) => g.final && g.final.etapa !== "terminada");
   const vigentes = new Set();
   for (const g of goldens.values()) {
-    for (const x of g.final?.marionetas ?? []) {
-      vigentes.add(x.m.id);
-      if (x.cuerda) vigentes.add(x.cuerda.id);
-    }
+    for (const x of g.final?.marionetas ?? []) vigentes.add(x.m.id);
   }
   for (const id of DIMENSIONES) {
     try {

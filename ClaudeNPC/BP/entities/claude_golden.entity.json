@@ -56,6 +56,16 @@
       "minecraft:damage_sensor": {
         "triggers": [
           {
+            "on_damage": {
+              "filters": {
+                "test": "has_tag",
+                "subject": "self",
+                "value": "claudenpc_intocable"
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
             "cause": "fall",
             "deals_damage": "no"
           },
@@ -69,6 +79,63 @@
           },
           {
             "cause": "lava",
+            "deals_damage": "no"
+          },
+          {
+            "on_damage": {
+              "filters": {
+                "any_of": [
+                  {
+                    "any_of": [
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "claudenpc_marioneta"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "damager",
+                        "value": "claudenpc_marioneta"
+                      }
+                    ]
+                  },
+                  {
+                    "test": "has_tag",
+                    "subject": "other",
+                    "value": "claudenpc_marioneta"
+                  },
+                  {
+                    "test": "has_tag",
+                    "subject": "damager",
+                    "value": "claudenpc_marioneta"
+                  }
+                ]
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
+            "cause": "projectile",
+            "on_damage": {
+              "filters": {
+                "test": "has_tag",
+                "subject": "self",
+                "value": "claudenpc_refleja"
+              },
+              "event": "claudenpc:refleja",
+              "target": "self"
+            },
+            "deals_damage": "no"
+          },
+          {
+            "on_damage": {
+              "filters": {
+                "test": "has_damage",
+                "value": "fatal"
+              },
+              "event": "claudenpc:golpe_fatal",
+              "target": "self"
+            },
             "deals_damage": "no"
           }
         ]
@@ -264,7 +331,9 @@
             "claudenpc:morada_der"
           ]
         }
-      }
+      },
+      "claudenpc:refleja": {},
+      "claudenpc:golpe_fatal": {}
     }
   }
 }

@@ -1,0 +1,17 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.claudenpc.inundacion.haces": {
+      "initial_state": "viva",
+      "states": {
+        "viva": {
+          "particle_effects": [
+            {
+              "effect": "haces"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

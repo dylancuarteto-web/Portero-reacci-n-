@@ -320,17 +320,18 @@ export const GOLDEN_FINAL = {
 export const FINAL = {
   corazon: "claudenpc:corazon_dorado", fondo: "claudenpc:fondo", orbe: "claudenpc:orbe", orbeAzul: "claudenpc:orbe_azul",
   orbeDefinitiva: "claudenpc:orbe_definitiva", reloj: "claudenpc:reloj",
-  signo: "claudenpc:signo", rayo: "claudenpc:rayo", marioneta: "claudenpc:marioneta", ilusion: "claudenpc:ilusion_jugador",
-  cuerda: "claudenpc:cuerda", inundacion: "claudenpc:inundacion", aldeano: "claudenpc:aldeano_marioneta",
+  marioneta: "claudenpc:marioneta", ilusion: "claudenpc:ilusion_jugador",
+  inundacion: "claudenpc:inundacion", aldeano: "claudenpc:aldeano_marioneta",
+  // v9.0: láser de energía (en lugar de los rayos) y marionetas propias con los ojos en su modelo.
+  laser: "claudenpc:laser_golden", marionetaZombi: "claudenpc:marioneta_zombi", marionetaEsqueleto: "claudenpc:marioneta_esqueleto",
 };
 export const ITEM_CORAZON = "claudenpc:corazon_dorado";
-// Ojos y corazón de las marionetas: se ponen como casco y el juego los pega a su cabeza y pecho.
-export const ITEM_OJOS = "claudenpc:ojos_marioneta";
 export const SONIDO = {
   corazon: "claudenpc.golden.corazon", combate: "claudenpc.golden.combate", chasquido: "claudenpc.golden.chasquido",
   tictac: "claudenpc.golden.tictac", pausa: "claudenpc.golden.pausa", reanudar: "claudenpc.golden.reanudar",
   latido: "claudenpc.golden.latido", corte: "claudenpc.golden.corte", carga: "claudenpc.golden.carga",
   rayoMorado: "claudenpc.golden.rayo_morado", // el sonido que mandó el usuario (corte de Dusttrust)
+  laserDisparo: "claudenpc.golden.laser_disparo", laserCarga: "claudenpc.golden.laser_carga", // v9.0 (sintetizados)
 };
 
 // Claude Maestro: IQ fijo, alcance de la campana, cada cuánto da clase, cuánto

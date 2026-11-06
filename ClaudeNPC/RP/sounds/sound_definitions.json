@@ -140,6 +140,28 @@
           "load_on_low_memory": true
         }
       ]
+    },
+    "claudenpc.golden.laser_disparo": {
+      "category": "hostile",
+      "max_distance": 64.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/laser_disparo",
+          "volume": 1.0,
+          "load_on_low_memory": true
+        }
+      ]
+    },
+    "claudenpc.golden.laser_carga": {
+      "category": "hostile",
+      "max_distance": 64.0,
+      "sounds": [
+        {
+          "name": "sounds/claudenpc/golden/laser_carga",
+          "volume": 0.8,
+          "load_on_low_memory": true
+        }
+      ]
     }
   }
 }

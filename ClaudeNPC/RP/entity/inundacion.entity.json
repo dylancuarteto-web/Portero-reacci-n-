@@ -14,21 +14,21 @@
         "default": "geometry.claudenpc.inundacion"
       },
       "animations": {
-        "vivir": "animation.claudenpc.inundacion.vivir",
-        "ctrl_chispas": "controller.animation.claudenpc.inundacion.chispas"
-      },
-      "particle_effects": {
-        "chispas": "claudenpc:inundacion_chispas"
+        "energia": "animation.claudenpc.inundacion.energia",
+        "ctrl_haces": "controller.animation.claudenpc.inundacion.haces"
       },
       "scripts": {
         "animate": [
-          "vivir",
-          "ctrl_chispas"
+          "energia",
+          "ctrl_haces"
         ]
       },
       "render_controllers": [
         "controller.render.claudenpc_inundacion"
-      ]
+      ],
+      "particle_effects": {
+        "haces": "claudenpc:inundacion_haces"
+      }
     }
   }
 }

@@ -1,5 +1,6 @@
 import { EntityDamageCause, GameMode, ItemStack, Player, system, world } from "@minecraft/server";
 import { ANIM, DIMENSIONES, MODIFICA_MUNDO, PARTICLES, PROP, ROBOT, ROBOT_CFG } from "../config.js";
+import { alSensor, etiqueta, EVENTO, TAG } from "../dano.js";
 import { estados } from "../estado.js";
 import { protegido } from "../estructuras.js";
 import { ponerHaciendo } from "../iq.js";
@@ -541,19 +542,13 @@ world.afterEvents.entityHitEntity.subscribe(({ damagingEntity, hitEntity }) => {
 });
 
 // Escudo de energía: las flechas rebotan (vuelven a quien las tiró) y el resto del daño
-// se reduce a la mitad mientras está activo.
-world.beforeEvents.entityHurt.subscribe((event) => {
-  const r = robots.get(event.hurtEntity.id);
-  if (!r || now() > (r.escudoHasta ?? 0)) return;
-  if (event.damageSource.cause === EntityDamageCause.projectile) {
-    event.cancel = true;
-    const tirador = event.damageSource.damagingEntity;
-    const e = r.e;
-    system.run(() => devolverFlecha(e, tirador));
-    return;
-  }
-  event.damage = event.damage * 0.5;
-}, { entityFilter: { type: ROBOT } });
+// se reduce a la mitad mientras está activo (sensor de robot.entity.json con la etiqueta).
+system.runInterval(() => {
+  const t = now();
+  for (const r of robots.values()) etiqueta(r.e, TAG.escudoRobot, t <= (r.escudoHasta ?? 0));
+}, 1);
+
+alSensor(EVENTO.refleja, [ROBOT], (e, golpe) => devolverFlecha(e, golpe?.quien));
 
 function devolverFlecha(e, tirador) {
   if (!e.isValid) return;

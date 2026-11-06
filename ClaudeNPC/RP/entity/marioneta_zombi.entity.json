@@ -1,0 +1,54 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:marioneta_zombi",
+      "materials": {
+        "default": "zombie",
+        "ojos": "entity_emissive_alpha"
+      },
+      "textures": {
+        "aspecto_0": "textures/entity/zombie/zombie",
+        "aspecto_1": "textures/entity/zombie/husk",
+        "aspecto_2": "textures/entity/zombie/drowned",
+        "aspecto_3": "textures/entity/zombie_villager2/zombie-villager",
+        "ojos": "textures/entity/claudenpc/ojos_marioneta_v9"
+      },
+      "geometry": {
+        "aspecto_0": "geometry.zombie.v1.8",
+        "aspecto_1": "geometry.zombie.husk.v1.8",
+        "aspecto_2": "geometry.zombie.drowned.v1.16",
+        "aspecto_3": "geometry.zombie.villager_v2",
+        "ojos": "geometry.claudenpc.ojos_humanoide",
+        "ojos_az": "geometry.claudenpc.ojos_aldeano_zombi"
+      },
+      "animations": {
+        "mirar": "animation.common.look_at_target",
+        "mover": "animation.humanoid.move",
+        "tirones": "animation.claudenpc.marioneta_v9.tirones",
+        "brazos": "animation.zombie.attack_bare_hand",
+        "golpe": "animation.humanoid.attack.rotations"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "mover",
+          "brazos",
+          {
+            "golpe": "variable.attack_time > 0"
+          },
+          "tirones"
+        ],
+        "pre_animation": [
+          "variable.gliding_speed_value = 1.0;",
+          "variable.tcos0 = (Math.cos(query.modified_distance_moved * 38.17) * query.modified_move_speed / variable.gliding_speed_value) * 57.3;"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_marioneta_zombi",
+        "controller.render.claudenpc_marioneta_zombi_ojos"
+      ],
+      "enable_attachables": true
+    }
+  }
+}

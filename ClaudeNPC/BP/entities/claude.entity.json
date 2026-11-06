@@ -35,7 +35,21 @@
           "track_target": true
         },
         "minecraft:behavior.hurt_by_target": {
-          "priority": 1
+          "priority": 1,
+          "entity_types": [
+            {
+              "filters": {
+                "none_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "claudenpc"
+                  }
+                ]
+              },
+              "max_dist": 32
+            }
+          ]
         },
         "minecraft:behavior.nearest_attackable_target": {
           "priority": 2,
@@ -196,6 +210,200 @@
             "drop_chance": 0.0
           }
         ]
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          {
+            "on_damage": {
+              "filters": {
+                "test": "has_tag",
+                "subject": "self",
+                "value": "claudenpc_intocable"
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
+            "cause": "fall",
+            "on_damage": {
+              "filters": {
+                "test": "has_tag",
+                "subject": "self",
+                "value": "claudenpc_sin_caida"
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
+            "on_damage": {
+              "filters": {
+                "any_of": [
+                  {
+                    "test": "is_family",
+                    "subject": "other",
+                    "value": "claudenpc"
+                  },
+                  {
+                    "test": "is_family",
+                    "subject": "damager",
+                    "value": "claudenpc"
+                  }
+                ]
+              }
+            },
+            "deals_damage": "no"
+          },
+          {
+            "cause": "projectile",
+            "on_damage": {
+              "filters": {
+                "test": "has_tag",
+                "subject": "self",
+                "value": "claudenpc_escudo_flechas"
+              },
+              "event": "claudenpc:bloqueo",
+              "target": "self"
+            },
+            "deals_damage": "no"
+          },
+          {
+            "cause": "entity_attack",
+            "on_damage": {
+              "filters": {
+                "all_of": [
+                  {
+                    "test": "has_tag",
+                    "subject": "self",
+                    "value": "claudenpc_escudo"
+                  },
+                  {
+                    "any_of": [
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "player"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "damager",
+                        "value": "player"
+                      }
+                    ]
+                  },
+                  {
+                    "none_of": [
+                      {
+                        "test": "has_equipment",
+                        "subject": "other",
+                        "domain": "hand",
+                        "value": "minecraft:wooden_axe"
+                      },
+                      {
+                        "test": "has_equipment",
+                        "subject": "other",
+                        "domain": "hand",
+                        "value": "minecraft:stone_axe"
+                      },
+                      {
+                        "test": "has_equipment",
+                        "subject": "other",
+                        "domain": "hand",
+                        "value": "minecraft:iron_axe"
+                      },
+                      {
+                        "test": "has_equipment",
+                        "subject": "other",
+                        "domain": "hand",
+                        "value": "minecraft:golden_axe"
+                      },
+                      {
+                        "test": "has_equipment",
+                        "subject": "other",
+                        "domain": "hand",
+                        "value": "minecraft:diamond_axe"
+                      },
+                      {
+                        "test": "has_equipment",
+                        "subject": "other",
+                        "domain": "hand",
+                        "value": "minecraft:netherite_axe"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "event": "claudenpc:bloqueo",
+              "target": "self"
+            },
+            "deals_damage": "no"
+          },
+          {
+            "cause": "entity_attack",
+            "on_damage": {
+              "filters": {
+                "all_of": [
+                  {
+                    "test": "has_tag",
+                    "subject": "self",
+                    "value": "claudenpc_esquiva"
+                  },
+                  {
+                    "any_of": [
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "player"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "damager",
+                        "value": "player"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "event": "claudenpc:esquiva",
+              "target": "self"
+            },
+            "deals_damage": "no"
+          },
+          {
+            "on_damage": {
+              "filters": {
+                "all_of": [
+                  {
+                    "test": "has_damage",
+                    "value": "fatal"
+                  },
+                  {
+                    "any_of": [
+                      {
+                        "test": "is_family",
+                        "subject": "other",
+                        "value": "player"
+                      },
+                      {
+                        "test": "is_family",
+                        "subject": "damager",
+                        "value": "player"
+                      }
+                    ]
+                  },
+                  {
+                    "test": "actor_health",
+                    "subject": "self",
+                    "operator": ">",
+                    "value": 24
+                  }
+                ]
+              },
+              "event": "claudenpc:golpe_fatal",
+              "target": "self"
+            },
+            "deals_damage": "no"
+          }
+        ]
       }
     },
     "events": {
@@ -251,7 +459,10 @@
           "claudenpc:sentado": false
         }
       },
-      "claudenpc:ver_habilidades": {}
+      "claudenpc:ver_habilidades": {},
+      "claudenpc:bloqueo": {},
+      "claudenpc:esquiva": {},
+      "claudenpc:golpe_fatal": {}
     }
   }
 }

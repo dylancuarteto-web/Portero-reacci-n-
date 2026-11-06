@@ -167,7 +167,7 @@ function iniciar(grupo, punto) {
     const a = (i / grupo.length) * Math.PI * 2;
     return { npc, a, slot: { x: centro.x + Math.cos(a) * 3, y: centro.y, z: centro.z + Math.sin(a) * 3 } };
   });
-  activa = { dimension, centro, miembros, t: 0, jugadores: [], aura: undefined };
+  activa = { dimension, centro, miembros, t: 0, jugadores: [], aura: undefined, id: 0 };
   for (const p of jugadoresCerca(centro, dimension)) {
     p.onScreenDisplay.setActionBar("§d¡Cinco Claudes con IQ 1000 se están reuniendo...!");
   }

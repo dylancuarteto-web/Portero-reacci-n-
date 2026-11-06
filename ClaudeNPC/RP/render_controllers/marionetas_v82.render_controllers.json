@@ -1,17 +1,6 @@
 {
   "format_version": "1.8.0",
   "render_controllers": {
-    "controller.render.claudenpc_ojos_marioneta": {
-      "geometry": "Geometry.default",
-      "materials": [
-        {
-          "*": "Material.default"
-        }
-      ],
-      "textures": [
-        "Texture.default"
-      ]
-    },
     "controller.render.claudenpc_aldeano_base": {
       "geometry": "Geometry.default",
       "materials": [

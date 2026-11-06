@@ -3,6 +3,7 @@ import { ANIM, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../config.js";
 import { now, particleAt, rand, soundAt, sortear } from "../../util.js";
 import { animar, barra, detalle, jugadoresCerca, musica, pararMusica, particula, pose, todosLosJugadores, vivos } from "./comun.js";
 import { PODERES_FINALES, tickPoderes } from "./poderes.js";
+import { niebla as ponerNiebla } from "../../dano.js";
 
 // Fase final, parte 2: la batalla. Lo primero que hace Claude Golden es chasquear los
 // dedos y curarse de menos de 100 a 1000 (la barra de jefe se llena con su cara). Suena la
@@ -22,7 +23,8 @@ export function guardarFinal(g) {
   const f = g.final;
   try {
     g.entidad.setDynamicProperty("claudenpc:final", JSON.stringify({ etapa: f.etapa === "muerte" ? "muerte" : "pelea",
-      espadas: !!f.espadasHechas, parkourHecho: !!f.parkourHecho, parkour: f.etapa === "parkour", centro: f.arena?.centro, yaw: f.yaw }));
+      espadas: !!f.espadasHechas, parkourHecho: !!f.parkourHecho, parkour: f.etapa === "parkour", centro: f.arena?.centro, yaw: f.yaw,
+      ultimo: !!f.ultimoAliento }));
   } catch {
     // Sin propiedades dinámicas.
   }
@@ -174,8 +176,7 @@ function hud(g) {
 
 function niebla(p, poner) {
   try {
-    if (poner) p.fogSettings.push(NIEBLA, ETIQUETA_NIEBLA);
-    else p.fogSettings.remove(ETIQUETA_NIEBLA);
+    ponerNiebla(p, NIEBLA, ETIQUETA_NIEBLA, poner);
   } catch {
     // Sin niebla.
   }
@@ -195,7 +196,8 @@ export function cerebroFinal(g, j) {
   if (f.etapa !== "pelea" || f.curando || !j?.isValid) return;
   if (now() < f.ocupadoHasta || now() < f.cd.poder || f.relojes || f.definitiva) return;
   const { actual } = vidaDe(g.entidad);
-  const ctx = { g, j, vida: actual, espadas: !!f.espadasHechas, marionetas: (f.marionetas ?? []).length };
+  const ctx = { g, j, vida: actual, espadas: !!f.espadasHechas, marionetas: (f.marionetas ?? []).length,
+    parkour: !!f.parkourHecho, ultimo: !!f.ultimoAliento };
   const lista = [];
   for (const p of PODERES_FINALES) {
     if (now() < (f.cd[p.id] ?? 0) || p.id === f.ultimo) continue;

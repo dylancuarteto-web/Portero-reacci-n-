@@ -1,0 +1,73 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.claudenpc_laser_nucleo": {
+      "arrays": {
+        "textures": {
+          "Array.colores": [
+            "Texture.amarillo",
+            "Texture.azul",
+            "Texture.morado",
+            "Texture.oro"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.nucleo"
+        }
+      ],
+      "textures": [
+        "Array.colores[math.mod(query.skin_id, 4)]"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "halo": false
+        }
+      ]
+    },
+    "controller.render.claudenpc_laser_halo": {
+      "arrays": {
+        "textures": {
+          "Array.colores": [
+            "Texture.amarillo",
+            "Texture.azul",
+            "Texture.morado",
+            "Texture.oro"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "materials": [
+        {
+          "*": "Material.halo"
+        }
+      ],
+      "textures": [
+        "Array.colores[math.mod(query.skin_id, 4)]"
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "nucleo": false
+        }
+      ],
+      "uv_anim": {
+        "offset": [
+          "query.life_time * 1.4",
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0
+        ]
+      }
+    }
+  }
+}

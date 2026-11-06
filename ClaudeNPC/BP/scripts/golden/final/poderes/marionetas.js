@@ -1,37 +1,38 @@
-import { EquipmentSlot, ItemStack, system, world } from "@minecraft/server";
-import { FINAL, GOLDEN, GOLDEN_FINAL, ITEM_OJOS, PARTICLES, SONIDO } from "../../../config.js";
+import { system, world } from "@minecraft/server";
+import { FINAL, GOLDEN_FINAL, PARTICLES, SONIDO } from "../../../config.js";
+import { alSensor, EVENTO } from "../../../dano.js";
 import { now, particleAt, soundAt } from "../../../util.js";
 import { estallido } from "../../comun.js";
 import { limitar } from "../arena.js";
-import { ejes, pose, punto } from "../comun.js";
+import { ejes, particula, pose, punto, tira } from "../comun.js";
 
-// Marionetas (v8.2): Golden alza el brazo y de sus dedos salen CUERDAS AMARILLAS de verdad
-// (entidades con forma de cuerda, no luces) que se atan al corazón de cada mob. Los ojos
-// amarillos y el corazón enredado son un "casco" (claudenpc:ojos_marioneta) que el juego pega
-// a la cabeza y al pecho del mob: se mueven con él sin retraso ni parpadeo aunque corra o salte.
-// Solo atacan al jugador: entre marionetas no se hacen daño (una flecha de un esqueleto a un
-// zombi no cuenta), así no se pelean entre ellas. Siempre sale un ALDEANO marioneta: se ve como
-// un aldeano, pero ataca (los aldeanos normales no saben atacar). Duran 2 minutos o hasta que
-// mueren (se deshacen en polvo dorado, sin soltar nada).
+// Marionetas (v9.0): Golden alza el brazo y de sus dedos salen CUERDAS AMARILLAS atadas al
+// corazón de cada marioneta. Cada cuerda es una cinta sólida (no brilla) que siempre mira a la
+// cámara, como las riendas de Minecraft: se ve redonda desde cualquier lado y va exactamente de
+// los dedos de Golden al corazón, sin depender de cómo gire una entidad.
+// Las marionetas son propias (zombi, husk, ahogado, aldeano zombi, esqueleto con arco, stray,
+// bogged y el aldeano que ataca): los ojos amarillos y el corazón enredado son parte de SU
+// MODELO (una segunda capa con los mismos huesos), así que se mueven con su cabeza y su pecho y
+// no se despegan ni parpadean aunque corran o salten. Solo atacan al jugador: entre ellas no se
+// hacen daño ni le hacen daño a Golden (sus sensores de daño). Duran 2 minutos o hasta que les
+// das el golpe final: no mueren, se deshacen en polvo dorado y no sueltan nada.
 
 const TAG = "claudenpc_marioneta";
-// Mobs que dibujan cascos (así se les ven los ojos y el corazón). pecho: altura del corazón;
-// frente: cuánto delante del centro del cuerpo; izq: hacia su izquierda (en bloques).
-const HUMANO = { pecho: 19.6 / 16, frente: 4.3 / 16, izq: 1.3 / 16 };
+// Corazón (en bloques): alto del centro, adelante del eje del cuerpo y hacia su izquierda.
+const PECHO = { pecho: 19.6 / 16, frente: 2.5 / 16, izq: 1.3 / 16 };
+const PECHO_ANCHO = { pecho: 19.6 / 16, frente: 3.5 / 16, izq: 1.3 / 16 }; // cuerpo de aldeano (más grueso)
 const TIPOS = [
-  { id: "minecraft:zombie", ...HUMANO },
-  { id: "minecraft:husk", ...HUMANO },
-  { id: "minecraft:drowned", ...HUMANO },
-  { id: "minecraft:zombie_villager_v2", ...HUMANO },
-  { id: "minecraft:skeleton", ...HUMANO },
-  { id: "minecraft:stray", ...HUMANO },
-  { id: "minecraft:bogged", ...HUMANO },
+  { id: FINAL.marionetaZombi, aspecto: 0, ...PECHO }, // zombi
+  { id: FINAL.marionetaZombi, aspecto: 1, ...PECHO }, // husk
+  { id: FINAL.marionetaZombi, aspecto: 2, ...PECHO }, // ahogado
+  { id: FINAL.marionetaZombi, aspecto: 3, ...PECHO_ANCHO }, // aldeano zombi
+  { id: FINAL.marionetaEsqueleto, aspecto: 0, ...PECHO }, // esqueleto
+  { id: FINAL.marionetaEsqueleto, aspecto: 1, ...PECHO }, // stray
+  { id: FINAL.marionetaEsqueleto, aspecto: 2, ...PECHO }, // bogged
 ];
 // El aldeano marioneta se dibuja al 93,75 % (como los aldeanos).
-const ALDEANO = { id: FINAL.aldeano, propio: true, pecho: (19.6 / 16) * 0.9375, frente: (4.3 / 16) * 0.9375, izq: (1.3 / 16) * 0.9375 };
-// Largo de las cuerdas: animaciones de 0,25 bloques (hasta 48).
-const PASO = 0.25;
-const LARGOS = 192;
+const ALDEANO = { id: FINAL.aldeano, escala: 0.9375, ...PECHO_ANCHO };
+export const TIPOS_MARIONETA = [FINAL.marionetaZombi, FINAL.marionetaEsqueleto, FINAL.aldeano];
 // El juego dibuja a un mob que camina unos 2 ticks atrasado: la cuerda apunta ahí.
 const ATRASO = 2;
 
@@ -42,36 +43,14 @@ function mezclar(lista) {
 function crearMob(dim, tipo, lugar) {
   for (let intento = 0; intento < 3; intento++) {
     try {
-      const m = dim.spawnEntity(tipo.id, lugar);
-      if (!tipo.propio && m.getComponent("minecraft:is_baby")) {
-        m.remove(); // los bebés tienen la cabeza de otro tamaño: los ojos no calzarían
-        continue;
-      }
-      return m;
+      return tipo.aspecto === undefined ? dim.spawnEntity(tipo.id, lugar)
+        : dim.spawnEntity(tipo.id, lugar, { spawnEvent: `claudenpc:aspecto_${tipo.aspecto}` });
     } catch {
-      // Lugar no válido: otro intento.
+      // Lugar no válido: otro intento un poco más arriba.
+      lugar = { x: lugar.x, y: lugar.y + 1, z: lugar.z };
     }
   }
   return undefined;
-}
-
-// El casco con los ojos y el corazón.
-function ponerOjos(m) {
-  try {
-    const eq = m.getComponent("minecraft:equippable");
-    if (eq) {
-      eq.setEquipment(EquipmentSlot.Head, new ItemStack(ITEM_OJOS, 1));
-      return true;
-    }
-  } catch {
-    // Este mob no se deja equipar por script: con el comando.
-  }
-  try {
-    m.runCommand(`replaceitem entity @s slot.armor.head 0 ${ITEM_OJOS}`);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export default {
@@ -98,20 +77,13 @@ export default {
         if (!m) return;
         try {
           m.addTag(TAG);
-          for (const [ef, amp] of [["strength", 0], ["speed", 0], ["resistance", 0], ["fire_resistance", 0]]) {
+          for (const [ef, amp] of [["strength", 0], ["speed", 0], ["resistance", 0]]) {
             m.addEffect(ef, GOLDEN_FINAL.marionetas.duran, { amplifier: amp, showParticles: false });
           }
         } catch {
           // Sin efectos.
         }
-        ponerOjos(m);
-        let cuerda;
-        try {
-          cuerda = dim.spawnEntity(FINAL.cuerda, manoDe(g, k));
-        } catch {
-          // Sin cuerda.
-        }
-        f.marionetas.push({ m, cuerda, tipo, hasta: now() + GOLDEN_FINAL.marionetas.duran, k, historia: [], largo: 0 });
+        f.marionetas.push({ m, tipo, hasta: now() + GOLDEN_FINAL.marionetas.duran, k, historia: [] });
         particleAt(dim, PARTICLES.fusionDestello, { x: lugar.x, y: lugar.y + 1, z: lugar.z });
         particleAt(dim, PARTICLES.curacion, lugar);
         soundAt(dim, lugar, "mob.evocation_illager.prepare_summon", 1.2, 0.8);
@@ -123,6 +95,18 @@ export default {
   },
 };
 
+function polvo(m) {
+  try {
+    if (!m.isValid) return;
+    const p = { x: m.location.x, y: m.location.y + 1, z: m.location.z };
+    estallido(m.dimension, p);
+    particleAt(m.dimension, PARTICLES.fragmento, p);
+    soundAt(m.dimension, p, "random.fizz", 1.2, 0.8);
+  } catch {
+    // Ya no existe.
+  }
+}
+
 function quitar(ent) {
   try {
     if (ent?.isValid) ent.remove();
@@ -132,18 +116,8 @@ function quitar(ent) {
 }
 
 function deshacer(x, efecto = true) {
-  try {
-    if (efecto && x.m.isValid) {
-      const p = { x: x.m.location.x, y: x.m.location.y + 1, z: x.m.location.z };
-      estallido(x.m.dimension, p);
-      particleAt(x.m.dimension, PARTICLES.fragmento, p);
-      soundAt(x.m.dimension, p, "random.fizz", 1.2, 0.8);
-    }
-  } catch {
-    // Ya no existe.
-  }
+  if (efecto) polvo(x.m);
   quitar(x.m);
-  quitar(x.cuerda);
 }
 
 export function quitarMarionetas(g, efecto = true) {
@@ -167,36 +141,20 @@ function corazonDe(t, estado) {
   const lh = Math.hypot(mira.x, mira.z) || 1;
   const fx = mira.x / lh;
   const fz = mira.z / lh;
+  const k = t.escala ?? 1;
   // Su izquierda es (fz, -fx).
-  return { x: pos.x + fx * t.frente + fz * t.izq, y: pos.y + t.pecho, z: pos.z + fz * t.frente - fx * t.izq };
+  return { x: pos.x + (fx * t.frente + fz * t.izq) * k, y: pos.y + t.pecho * k, z: pos.z + (fz * t.frente - fx * t.izq) * k };
 }
 
-// Estira la cuerda de "a" (los dedos de Golden) a "b" (el corazón): la entidad queda en "a",
-// mirando a "b" (el modelo apunta como una cabeza) y con el largo de la animación más cercana.
-export function atar(x, a, b) {
-  const c = x.cuerda;
-  if (!c?.isValid) return;
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const dz = b.z - a.z;
-  const horiz = Math.hypot(dx, dz);
-  const largo = Math.hypot(horiz, dy);
-  const yaw = (Math.atan2(-dx, dz) * 180) / Math.PI;
-  const pitch = (-Math.atan2(dy, horiz) * 180) / Math.PI; // positivo: hacia abajo
-  c.teleport(a, { rotation: { x: pitch, y: yaw }, keepVelocity: false });
-  const n = Math.max(1, Math.min(LARGOS, Math.round(largo / PASO)));
-  if (n !== x.largo) {
-    x.largo = n;
-    try {
-      c.playAnimation(`animation.claudenpc.cuerda.largo_${n}`, { controller: "claudenpc_cuerda_largo", blendOutTime: 0 });
-    } catch {
-      // Sin animación.
-    }
-  }
+// La cuerda de "a" (los dedos de Golden) a "b" (el corazón) y un nudo en cada punta.
+export function atar(dim, a, b) {
+  tira(dim, "claudenpc:cuerda_v9", a, b);
+  particula(dim, "claudenpc:cuerda_nudo", b);
+  particula(dim, "claudenpc:cuerda_nudo", a);
 }
 
 // Cada tick: las cuerdas van de los dedos de Golden al corazón de cada marioneta. Se cortan a
-// los 2 minutos o cuando la marioneta muere.
+// los 2 minutos o cuando la marioneta se deshace.
 export function tickMarionetas(g, _jugadores) {
   const f = g.final;
   if (!f.marionetas?.length) return;
@@ -209,7 +167,7 @@ export function tickMarionetas(g, _jugadores) {
       const ahora = { pos: { ...x.m.location }, mira: x.m.getViewDirection() };
       x.historia = [ahora, ...(x.historia ?? [])].slice(0, ATRASO + 1);
       const visto = x.historia[Math.min(ATRASO, x.historia.length - 1)];
-      atar(x, manoDe(g, x.k), corazonDe(x.tipo, visto));
+      atar(x.m.dimension, manoDe(g, x.k), corazonDe(x.tipo, visto));
     } catch {
       // Mob no disponible.
     }
@@ -217,44 +175,10 @@ export function tickMarionetas(g, _jugadores) {
   });
 }
 
-function esMarioneta(ent) {
-  try {
-    return !!ent?.isValid && ent.hasTag(TAG);
-  } catch {
-    return false;
-  }
-}
-
-world.beforeEvents.entityHurt.subscribe((ev) => {
-  const m = ev.hurtEntity;
-  try {
-    // Entre marionetas (y contra Golden) no hay daño: así no se pelean ni se vengan entre
-    // ellas, y solo van por el jugador.
-    const atacante = ev.damageSource.damagingEntity;
-    if (esMarioneta(atacante) && (esMarioneta(m) || m.typeId === GOLDEN)) {
-      ev.cancel = true;
-      return;
-    }
-    if (!m.hasTag(TAG)) return;
-    // Al morir no sueltan nada: se deshacen en polvo dorado.
-    const vida = m.getComponent("minecraft:health")?.currentValue ?? 0;
-    if (ev.damage < vida) return;
-    ev.cancel = true;
-    system.run(() => {
-      try {
-        if (!m.isValid) return;
-        const p = { x: m.location.x, y: m.location.y + 1, z: m.location.z };
-        estallido(m.dimension, p);
-        particleAt(m.dimension, PARTICLES.fragmento, p);
-        soundAt(m.dimension, p, "random.fizz", 1.2, 0.8);
-        m.remove();
-      } catch {
-        // Ya no existe.
-      }
-    });
-  } catch {
-    // Sin etiquetas.
-  }
+// El golpe que la mataría no se aplica (su sensor): se deshace en polvo dorado, sin soltar nada.
+alSensor(EVENTO.fatal, TIPOS_MARIONETA, (m) => {
+  polvo(m);
+  quitar(m);
 });
 
 // Las marionetas no rompen bloques con explosiones.
@@ -266,12 +190,13 @@ world.beforeEvents.explosion.subscribe((ev) => {
   }
 });
 
-// Por si el mundo se cerró: marionetas, cuerdas o corazones (de la v8.1) sueltos se deshacen.
+// Por si el mundo se cerró: marionetas sueltas (y cosas de la v8.2) se deshacen.
 export function limpiarMarionetasHuerfanas(dim, vigentes) {
   try {
     for (const m of dim.getEntities({ tags: [TAG] })) if (!vigentes.has(m.id)) m.remove();
-    for (const h of dim.getEntities({ type: FINAL.marioneta })) if (!vigentes.has(h.id)) h.remove();
-    for (const c of dim.getEntities({ type: FINAL.cuerda })) if (!vigentes.has(c.id)) c.remove();
+    for (const tipo of [...TIPOS_MARIONETA, FINAL.marioneta]) {
+      for (const m of dim.getEntities({ type: tipo })) if (!vigentes.has(m.id)) m.remove();
+    }
   } catch {
     // Dimensión sin cargar.
   }

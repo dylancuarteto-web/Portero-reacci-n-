@@ -3,7 +3,8 @@ import { ANIM, DIMENSIONES, ESPEJISMO, GOLDEN, GOLDEN_CFG, MODIFICA_MUNDO, PARTI
 import { animate, blockAt, burst, distancia, now, particleAt, piso, rand, sortear, sound, soundAt } from "../util.js";
 import { danar, empujar, estallido, goldens, historial, objetivos } from "./comun.js";
 import { PODERES } from "./poderes/index.js";
-import { cerebroFinal, controlarDano, finalInterrumpido, reanudarFinal, revisarUmbral } from "./final/index.js";
+import { cerebroFinal, despuesDelGolpe, finalInterrumpido, golpeFatal, intocable, reanudarFinal, revisarUmbral } from "./final/index.js";
+import { alSensor, etiqueta, EVENTO, TAG } from "../dano.js";
 import { limitar } from "./final/arena.js";
 
 // Claude Golden: nace de la fusión de cinco Claudes con IQ 1000 y es un jefe HOSTIL.
@@ -358,7 +359,7 @@ system.runInterval(() => {
 
 // --- Golpes y flechas --------------------------------------------------------------------
 
-world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
+world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource, damage }) => {
   const atacante = damageSource.damagingEntity;
   if (hurtEntity.typeId === ESPEJISMO && atacante instanceof Player) {
     // Era un espejismo: se deshace y te deja ciego un momento.
@@ -376,46 +377,52 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource }) => {
   const g = goldens.get(hurtEntity.id);
   if (!g) return;
   if (g.espejismos?.length && atacante instanceof Player) quitarEspejismos(g);
+  // Aturdido recibe el doble; después, la fase final decide (con menos de 100 empieza, con
+  // 200 el parkour...).
+  despuesDelGolpe(g, now() < g.aturdidoHasta ? damage : 0, atacante, (x) => quitarEspejismos(x));
 });
 
-// Devuelve la mayoría de las flechas (dorada, hacia quien la tiró); aturdido recibe el doble.
-// Después, la fase final decide (con menos de 100 empieza; en cinemáticas no recibe daño).
-world.beforeEvents.entityHurt.subscribe((event) => {
-  // Ya cancelado (por ejemplo, una flecha de una de sus marionetas): nada que hacer.
-  if (event.cancel) return;
-  const g = goldens.get(event.hurtEntity.id);
-  if (g && now() < g.aturdidoHasta) event.damage *= 2;
-  const refleja = event.damageSource.cause === EntityDamageCause.projectile && Math.random() <= GOLDEN_CFG.reflejo[(g?.fase ?? 1) - 1];
-  if (!refleja) {
-    if (g) controlarDano(g, event, (x) => quitarEspejismos(x));
-    return;
+// Intocable en cinemáticas y curándose; devuelve la mayoría de las flechas (el sensor de
+// claude_golden.entity.json lee estas etiquetas, que se sortean cada tick).
+system.runInterval(() => {
+  for (const g of goldens.values()) {
+    const e = g.entidad;
+    if (!e?.isValid) continue;
+    etiqueta(e, TAG.intocable, intocable(g));
+    etiqueta(e, TAG.refleja, Math.random() <= GOLDEN_CFG.reflejo[(g.fase ?? 1) - 1]);
   }
-  event.cancel = true;
-  const e = event.hurtEntity;
-  const tirador = event.damageSource.damagingEntity;
-  system.run(() => {
-    if (!e.isValid) return;
-    burst(e, PARTICLES.midas, { x: 0, y: 1, z: 0 });
-    sound(e, "item.shield.block", 1.4);
-    if (!tirador?.isValid) return;
-    try {
-      const o = e.getHeadLocation();
-      const t = tirador.getHeadLocation();
-      const dx = t.x - o.x;
-      const dy = t.y - o.y;
-      const dz = t.z - o.z;
-      const l = Math.hypot(dx, dy, dz) || 1;
-      const flecha = e.dimension.spawnEntity("minecraft:arrow", { x: o.x + (dx / l) * 0.9, y: o.y, z: o.z + (dz / l) * 0.9 });
-      const proj = flecha.getComponent("minecraft:projectile");
-      if (proj) {
-        proj.owner = e;
-        proj.shoot({ x: (dx / l) * 2.4, y: (dy / l) * 2.4 + 0.08, z: (dz / l) * 2.4 });
-      }
-    } catch {
-      // Sin flecha de vuelta.
+}, 1);
+
+// Un golpe que lo mataría: nunca muere de un golpe (empieza la fase final, el parkour o su muerte).
+alSensor(EVENTO.fatal, [GOLDEN], (e, golpe) => {
+  const g = goldens.get(e.id);
+  if (g) golpeFatal(g, golpe?.quien, (x) => quitarEspejismos(x));
+});
+
+// Flecha devuelta (dorada, hacia quien la tiró).
+alSensor(EVENTO.refleja, [GOLDEN], (e, golpe) => {
+  burst(e, PARTICLES.midas, { x: 0, y: 1, z: 0 });
+  sound(e, "item.shield.block", 1.4);
+  const tirador = golpe?.quien;
+  if (!tirador?.isValid) return;
+  try {
+    const o = e.getHeadLocation();
+    const t = tirador.getHeadLocation();
+    const dx = t.x - o.x;
+    const dy = t.y - o.y;
+    const dz = t.z - o.z;
+    const l = Math.hypot(dx, dy, dz) || 1;
+    const flecha = e.dimension.spawnEntity("minecraft:arrow", { x: o.x + (dx / l) * 0.9, y: o.y, z: o.z + (dz / l) * 0.9 });
+    const proj = flecha.getComponent("minecraft:projectile");
+    if (proj) {
+      proj.owner = e;
+      proj.shoot({ x: (dx / l) * 2.4, y: (dy / l) * 2.4 + 0.08, z: (dz / l) * 2.4 });
     }
-  });
-}, { entityFilter: { type: GOLDEN } });
+  } catch {
+    // Sin flecha de vuelta.
+  }
+});
+
 
 world.afterEvents.entityDie.subscribe(({ deadEntity }) => {
   if (deadEntity.typeId !== GOLDEN) return;
