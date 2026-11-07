@@ -1,0 +1,6 @@
+{
+  "system":"error_sans_style_puppet_threads",
+  "visual":{"strand_count":5,"segments_per_strand":10,"colors":["#ff334f","#ffffff","#45d9ff"],"sag":0.18,"pulse":"sinusoidal","anchor":"staff_or_hand","target":"entity_position_plus_offset"},
+  "logic":{"states":["IDLE","AIMING","ATTACHED","COMMANDING","STRAINED","BROKEN","RELEASED"],"max_targets":3,"max_range":18,"orders":["follow_anchor","hold_position","move_to_point","attack_marked_target"],"break_conditions":["range_exceeded","target_invalid","duration_expired","manual_release"]},
+  "notes":["La cuerda visual y el control lógico son sistemas separados.","Si no hay acceso a huesos, usa posición de entidad + offset.","Implementa solo APIs documentadas para la versión objetivo."]
+}
