@@ -1,0 +1,66 @@
+{
+  "format_version": "1.8.0",
+  "render_controllers": {
+    "controller.render.claudenpc_infinito": {
+      "arrays": {
+        "textures": {
+          "Array.pieles": [
+            "Texture.t0",
+            "Texture.t1",
+            "Texture.t2",
+            "Texture.t3",
+            "Texture.t4"
+          ]
+        }
+      },
+      "geometry": "Geometry.default",
+      "textures": [
+        "Array.pieles[query.variant]"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        },
+        {
+          "emblema": "Material.glow"
+        },
+        {
+          "ojos": "Material.glow"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "herr_*": false
+        }
+      ]
+    },
+    "controller.render.claudenpc_infinito_extra": {
+      "geometry": "Geometry.extra",
+      "textures": [
+        "Texture.extra"
+      ],
+      "materials": [
+        {
+          "*": "Material.default"
+        }
+      ],
+      "part_visibility": [
+        {
+          "*": true
+        },
+        {
+          "cinta*": "query.variant >= 1"
+        },
+        {
+          "bufanda*": "query.variant >= 2"
+        },
+        {
+          "hombrera*": "query.variant >= 3"
+        }
+      ]
+    }
+  }
+}

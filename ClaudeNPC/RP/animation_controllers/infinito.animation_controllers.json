@@ -1,0 +1,32 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.claudenpc.infinito.aura": {
+      "initial_state": "sin",
+      "states": {
+        "sin": {
+          "transitions": [
+            {
+              "aura": "query.mark_variant == 1"
+            }
+          ]
+        },
+        "aura": {
+          "particle_effects": [
+            {
+              "effect": "aura"
+            },
+            {
+              "effect": "chispas"
+            }
+          ],
+          "transitions": [
+            {
+              "sin": "query.mark_variant != 1"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

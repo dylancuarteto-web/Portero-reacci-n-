@@ -1,0 +1,84 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "claudenpc:exponencial_infinito",
+      "materials": {
+        "default": "entity_alphatest",
+        "glow": "entity_emissive_alpha"
+      },
+      "textures": {
+        "t0": "textures/entity/claudenpc/infinito_0",
+        "t1": "textures/entity/claudenpc/infinito_1",
+        "t2": "textures/entity/claudenpc/infinito_2",
+        "t3": "textures/entity/claudenpc/infinito_3",
+        "t4": "textures/entity/claudenpc/infinito_4",
+        "extra": "textures/entity/claudenpc/infinito_extra"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.claude",
+        "extra": "geometry.claudenpc.infinito_extra"
+      },
+      "animations": {
+        "mirar": "animation.claudenpc.mirar",
+        "caminar": "animation.claudenpc.caminar",
+        "respirar": "animation.claudenpc.respirar",
+        "parpadeo": "animation.claudenpc.parpadeo",
+        "espadazo": "animation.claudenpc.espadazo",
+        "espadazo2": "animation.claudenpc.espadazo2",
+        "hachazo": "animation.claudenpc.hachazo",
+        "estocada": "animation.claudenpc.estocada",
+        "bloqueo": "animation.claudenpc.bloqueo",
+        "arco": "animation.claudenpc.arco",
+        "lanzar": "animation.claudenpc.lanzar",
+        "beber": "animation.claudenpc.beber",
+        "cubeta": "animation.claudenpc.cubeta",
+        "torre": "animation.claudenpc.torre",
+        "celebrar": "animation.claudenpc.celebrar",
+        "golpe": "animation.claudenpc.golpe",
+        "inf_base": "animation.claudenpc.infinito.base",
+        "inf_pose_ninguna": "animation.claudenpc.infinito.pose_ninguna",
+        "inf_pose_guardia": "animation.claudenpc.infinito.pose_guardia",
+        "inf_pose_observar": "animation.claudenpc.infinito.pose_observar",
+        "inf_pose_cubrirse": "animation.claudenpc.infinito.pose_cubrirse",
+        "inf_pose_derrota": "animation.claudenpc.infinito.pose_derrota",
+        "inf_pose_cargado": "animation.claudenpc.infinito.pose_cargado",
+        "inf_pose_recuperar": "animation.claudenpc.infinito.pose_recuperar",
+        "inf_preparar": "animation.claudenpc.infinito.preparar",
+        "inf_rapido": "animation.claudenpc.infinito.rapido",
+        "inf_pesado": "animation.claudenpc.infinito.pesado",
+        "inf_esquiva": "animation.claudenpc.infinito.esquiva",
+        "inf_cambio": "animation.claudenpc.infinito.cambio",
+        "inf_giro": "animation.claudenpc.infinito.giro",
+        "inf_finta": "animation.claudenpc.infinito.finta",
+        "inf_critico": "animation.claudenpc.infinito.critico",
+        "inf_victoria": "animation.claudenpc.infinito.victoria",
+        "inf_evolucion": "animation.claudenpc.infinito.evolucion",
+        "ctrl_aura": "controller.animation.claudenpc.infinito.aura"
+      },
+      "particle_effects": {
+        "aura": "claudenpc:infinito_aura",
+        "chispas": "claudenpc:infinito_chispas"
+      },
+      "scripts": {
+        "animate": [
+          "mirar",
+          "caminar",
+          "respirar",
+          "parpadeo",
+          "inf_base",
+          "ctrl_aura"
+        ]
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_infinito",
+        "controller.render.claudenpc_infinito_extra"
+      ],
+      "enable_attachables": true,
+      "spawn_egg": {
+        "base_color": "#2A0A10",
+        "overlay_color": "#FF3048"
+      }
+    }
+  }
+}

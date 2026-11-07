@@ -1155,6 +1155,8 @@ def generar():
     sonidos_y_textos()
     import v90_assets
     v90_assets.generar()
+    import v100_assets
+    v100_assets.generar()
 
 
 # =============================================================================

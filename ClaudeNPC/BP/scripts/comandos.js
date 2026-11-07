@@ -4,6 +4,7 @@ import { obtenerEstado } from "./estado.js";
 import { aprender } from "./iq.js";
 import { claseAhora } from "./maestro.js";
 import { forzarRobot } from "./robot/construccion.js";
+import { comandoDeterminacion, comandoFase, comandoInfo, generarInfinito } from "./infinito/index.js";
 
 // /claudenpc:iq <valor>: pone el IQ de los Claudes cercanos. Sirve para probar la
 // robot (5 Claudes con IQ 500) o la fusión (5 con IQ 1000) sin esperar. Requiere trucos.
@@ -88,6 +89,52 @@ export function registrarComandos() {
         system.run(() => p.sendMessage(`§6${claseAhora(p)}`));
         return { status: CustomCommandStatus.Success };
       },
+    );
+    // Claude Exponencial Infinito (infinito/index.js).
+    const comoJugador = (origin, fn) => {
+      const p = origin.sourceEntity;
+      if (!(p instanceof Player)) return { status: CustomCommandStatus.Failure, message: "Úsalo como jugador." };
+      system.run(() => p.sendMessage(fn(p)));
+      return { status: CustomCommandStatus.Success };
+    };
+    customCommandRegistry.registerCommand(
+      {
+        name: "claudenpc:infinito",
+        description: "Genera a Claude Exponencial Infinito delante de ti (fase opcional, de 1 a 20)",
+        permissionLevel: CommandPermissionLevel.GameDirectors,
+        cheatsRequired: true,
+        optionalParameters: [{ name: "fase", type: CustomCommandParamType.Integer }],
+      },
+      (origin, fase) => comoJugador(origin, (p) => generarInfinito(p, fase)),
+    );
+    customCommandRegistry.registerCommand(
+      {
+        name: "claudenpc:fase",
+        description: "Pone esa fase (1-20) al Claude Exponencial Infinito más cercano",
+        permissionLevel: CommandPermissionLevel.GameDirectors,
+        cheatsRequired: true,
+        mandatoryParameters: [{ name: "fase", type: CustomCommandParamType.Integer }],
+      },
+      (origin, fase) => comoJugador(origin, (p) => comandoFase(p, fase)),
+    );
+    customCommandRegistry.registerCommand(
+      {
+        name: "claudenpc:determinacion",
+        description: "Pone esa determinación (y su fase) al Claude Exponencial Infinito más cercano",
+        permissionLevel: CommandPermissionLevel.GameDirectors,
+        cheatsRequired: true,
+        mandatoryParameters: [{ name: "valor", type: CustomCommandParamType.Integer }],
+      },
+      (origin, valor) => comoJugador(origin, (p) => comandoDeterminacion(p, valor)),
+    );
+    customCommandRegistry.registerCommand(
+      {
+        name: "claudenpc:infinito_info",
+        description: "Muestra la fase, el estado, lo que aprendió y los errores del Claude Exponencial Infinito más cercano",
+        permissionLevel: CommandPermissionLevel.Any,
+        cheatsRequired: false,
+      },
+      (origin) => comoJugador(origin, (p) => comandoInfo(p)),
     );
   });
 }

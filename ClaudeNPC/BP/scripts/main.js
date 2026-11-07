@@ -13,6 +13,8 @@ import { nivelHab } from "./habilidades.js";
 import { contraataque } from "./habilidades/reflejos.js";
 import { revisarFusion } from "./fusion.js";
 import "./golden/index.js";
+import "./infinito/index.js";
+import { tickRescatista } from "./infinito/rescate.js";
 import "./corazon.js";
 import { aprender, ponerHaciendo } from "./iq.js";
 import { suspenderPorAtaque } from "./maestro.js";
@@ -109,6 +111,13 @@ function cerebro(npc) {
     s.hogarCargado = true;
   }
   if (s.fusion) return;
+  if (s.rescate) {
+    // Lleva a Claude Exponencial Infinito a recuperarse (infinito/rescate.js).
+    hostil(npc, s, false);
+    pausarRutina(npc, s);
+    tickRescatista(npc, s);
+    return;
+  }
   if (cada(s, "reflejos5", 40)) s.reflejos5 = nivelHab(npc, s, "reflejos") >= 5;
   if (s.robot) return tickPiloto(npc, s);
   // Fuera de la pelea: se cura solo y se pone la armadura que le toca por su IQ (cuero,
