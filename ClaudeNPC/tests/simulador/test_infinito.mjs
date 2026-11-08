@@ -2,7 +2,7 @@
 // el simulador imita la Script API 2.4.0 (física simple, proyectiles, explosiones y los sensores
 // de daño leídos del BP) para probar la lógica. Se corre con tests/simulador/correr.sh.
 import {
-  Entity, Player, W, entidades, errores, escribir, handlers, leer, log, medida, overworld as dim, system, tick, world,
+  Entity, InputPermissionCategory, ItemStack, Player, W, emitir, entidades, errores, escribir, handlers, leer, log, medida, overworld as dim, system, tick, world,
 } from "@minecraft/server";
 import "./scripts/main.js";
 import { NPC } from "./scripts/config.js";
@@ -44,7 +44,7 @@ function nuevo(x, z, fase = 1) {
   esperar(!!s, "se registra al aparecer");
   esperar(s.fase === 1 && e.mano === "minecraft:wooden_sword", "fase 1 con espada de madera");
   esperar(!s.escudo && e.equipo["slot.armor.chest"] === "minecraft:air", "fase 1 sin escudo ni armadura");
-  esperar(e.nameTag.includes("Claude Exponencial Infinito") && e.nameTag.includes("NOOB"), "nombre con fase");
+  esperar(e.nameTag === "§c§lDETERMINACIÓN §r§e0", "encima solo se ve la determinación");
   console.log("APARECE", { fase: s.fase, mano: e.mano, nombre: e.nameTag.split("\n") });
   e.isValid = false;
   correr(101);
@@ -124,6 +124,66 @@ function nuevo(x, z, fase = 1) {
   correr(101);
 }
 
+// 4b) Pelea como un jugador: corre saltando hacia ti, no retrocede para guardar distancia y
+//     no se queda quieto (fases 1, 5, 7 y 12).
+for (const faseN of [1, 5, 7, 12]) {
+  const p = jugadorEn(14.5, 0.5);
+  const { e, s } = nuevo(0.5, 0.5, faseN);
+  const modos = new Set();
+  let quieto = 0;
+  let cerca = 0;
+  let saltos = 0;
+  let enSuelo = true;
+  let llego;
+  const flechas0 = entidades.filter((x) => x.typeId === "minecraft:arrow").length;
+  correr(400, (t) => {
+    const tnt = entidades.some((x) => x.isValid && x.typeId === "minecraft:tnt" && dist(x, e) < 7);
+    // (los combos con TNT o cristal, y huir de su propia TNT, sí lo alejan un momento)
+    if (s.estado !== "COMBO" && !tnt) modos.add(s.mov?.modo);
+    e.vida = e.vidaMax; // con toda la vida (no tiene por qué retirarse)
+    p.vida = 20;
+    // El jugador camina en círculos.
+    p.teleport({ x: 14.5 + Math.cos(t / 30) * 5, y: 65, z: 0.5 + Math.sin(t / 30) * 5 });
+    const d = dist(e, p);
+    if (llego === undefined && d < 4) llego = t;
+    if (enSuelo && !e.isOnGround && e.vel.y > 0.25) saltos++;
+    enSuelo = e.isOnGround;
+    if (llego !== undefined && s.estado !== "COMBO" && !s.comiendo) {
+      cerca++;
+      if (Math.hypot(e.vel.x, e.vel.z) < 0.02 && e.isOnGround) quieto++;
+    }
+  });
+  const flechas = entidades.filter((x) => x.typeId === "minecraft:arrow").length - flechas0;
+  console.log(`HUMANO fase ${faseN}`, { llegoEn: llego, saltos, quieto: `${quieto}/${cerca}`, modos: [...modos], flechas });
+  esperar(llego !== undefined && llego < (faseN >= 12 ? 200 : faseN >= 3 ? 170 : 120), `fase ${faseN}: llega corriendo (empieza a 14-19 bloques)`);
+  esperar(saltos >= (faseN <= 1 ? 1 : 2), `fase ${faseN}: corre saltando`);
+  esperar(!modos.has("lejos"), `fase ${faseN}: no retrocede para guardar distancia`);
+  esperar(cerca > 0 && quieto / cerca < 0.1, `fase ${faseN}: casi nunca se queda quieto (${quieto}/${cerca})`);
+  e.isValid = false;
+  sacar(p);
+  correr(101);
+}
+
+// 4c) La determinación sube cuando le pegas (más cuanto más fuerte).
+{
+  const p = jugadorEn(0.5, 2.5, { modo: "Creative" });
+  const { e, s } = nuevo(0.5, 0.5, 3);
+  s.proximaDecision = system.currentTick + 100000;
+  const d0 = s.determinacion;
+  e.applyDamage(4, { cause: "entityAttack", damagingEntity: p });
+  correr(2);
+  const d1 = s.determinacion;
+  e.inmuneHasta = undefined;
+  e.applyDamage(10, { cause: "entityAttack", damagingEntity: p });
+  correr(2);
+  const d2 = s.determinacion;
+  console.log("HERIDO", { d0, d1: d1.toFixed(2), d2: d2.toFixed(2) });
+  esperar(d1 > d0 && d2 - d1 > d1 - d0, "la determinación sube al recibir daño (más con golpes más fuertes)");
+  e.isValid = false;
+  sacar(p);
+  correr(101);
+}
+
 // 5) Fase 7 (ESPECIALISTA EN ESPADAS): strafe, W-tap/S-tap, combos y ritmo de 10+ ticks.
 {
   const p = jugadorEn(5.5, 0.5);
@@ -144,7 +204,7 @@ function nuevo(x, z, fase = 1) {
   console.log("FASE 7", { golpes: golpes.length, sepMin: Math.min(...separacion), modos: [...modos], estados: [...estadosVistos], combos: s.ultimosCombos, mano: e.mano, wtaps });
   esperar(golpes.length >= 8, "la fase 7 golpea seguido");
   esperar(Math.min(...separacion) >= 10, "respeta la invulnerabilidad de 10 ticks");
-  esperar(modos.has("lado"), "hace strafe");
+  esperar(modos.has("presion") || modos.has("lado"), "hace strafe (rodea al rival)");
   esperar(s.ultimosCombos.length > 0, "usa combos");
   esperar(/minecraft:diamond_(sword|axe)/.test(e.mano ?? ""), "arma de diamante en la fase 7 (puede haber evolucionado a la 8)");
   e.isValid = false;
@@ -158,8 +218,9 @@ function nuevo(x, z, fase = 1) {
   const { e, s } = nuevo(0.5, 0.5, 12);
   s.cd.combo = system.currentTick + 10000; // solo el tiro (para medir)
   const armas = new Set();
+  const n0 = entidades.length;
   correr(300, () => { armas.add(e.mano); p.teleport({ x: 16.5, y: 65, z: 0.5 }); p.vida = 20; });
-  const flechas = entidades.filter((x) => x.typeId === "minecraft:arrow");
+  const flechas = entidades.slice(n0).filter((x) => x.typeId === "minecraft:arrow");
   const vivas = flechas.filter((x) => x.isValid);
   for (const f of flechas) if (f.dueno !== e) console.log("FLECHA AJENA", f.id, f.dueno?.typeId, f.location);
   console.log("DISTANCIA", { armas: [...armas], flechas: flechas.length, flechasConDueno: flechas.filter((f) => f.dueno === e).length, golpesFlecha: (p.historial ?? []).filter((h) => h.causa === "projectile").length });
@@ -211,7 +272,7 @@ function nuevo(x, z, fase = 1) {
   p.equipo.Offhand = "minecraft:shield";
   p.mira = { x: 0, y: 0, z: -1 };
   const { e, s } = nuevo(0.5, 0.5, 8);
-  correr(240, () => { p.teleport({ x: 0.5, y: 65, z: 2.6 }); p.vida = 20; });
+  correr(320, () => { p.teleport({ x: 0.5, y: 65, z: 2.6 }); p.vida = 20; });
   console.log("ROMPEGUARDIA", { cooldowns: log.cooldowns.length, mano: e.mano, estilo: s.estilo, combos: s.ultimosCombos });
   esperar(log.cooldowns.some((c) => c.cat === "shield" && c.dur === 100), "le desactiva el escudo al jugador con el hacha");
   e.isValid = false;
@@ -502,10 +563,59 @@ let datosRescate;
   esperar(soltado && log.titulos.some((t) => t.txt.includes("soltó")), "golpe fuerte al rescatista: lo suelta");
 }
 
+// 14b) Siempre viene un Claude: si el que venía muere, viene otro; y si no hay suelo lejos
+//      (por ejemplo, en el mar o en el Nether), aparece uno a su lado.
+{
+  const p = jugadorEn(-40.5, 0.5, { modo: "Creative" });
+  const { e, s } = nuevo(-40.5, 6.5, 3);
+  for (const x of entidades) if (x.typeId === NPC && x.isValid && dist(x, e) < 60) x.isValid = false;
+  const getTop = dim.getTopmostBlock;
+  // Sin suelo a más de 5 bloques: solo puede aparecer uno a su lado.
+  dim.getTopmostBlock = (q) => (Math.hypot(q.x - e.location.x, q.z - e.location.z) > 5 ? undefined : getTop(q));
+  e.vida = 2;
+  p.modo = "Survival";
+  e.inmuneHasta = undefined;
+  e.applyDamage(10, { cause: "entityAttack", damagingEntity: p });
+  p.modo = "Creative";
+  const quien = () => s.derribo?.rescatistaId ?? s.carga?.rescatistaId;
+  const vistos = [];
+  let d1 = Infinity;
+  let llevadoPorOtro = false;
+  correr(INFINITO_CFG.rescateA * 2 + 600, () => {
+    const id = quien();
+    if (id !== undefined && !vistos.includes(id)) {
+      vistos.push(id);
+      if (vistos.length === 1) {
+        // El primero muere antes de llevárselo (y ya hay suelo otra vez).
+        const primero = world.getEntity(id);
+        d1 = primero ? dist(primero, e) : Infinity;
+        if (primero) {
+          estados.get(primero.id).rescate = undefined;
+          primero.isValid = false;
+        }
+        dim.getTopmostBlock = getTop;
+      }
+    }
+    if (s.etapa === "cargado" && vistos.length >= 2 && s.carga?.rescatistaId !== vistos[0]) llevadoPorOtro = true;
+  });
+  dim.getTopmostBlock = getTop;
+  console.log("RESCATISTAS", { vistos: vistos.length, distanciaPrimero: d1.toFixed(1), llevadoPorOtro, etapa: s.etapa });
+  esperar(d1 < 3, "sin suelo lejos, el rescatista aparece a su lado");
+  esperar(vistos.length >= 2, "si el que venía muere, viene otro");
+  esperar(llevadoPorOtro, "y el otro se lo lleva");
+  e.isValid = false;
+  for (const x of entidades) if (x.typeId === NPC && dist(x, e) < 80) x.isValid = false;
+  sacar(p);
+  correr(101);
+}
+
 // 15) Sello: con el sello completo desaparece para siempre.
 {
   const { e, s } = datosRescate;
-  // Los rescatistas ya no están (el de la prueba o uno que llegó corriendo): si lo cargaban, lo sueltan.
+  // Los rescatistas ya no están (el de la prueba o uno que llegó corriendo): si lo cargaban, lo
+  // sueltan. Mientras se construye el sello no llama a otro (eso se prueba en la 14b).
+  const rescateA = INFINITO_CFG.rescateA;
+  INFINITO_CFG.rescateA = 1e9;
   for (const x of entidades) if (x.typeId === NPC) x.isValid = false;
   correr(25);
   if (s.etapa === "pelea") {
@@ -533,7 +643,27 @@ let datosRescate;
   esperar(world.getDynamicProperty("claudenpc:infinitos_sellados") === 1, "cuenta los sellados del mundo");
   correr(200);
   esperar(!entidades.some((x) => x.typeId === INFINITO && x.isValid), "no vuelve a aparecer");
+  INFINITO_CFG.rescateA = rescateA;
   sacar(datosRescate.p);
+}
+
+// 15b) Si muere de verdad (algo que el sensor no paró), reaparece derribado con todo lo que
+//      sabía; con /kill (override) o sellado, no.
+{
+  const { e, s } = nuevo(60.5, 0.5, 9);
+  const det = s.determinacion;
+  emitir("world.after.entityDie", { deadEntity: e, damageSource: { cause: "lava" } });
+  e.isValid = false;
+  correr(3);
+  const otro = entidades.find((x) => x.typeId === INFINITO && x.isValid && x !== e && Math.abs(x.location.x - 60.5) < 1);
+  const s2 = otro && infinitos.get(otro.id);
+  console.log("REVIVE", { otro: !!otro, etapa: s2?.etapa, fase: s2?.fase, det: s2 && Math.round(s2.determinacion) });
+  esperar(!!s2 && s2.etapa === "derribado" && Math.abs(s2.determinacion - det) < 0.5, "si muere de verdad, reaparece derribado con su determinación");
+  emitir("world.after.entityDie", { deadEntity: otro, damageSource: { cause: "selfDestruct" } }); // /kill
+  otro.isValid = false;
+  correr(3);
+  esperar(!entidades.some((x) => x.typeId === INFINITO && x.isValid && Math.abs(x.location.x - 60.5) < 1), "con /kill no reaparece");
+  correr(101);
 }
 
 // 16) Guardado: determinación, memoria y etapa se recuperan.
@@ -617,6 +747,91 @@ let datosRescate;
   esperar(!z.isValid || z.vida <= 0, "pelea con un monstruo si no hay jugadores");
   esperar((s.estadisticas.monstruo ?? 0) >= 1, "gana determinación al vencer al monstruo");
   e.isValid = false;
+  correr(101);
+}
+
+// 18e) Cinemática de la fase 20: cara estilo Saitama, máscara estilo Garou (guardando el casco),
+//      gráfica con curvas y caras, destello, "TOP 1" al lado y el choque de puños.
+{
+  const p = jugadorEn(6.5, 0.5);
+  const casco = new ItemStack("minecraft:diamond_helmet", 1);
+  casco.marca = "mi casco encantado";
+  p.getComponent("minecraft:equippable").setEquipment("Head", casco);
+  const { e, s } = nuevo(0.5, 0.5, 19);
+  const cam0 = log.camaras.length;
+  const c0 = (log.cine ?? []).length;
+  const com0 = log.comandos.length;
+  const tit0 = log.titulos.length;
+  ponerFase(e, s, 20);
+  esperar(!!s.cine && p.permisos?.[InputPermissionCategory.Movement] === false, "al llegar a la 20 empieza la cinemática y el jugador queda quieto");
+  correr(6);
+  const cabezaDurante = p.getComponent("minecraft:equippable").getEquipment("Head");
+  const enInventario = p.items?.find((x) => x === casco);
+  esperar(e.eventos.includes("claudenpc:cara_1"), "el Infinito pone su cara estilo Saitama");
+  esperar(cabezaDurante?.typeId === "claudenpc:mascara_garou" && !!enInventario, "el jugador lleva la máscara y su casco queda en el inventario");
+  const vida0 = p.vida;
+  e.inmuneHasta = undefined;
+  const v0 = e.vida;
+  e.applyDamage(30, { cause: "entityAttack", damagingEntity: p });
+  esperar(e.vida === v0, "intocable durante la cinemática");
+  let vidaMin = p.vida;
+  let n = 0;
+  while (s.cine && n++ < 400) { tick(); vidaMin = Math.min(vidaMin, p.vida); }
+  correr(10);
+  const cine = (log.cine ?? []).slice(c0);
+  const cuenta = (id) => cine.filter((x) => x.id === id).length;
+  const top = cine.filter((x) => x.id === "claudenpc:cine_top1");
+  const fondo = cine.find((x) => x.id === "claudenpc:cine_fondo");
+  const camaras = log.camaras.slice(cam0);
+  console.log("CINEMATICA", { fondo: cuenta("claudenpc:cine_fondo"), trazos: cuenta("claudenpc:cine_trazo"), caraS: cuenta("claudenpc:cine_cara_s"),
+    caraG: cuenta("claudenpc:cine_cara_g"), destello: cuenta("claudenpc:cine_destello"), top1: top.length, rojo: cuenta("claudenpc:cine_rojo"),
+    camaras: camaras.length, temblor: log.comandos.slice(com0).filter((x) => x.startsWith("camerashake")).length,
+    titulo: log.titulos.slice(tit0).map((x) => x.txt) });
+  esperar(cuenta("claudenpc:cine_fondo") === 1 && cuenta("claudenpc:cine_trazo") === 80, "la gráfica: fondo con cuadrícula y dos curvas de 40 trazos");
+  esperar(cuenta("claudenpc:cine_cara_s") > 60 && cuenta("claudenpc:cine_cara_g") > 60, "las caras suben por las curvas");
+  esperar(cuenta("claudenpc:cine_destello") === 1 && top.length === 2 && cuenta("claudenpc:cine_rojo") === 1, "destello arriba, TOP 1 dos veces y el choque con energía roja");
+  // El TOP 1 de la gráfica sale a la derecha de la cara del Infinito y arriba.
+  const caraFinal = cine.filter((x) => x.id === "claudenpc:cine_cara_s").at(-1);
+  const camG = camaras.find((x) => x.o.facingLocation && Math.abs(x.o.location.y - fondo.pos.y) < 0.01);
+  if (camG && caraFinal && top[0]) {
+    const F = { x: fondo.pos.x - camG.o.location.x, z: fondo.pos.z - camG.o.location.z };
+    const l = Math.hypot(F.x, F.z); F.x /= l; F.z /= l;
+    const R = { x: -F.z, z: F.x };
+    const derecha = (top[0].pos.x - caraFinal.pos.x) * R.x + (top[0].pos.z - caraFinal.pos.z) * R.z;
+    console.log("TOP1 POSICION", { derecha: derecha.toFixed(2), altura: (top[0].pos.y - camG.o.location.y).toFixed(2) });
+    esperar(derecha > 2 && top[0].pos.y > camG.o.location.y + 4, "TOP 1 al lado de la cara (a la derecha) y arriba de la gráfica");
+  } else {
+    esperar(false, "TOP 1 al lado de la cara (a la derecha) y arriba de la gráfica");
+  }
+  esperar(camaras.length >= 5, "cámaras: hombro, gráfica y choque");
+  esperar(log.comandos.slice(com0).some((x) => x.startsWith("camerashake")), "temblor de cámara en el choque");
+  esperar(!s.cine && p.permisos?.[InputPermissionCategory.Movement] === true, "al terminar el jugador vuelve a moverse");
+  const cabezaDespues = p.getComponent("minecraft:equippable").getEquipment("Head");
+  esperar(cabezaDespues === casco && cabezaDespues.marca === "mi casco encantado" && !p.items.includes(casco), "le devuelve su mismo casco (con sus encantamientos)");
+  esperar(e.eventos.includes("claudenpc:cara_0"), "el Infinito vuelve a su cara");
+  esperar(vidaMin >= vida0 - 0.001, "el jugador no recibe daño en la cinemática");
+  const golpes0 = (p.historial ?? []).filter((h) => h.quien === INFINITO).length;
+  correr(160, () => { p.vida = 20; });
+  esperar((p.historial ?? []).filter((h) => h.quien === INFINITO).length > golpes0, "después sigue la pelea (te vuelve a golpear)");
+  e.isValid = false;
+  sacar(p);
+  correr(101);
+}
+{
+  // Inventario lleno: no le pone la máscara (para no perder su casco).
+  const p = jugadorEn(6.5, 30.5);
+  const casco = new ItemStack("minecraft:netherite_helmet", 1);
+  p.getComponent("minecraft:equippable").setEquipment("Head", casco);
+  p.items = new Array(36).fill(0).map(() => new ItemStack("minecraft:dirt", 64));
+  const { e, s } = nuevo(0.5, 30.5, 19);
+  ponerFase(e, s, 20);
+  correr(10);
+  esperar(p.getComponent("minecraft:equippable").getEquipment("Head") === casco, "con el inventario lleno no le cambia el casco");
+  // Si el Infinito desaparece a la mitad, nadie queda congelado.
+  e.remove();
+  correr(3);
+  esperar(p.permisos?.[InputPermissionCategory.Movement] === true && !s.cine, "si el Infinito desaparece a la mitad, la cinemática se cierra");
+  sacar(p);
   correr(101);
 }
 

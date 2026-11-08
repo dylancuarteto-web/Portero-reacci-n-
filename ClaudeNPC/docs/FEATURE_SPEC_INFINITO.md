@@ -161,7 +161,7 @@ Encima de la cabeza: nombre, fase y determinación, y una frase corta de vez en 
   O . . . O
 ```
 
-3. **Rescate**: a los 12 s, el Claude más cercano (o uno que llega corriendo si no hay ninguno a 48 bloques) va hacia él (si no encuentra camino, llega con una perla), lo carga en el hombro y lo lleva a su casa o a un lugar tranquilo lejos de los jugadores. Si golpeas al rescatista fuerte (5 o más de un golpe, u 8 en total), lo suelta (y vuelve a correr el tiempo del sello). Si nadie llega en 30 s, se recupera ahí mismo.
+3. **Rescate**: a los 12 s, el Claude más cercano (o uno que llega corriendo si no hay ninguno a 48 bloques) va hacia él (si no encuentra camino, llega con una perla), lo carga en el hombro y lo lleva a su casa o a un lugar tranquilo lejos de los jugadores. Si golpeas al rescatista fuerte (5 o más de un golpe, u 8 en total), lo suelta (y vuelve a correr el tiempo del sello). Si el rescatista muere o se pierde, viene otro (v10.1); solo si de verdad no puede venir nadie, se recupera ahí mismo a los 30 s.
 4. **Recuperación**: sentado 30 s (también se puede sellar mientras tanto), vuelve a tener toda su vida y gana determinación (+25 × ritmo). Sigue peleando.
 
 ## 12. Rendimiento (Android)
@@ -191,3 +191,15 @@ Estado: GENERATED + STATICALLY_VALIDATED (tipos oficiales 2.4.0 sin errores; val
 ## 14. Recursos del usuario
 
 Ninguno obligatorio. Usa sonidos de Minecraft. Si quieres sonidos propios (por ejemplo, para evolucionar), se pueden agregar después.
+
+## 15. v10.1
+
+| Cambio | Detalle |
+|---|---|
+| Determinación al recibir daño | `GANANCIA.herido = 0.5` por punto de daño (× ritmo, × 1,5 con poca vida), en `entityHurt`. |
+| Siempre se lo lleva un Claude | Derribado → a los 12 s, el Claude libre más cercano (48 bloques) o uno que aparece y llega corriendo (lado contrario al jugador; si no hay suelo, por los costados, por delante y, como último recurso, a su lado); con perla si no encuentra camino. Si el rescatista muere o se pierde, `tickEtapa` llama a otro (hasta 6 llamadas; si nadie pudo venir, lo intenta cada 5 s). Se recupera solo a los 30 s únicamente si nadie pudo venir (si vino alguien, el tope es 2 min). Si muere de verdad (no `/kill` —causa `selfDestruct`—, ni `override`, ni sellado), `index.js` lo hace reaparecer derribado con su estado guardado. |
+| Nombre | Solo `DETERMINACIÓN <n>`; las frases van a la barra de acción (16 bloques). |
+| Movimiento | Modo `presion` por defecto: corre (y salta desde 3,6 bloques) hacia el rival y, ya cerca, lo rodea corrigiendo la distancia; los movimientos cortos (W-tap, S-tap, strafe) terminan en presión, no en "quieto". Sin retroceso para guardar distancia. Arco solo a más de 18 bloques (12 desde la fase 12) y dos tiros como mucho seguidos. Defensa más corta y menos frecuente. Retirada con menos del 10-20 % de vida. |
+| Cinemática de la fase 20 | `cinematica.js`: caras (evento `claudenpc:cara_1` → `minecraft:skin_id` 1 → textura `infinito_saitama`), máscara `claudenpc:mascara_garou` (objeto + attachable en la cabeza, casco guardado en un hueco libre del inventario), gráfica con partículas (`cine_fondo`, `cine_trazo`, `cine_cara_s`, `cine_cara_g`, `cine_destello`, `cine_top1`), choque (`cine_rojo`, temblor de cámara). Cámara libre, fundidos y bloqueo de controles con las herramientas de la cinemática de Golden. Unos 268 ticks. |
+
+Medidas de la gráfica (iguales en `cinematica.js` y `source/v100_assets.py`): la cámara mira la gráfica a 20 bloques y el fondo está a 26; la gráfica mide 32 × 18 bloques; el fondo, 112 × 56.

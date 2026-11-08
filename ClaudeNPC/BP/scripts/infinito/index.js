@@ -5,6 +5,7 @@ import { flat, now, sound } from "../util.js";
 import { gesto, pose } from "./animacion.js";
 import { ARMAS, bajarEscudo, equipar, escudoMano, tier, vestirFase } from "./armas.js";
 import { cambiarEstado, pensar, tickPelea, victoria } from "./cerebro.js";
+import { iniciarCinematica, tickCinematica } from "./cinematica.js";
 import { COMBOS, tickCombo } from "./combos.js";
 import { INFINITO, INFINITO_CFG, NOMBRE_INFINITO, PROP_SELLADOS, TAG_INF } from "./config.js";
 import { tickCaida } from "./cubetas.js";
@@ -104,7 +105,10 @@ function presentar(e, s, anterior) {
 alEvolucionar((e, s, anterior) => {
   aplicarAspecto(e, s);
   actualizarNombre(e, s, true);
-  if (s.fase > anterior && s.etapa === "pelea") presentar(e, s, anterior);
+  if (s.fase > anterior && s.etapa === "pelea") {
+    // Al llegar a la fase 20: la cinemática (si hay jugadores cerca); si no, la presentación.
+    if (!(s.fase >= 20 && anterior < 20 && iniciarCinematica(e, s))) presentar(e, s, anterior);
+  }
   guardar(s);
 });
 
@@ -133,6 +137,7 @@ function sincronizarEtiquetas(e, s) {
 // --- Bucles -------------------------------------------------------------------------------
 function tick(e, s) {
   sincronizarEtiquetas(e, s);
+  if (s.cine) return tickCinematica(e, s);
   if (s.etapa === "cargado") return tickCargado(e, s);
   if (s.etapa !== "pelea") return;
   if (e.isOnGround && now() % 20 === 0) s.ultimoSuelo = { ...e.location };
@@ -229,6 +234,8 @@ world.afterEvents.entityHurt.subscribe(({ hurtEntity, damageSource, damage }) =>
   if (!s) return;
   const e = hurtEntity;
   s.ultimoDano = now();
+  // Cada golpe que recibe le da determinación (proporcional al daño).
+  if (damage > 0 && s.etapa === "pelea") ganar(e, s, "herido", damage);
   if (s.combate) {
     s.combate.recibidos++;
     s.combate.danoRecibido += damage;
@@ -291,11 +298,41 @@ alSensor(EVENTO.fatal, [INFINITO], (e) => {
 });
 
 // Victorias.
+// Si aun así muere de verdad (lava, vacío, algo que el sensor no paró), no se pierde:
+// aparece derribado en el mismo lugar con todo lo que sabía y un Claude se lo lleva.
+// Excepciones: sellado, o quitado a propósito con /kill (causa "override"/"selfDestruct").
+function revivir(muerto, s) {
+  let dim;
+  let lugar;
+  try {
+    dim = muerto.dimension;
+    lugar = { ...muerto.location };
+  } catch {
+    return;
+  }
+  if (s.ultimoSuelo && (lugar.y < dim.heightRange.min + 4 || Math.abs(lugar.y - s.ultimoSuelo.y) > 30)) lugar = { ...s.ultimoSuelo };
+  let nuevo;
+  try {
+    nuevo = dim.spawnEntity(INFINITO, lugar);
+  } catch {
+    return;
+  }
+  // El estado (en memoria) se guarda en la entidad nueva y se vuelve a cargar.
+  s.e = nuevo;
+  s.etapa = "pelea";
+  guardar(s);
+  const s2 = registrar(nuevo);
+  if (s2) derribar(nuevo, s2);
+}
+
 world.afterEvents.entityDie.subscribe(({ deadEntity, damageSource }) => {
   try {
     if (deadEntity.typeId === INFINITO) {
+      const s = infinitos.get(deadEntity.id);
       limpiarDe(deadEntity.id);
       infinitos.delete(deadEntity.id);
+      const causa = String(damageSource?.cause ?? "");
+      if (s && s.etapa !== "sellado" && !deadEntity.hasTag(TAG_SELLADO) && causa !== "override" && causa !== "selfDestruct") revivir(deadEntity, s);
       return;
     }
     const killer = damageSource?.damagingEntity;

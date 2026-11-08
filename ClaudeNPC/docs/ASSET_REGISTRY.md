@@ -15,6 +15,7 @@ Todo bajo el namespace `claudenpc`. Se definen aquí una sola vez y se reutiliza
 |---|---|
 | `claudenpc:nivel_0` … `claudenpc:nivel_4` | Aspecto y vida máxima por tramo de fases (1-5, 6-10, 11-15, 16-19, 20): `minecraft:variant` 0-4 |
 | `claudenpc:aura_0` / `claudenpc:aura_1` | Aura de la fase 20 apagada / encendida: `minecraft:mark_variant` 0/1 |
+| `claudenpc:cara_0` / `claudenpc:cara_1` | Cara normal / cara estilo Saitama de la cinemática de la fase 20: grupo `claudenpc:cara_1` con `minecraft:skin_id` 1 |
 | `claudenpc:bloqueo` | Lo lanza su sensor al parar un golpe o una flecha con el escudo |
 | `claudenpc:golpe_fatal` | Lo lanza su sensor ante el golpe que lo mataría (no se aplica: queda derribado) |
 
@@ -51,3 +52,14 @@ Todo bajo el namespace `claudenpc`. Se definen aquí una sola vez y se reutiliza
 
 ## Sonidos
 Solo de Minecraft (no se agregan archivos de audio).
+
+## v10.1: cinemática de la fase 20
+| Tipo | Identificador / ruta |
+|---|---|
+| Textura de la cara | `textures/entity/claudenpc/infinito_saitama` (índice 5 de `Array.pieles`, con `query.skin_id == 1`) |
+| Objeto | `claudenpc:mascara_garou` (`BP/items/mascara_garou.json`, se lleva en la cabeza) |
+| Attachable | `claudenpc:mascara_garou` · geometría `geometry.claudenpc.mascara_garou` · textura `textures/models/claudenpc/mascara_garou` · controlador `controller.render.claudenpc_mascara_garou` |
+| Ícono | `claudenpc_mascara_garou` → `textures/items/mascara_garou` |
+| Partículas | `claudenpc:cine_fondo`, `claudenpc:cine_trazo`, `claudenpc:cine_cara_s`, `claudenpc:cine_cara_g`, `claudenpc:cine_destello`, `claudenpc:cine_rojo`, `claudenpc:cine_top1` |
+| Texturas de partículas | `textures/particle/claudenpc_cine_fondo`, `_caras`, `_destello`, `_rojo`, `_top1`, `_trazo` |
+| Variables Molang | `variable.vida`, `variable.escala`, `variable.dir`, `variable.largo`, `variable.grosor` |

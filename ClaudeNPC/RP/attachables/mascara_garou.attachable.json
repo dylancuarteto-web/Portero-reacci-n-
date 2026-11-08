@@ -1,0 +1,23 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:attachable": {
+    "description": {
+      "identifier": "claudenpc:mascara_garou",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/models/claudenpc/mascara_garou"
+      },
+      "geometry": {
+        "default": "geometry.claudenpc.mascara_garou"
+      },
+      "scripts": {
+        "parent_setup": "variable.helmet_layer_visible = 0.0;"
+      },
+      "render_controllers": [
+        "controller.render.claudenpc_mascara_garou"
+      ]
+    }
+  }
+}

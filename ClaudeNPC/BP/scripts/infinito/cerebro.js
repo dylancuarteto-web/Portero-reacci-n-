@@ -12,7 +12,7 @@ import { fase, puede } from "./fases.js";
 import { alcance, distanciaA, enAlcance, golpear, listoParaGolpear, seCubre } from "./golpe.js";
 import { armaDe, armaduraDe, nuevaPelea, observar, resumen, rival, ritmoDeAtaque } from "./memoria.js";
 import {
-  acercar, acorralado, buscarAltura, esquivar, mover, RAPIDEZ, reposicionar, retroceder, saltar, stap, wtap,
+  acorralado, buscarAltura, esquivar, mover, presionar, RAPIDEZ, reposicionar, retroceder, saltar, stap, wtap,
 } from "./movimiento.js";
 import { actitud, decir } from "./personalidad.js";
 import { comer, lanzarPerla, lanzarPocion, tntCerca } from "./proyectiles.js";
@@ -37,7 +37,7 @@ function alEntrar(e, s, estado) {
       decir(e, s, "observar");
       break;
     case "DEFENDING":
-      s.cd.defensa = now() + 24;
+      s.cd.defensa = now() + 40;
       if (!levantarEscudo(e, s, 16) && puede(s, "impredecible") && x?.obj) esquivar(e, s, x.obj);
       break;
     case "COUNTERING":
@@ -50,7 +50,6 @@ function alEntrar(e, s, estado) {
         s.estiloDesde = now();
       }
       s.seguidasMal = 0;
-      mover(s, "quieto", { obj: x?.obj });
       break;
     }
     case "RETREATING":
@@ -220,7 +219,7 @@ function contexto(e, s, obj, m, r, d, salud) {
 
 function umbralRetirada(s) {
   if (puede(s, "infinito")) return 0; // la fase 20 nunca se retira: se cura peleando
-  return Math.max(0.16, 0.32 - (s.fase - 4) * 0.01);
+  return Math.max(0.1, 0.2 - (s.fase - 4) * 0.006); // solo con muy poca vida
 }
 
 function puedeDefender(s) {
@@ -277,7 +276,7 @@ export function pensar(e, s) {
     cambiarEstado(e, s, "RETREATING", true);
   } else if (puede(s, "retroceder") && x.salud < umbralRetirada(s) && !["RETREATING", "RECOVERING"].includes(s.estado)
     && now() >= (s.cd.retirada ?? 0)) {
-    s.cd.retirada = now() + 400;
+    s.cd.retirada = now() + 600;
     cambiarEstado(e, s, "RETREATING", true);
     decir(e, s, "retirada");
   }
@@ -297,8 +296,8 @@ export function pensar(e, s) {
   const enGuardia = ["APPROACHING", "ENGAGING", "COUNTERING", "OBSERVING"].includes(s.estado)
     || (s.estado === "COMBO" && !s.combo) || (s.interrumpido && now() - s.interrumpido < 6);
   const amenaza = x.rivalAtaca || x.flecha || x.anticipa === "atacar" || (x.anticipa === "disparar" && x.d > 5);
-  if (enGuardia && amenaza && puedeDefender(s) && now() >= (s.cd.defensa ?? 0)
-    && Math.random() < 0.35 + 0.6 * niveles(s).reaccion) {
+  if (enGuardia && amenaza && x.d < 3.8 && puedeDefender(s) && now() >= (s.cd.defensa ?? 0)
+    && Math.random() < 0.15 + 0.45 * niveles(s).reaccion) {
     cambiarEstado(e, s, "DEFENDING", true);
   } else if (puede(s, "aperturas") && now() - (s.rompioEscudo ?? -1000) < 10 && s.estado !== "COMBO") {
     cambiarEstado(e, s, "COUNTERING", true); // le acaba de romper el escudo: castiga
@@ -345,13 +344,12 @@ function sinObjetivo(e, s) {
 
 function observando(e, s, x, f) {
   const t = now() - s.estadoDesde;
-  if (t >= f.observa || x.d < 4 || now() - (s.ultimoDano ?? -1000) < 20) {
+  // Te estudia un momento (como mucho 1,2 s) dando vueltas a tu alrededor, sin alejarse.
+  if (t >= Math.min(f.observa, 24) || x.d < 4 || now() - (s.ultimoDano ?? -1000) < 20) {
     cambiarEstado(e, s, "APPROACHING", true);
     return acercandose(e, s, x);
   }
-  if (x.d < 6) retroceder(s, x.obj, 7);
-  else if (x.d > 9) acercar(s, x.obj, { hasta: 8, correr: false, saltos: false });
-  else mover(s, "lado", { obj: x.obj, lado: s.lado ?? 1, radio: 7, rapidez: RAPIDEZ.lado * 0.6 });
+  presionar(s, x.obj, { ideal: 5, rapidezLado: RAPIDEZ.lado * 0.7 });
 }
 
 function intentarCombo(e, s, x, prob) {
@@ -366,13 +364,13 @@ function acercandose(e, s, x) {
   decidirArma(e, s, x);
   if (esDistancia(s.arma)) {
     if (x.d >= 5 && x.d <= 22) return cambiarEstado(e, s, "ENGAGING");
-    acercar(s, x.obj, { hasta: 18, correr: true });
+    presionar(s, x.obj);
     return;
   }
   if (x.d <= alcance(s) + 0.6) return cambiarEstado(e, s, "ENGAGING");
   if (intentarCombo(e, s, x, 0.25 + 0.5 * niveles(s).combos)) return;
   const zigzag = puede(s, "impredecible") && (x.r.arquero || esDistancia(armaDe(x.obj)));
-  acercar(s, x.obj, { hasta: alcance(s) - 0.3, correr: puede(s, "correrAtacar") || x.d > 8, saltos: puede(s, "perseguir"), zigzag });
+  presionar(s, x.obj, { zigzag });
 }
 
 function peleando(e, s, x) {
@@ -380,11 +378,17 @@ function peleando(e, s, x) {
   const n = niveles(s);
   if (esDistancia(s.arma)) {
     if (x.d > 26) return cambiarEstado(e, s, "APPROACHING");
-    if (x.d < 7) retroceder(s, x.obj, 10);
-    else if (x.d > 18) acercar(s, x.obj, { hasta: 14, correr: true });
-    else mover(s, "lado", { obj: x.obj, lado: s.lado ?? 1, radio: x.d, rapidez: RAPIDEZ.lado * 0.7 });
+    // Mientras dispara se mueve de lado y se va acercando; tras dos tiros vuelve a la carga.
+    presionar(s, x.obj, { ideal: Math.max(6, x.d - 1), rapidezLado: RAPIDEZ.lado * 0.7 });
+    if ((s.tiros ?? 0) >= 2) {
+      s.tiros = 0;
+      s.cd.arco = now() + 140;
+      equipar(e, s, "espada");
+      return cambiarEstado(e, s, "APPROACHING", true);
+    }
     if (now() >= (s.cd.tiro ?? 0) && iniciarCombo(e, s, TIRO, x.obj)) {
       s.cd.tiro = now() + 16;
+      s.tiros = (s.tiros ?? 0) + 1;
       s.atacar = false;
       cambiarEstado(e, s, "COMBO", true);
     }
@@ -404,37 +408,24 @@ function peleando(e, s, x) {
 }
 
 function movimientoCuerpo(e, s, x) {
-  const al = alcance(s);
-  if (s.fase <= 1) return acercar(s, x.obj, { hasta: 1.2, correr: false, saltos: false }); // el NOOB va directo
-  // Salta antes de llegar para caer golpeando (crítico), fase 2+.
-  if (puede(s, "saltarAntes") && e.isOnGround && x.d > 2.4 && x.d < 3.8 && s.proximoGolpe - now() < 8 && Math.random() < 0.25) {
-    saltar(e, s, x.obj, 0.42, 0.2);
+  // Llega saltando para caer golpeando (crítico): fase 2+ (y el NOOB a veces, por torpe).
+  const salta = puede(s, "saltarAntes") ? 0.35 : 0.12;
+  if (e.isOnGround && x.d > 2.3 && x.d < 3.9 && s.proximoGolpe - now() < 10 && Math.random() < salta) {
+    saltar(e, s, x.obj, 0.42, 0.22);
   }
-  if (!puede(s, "controlDistancia")) return acercar(s, x.obj, { hasta: puede(s, "distancia") ? 2.3 : 1.8 });
-  const ideal = al - 0.25;
-  if (x.d > ideal + 0.5) return acercar(s, x.obj, { hasta: ideal, correr: true });
-  if (x.d < ideal - 0.9 && !acorralado(e, x.obj)) return retroceder(s, x.obj, ideal);
-  if (puede(s, "strafe")) {
-    const cada = puede(s, "impredecible") ? 12 + Math.floor(Math.random() * 18) : 30;
-    if (now() >= (s.cd.lado ?? 0)) {
-      s.lado = -(s.lado ?? 1);
-      s.cd.lado = now() + cada;
-    }
-    return mover(s, "lado", { obj: x.obj, lado: s.lado, radio: ideal });
-  }
-  mover(s, "quieto", { obj: x.obj });
+  // Nunca se queda quieto ni retrocede para guardar distancia: te rodea y vuelve a entrar.
+  presionar(s, x.obj);
 }
 
 function defendiendo(e, s, x) {
   const t = now() - s.estadoDesde;
   if (now() - (s.bloqueoEn ?? -1000) < 10 && puede(s, "castigar")) return cambiarEstado(e, s, "COUNTERING", true);
-  if (t > 16 || (!x.rivalAtaca && !x.flecha && t > 8)) {
+  if (t > 12 || (!x.rivalAtaca && !x.flecha && t > 6)) {
     bajarEscudo(e, s);
     return cambiarEstado(e, s, "ENGAGING", true);
   }
-  if (s.escudoArriba) {
-    mover(s, puede(s, "strafe") ? "lado" : "quieto", { obj: x.obj, lado: s.lado ?? 1, radio: Math.max(2.4, x.d), rapidez: RAPIDEZ.lento });
-  }
+  // Con el escudo arriba va lento, pero sigue moviéndose a tu alrededor.
+  presionar(s, x.obj);
 }
 
 function contraatacando(e, s, x) {
@@ -449,7 +440,7 @@ function contraatacando(e, s, x) {
     s.proximoGolpe = Math.min(s.proximoGolpe, now());
   }
   s.atacar = true;
-  acercar(s, x.obj, { hasta: alcance(s) - 0.4, correr: true });
+  presionar(s, x.obj, { ideal: 1.8 });
   if (now() - s.estadoDesde > 14 || now() - s.ultimoGolpe < 3) cambiarEstado(e, s, "ENGAGING", true);
 }
 
@@ -468,9 +459,9 @@ function retirandose(e, s, x) {
 
 function recuperandose(e, s, x) {
   const t = now() - s.estadoDesde;
-  if (x.salud >= 0.6 || x.d < 4 || t > 200) return cambiarEstado(e, s, "APPROACHING", true);
+  if (x.salud >= 0.5 || x.d < 5 || t > 120) return cambiarEstado(e, s, "APPROACHING", true);
   if (x.d < 7) retroceder(s, x.obj, 9);
-  else mover(s, "quieto", { obj: x.obj });
+  else presionar(s, x.obj, { ideal: 8, rapidezLado: RAPIDEZ.lado * 0.6 });
   if (s.comiendo) return;
   if (puede(s, "pociones") && now() >= (s.cd.pocionCura ?? 0)) {
     s.cd.pocionCura = now() + 300;
@@ -481,9 +472,8 @@ function recuperandose(e, s, x) {
 }
 
 function adaptando(e, s, x) {
-  if (now() - s.estadoDesde >= 20) return cambiarEstado(e, s, "APPROACHING", true);
-  if (x.d < 3) retroceder(s, x.obj, 4);
-  else mover(s, "lado", { obj: x.obj, lado: s.lado ?? 1, radio: Math.max(3, x.d), rapidez: RAPIDEZ.lado * 0.5 });
+  if (now() - s.estadoDesde >= 10) return cambiarEstado(e, s, "APPROACHING", true);
+  presionar(s, x.obj, { ideal: 3.2 });
 }
 
 // --- Cada tick: golpe cuerpo a cuerpo, escudo y volver al arma ------------------------------

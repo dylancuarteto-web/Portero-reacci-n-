@@ -145,10 +145,24 @@ export class Entity {
     const self = this;
     if (k === "minecraft:health") return { get currentValue() { return self.vida; }, get effectiveMax() { return self.vidaMax; },
       setCurrentValue(v) { self.vida = Math.min(self.vidaMax, v); return true; }, resetToMaxValue() { self.vida = self.vidaMax; } };
-    if (k === "minecraft:equippable") return { getEquipment: (slot) => {
-      const id = slot === "Mainhand" ? self.mano : self.equipo[slot];
-      return id && id !== "minecraft:air" ? { typeId: id } : undefined;
-    } };
+    if (k === "minecraft:equippable") return {
+      getEquipment: (slot) => {
+        if (self.equipoObj?.[slot]) return self.equipoObj[slot];
+        const id = slot === "Mainhand" ? self.mano : self.equipo[slot];
+        return id && id !== "minecraft:air" ? { typeId: id } : undefined;
+      },
+      setEquipment: (slot, item) => {
+        self.equipoObj ??= {};
+        if (!item) { delete self.equipo[slot]; delete self.equipoObj[slot]; if (slot === "Mainhand") self.mano = undefined; return true; }
+        self.equipo[slot] = item.typeId; self.equipoObj[slot] = item; if (slot === "Mainhand") self.mano = item.typeId;
+        return true;
+      },
+    };
+    if (k === "minecraft:inventory" && this instanceof Player) {
+      self.items ??= new Array(36).fill(undefined);
+      return { container: { size: 36, getItem: (i) => self.items[i], setItem: (i, it) => { self.items[i] = it ?? undefined; },
+        get emptySlotsCount() { return self.items.filter((x) => !x).length; } } };
+    }
     if (k === "minecraft:is_baby") return this.bebe ? {} : undefined;
     if (k === "minecraft:variant") return this.variant !== undefined ? { value: this.variant } : undefined;
     if (k === "minecraft:mark_variant") return this.markVariant !== undefined ? { value: this.markVariant } : undefined;
@@ -178,6 +192,7 @@ export class Entity {
   }
   addEffect(ef, dur, o = {}) {
     this.efectos.push(ef); log.efectos.push({ t: system.currentTick, quien: this.typeId, ef, dur, amp: o.amplifier ?? 0 });
+    (this.activos ??= {})[ef] = { hasta: system.currentTick + dur, amp: o.amplifier ?? 0 };
     if (ef === "instant_health") this.vida = Math.min(this.vidaMax, this.vida + 4 * 2 ** (o.amplifier ?? 0));
     if (ef === "instant_damage") this.applyDamage(6 * 2 ** (o.amplifier ?? 0), { cause: "magic" });
   }
@@ -201,6 +216,9 @@ export class Entity {
     if (this.typeId === "minecraft:ender_crystal") { explotar(this.dimension, { ...this.location }, 6, true, this); this.remove(); return true; }
     if (otro && causa === "entityAttack") emitir("world.after.entityHitEntity", { damagingEntity: otro, hitEntity: this });
     if (otro && causa === "projectile" && !o.sinEvento) emitir("world.after.projectileHitEntity", { source: otro, projectile: o.projectile, dimension: this.dimension, location: { ...this.location }, getEntityHit: () => ({ entity: this }) });
+    // Resistencia V (cinemáticas): no recibe daño salvo el vacío o /kill.
+    const res = this.activos?.resistance;
+    if (res && res.hasta > system.currentTick && res.amp >= 4 && causa !== "void" && causa !== "override") return false;
     // Invulnerabilidad de 10 ticks (como el juego): un golpe más débil en ese tiempo no entra.
     if (this.inmuneHasta !== undefined && system.currentTick < this.inmuneHasta && n <= (this.ultimoDanoRecibido ?? 0)) return false;
     const ctx = { yo: this, otro, danador: o.projectile ?? otro, dano: n, causa };
@@ -235,7 +253,7 @@ export class Entity {
   kill() { this.vida = 0; this.isValid = false; return true; }
   removeTag(t) { return this.tags.delete(t); }
   getTags() { return [...this.tags]; }
-  removeEffect(ef) { this.efectos = this.efectos.filter((x) => x !== ef); return true; }
+  removeEffect(ef) { this.efectos = this.efectos.filter((x) => x !== ef); if (this.activos) delete this.activos[ef]; return true; }
 }
 export class Player extends Entity {
   constructor(dim, loc) {
@@ -412,7 +430,11 @@ export function crearDim(id) {
     },
     getEntities: (o = {}) => consulta(entidades.filter((e) => e.dimension === dim), o),
     getPlayers: (o = {}) => consulta(entidades.filter((e) => e instanceof Player && e.dimension === dim), { ...o, type: undefined }),
-    spawnParticle: (id, pos, vars) => { for (const k of ["x", "y", "z"]) if (!Number.isFinite(pos[k])) throw new Error(`partícula ${id} con ${k}=${pos[k]}`); log.particulas.push(id); },
+    spawnParticle: (id, pos, vars) => {
+      for (const k of ["x", "y", "z"]) if (!Number.isFinite(pos[k])) throw new Error(`partícula ${id} con ${k}=${pos[k]}`);
+      log.particulas.push(id);
+      if (id.startsWith("claudenpc:cine_")) (log.cine ??= []).push({ t: system.currentTick, id, pos: { ...pos }, v: { ...(vars?.v ?? {}) } });
+    },
     playSound: (s) => log.sonidos.push(s),
     spawnItem: (it) => log.items.push(it),
     runCommand: () => ({}),

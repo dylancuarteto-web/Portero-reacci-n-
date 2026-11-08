@@ -1,0 +1,22 @@
+{
+  "format_version": "1.21.40",
+  "minecraft:item": {
+    "description": {
+      "identifier": "claudenpc:mascara_garou",
+      "menu_category": {
+        "category": "equipment"
+      }
+    },
+    "components": {
+      "minecraft:icon": "claudenpc_mascara_garou",
+      "minecraft:display_name": {
+        "value": "Máscara de Garou"
+      },
+      "minecraft:max_stack_size": 1,
+      "minecraft:wearable": {
+        "slot": "slot.armor.head",
+        "protection": 0
+      }
+    }
+  }
+}

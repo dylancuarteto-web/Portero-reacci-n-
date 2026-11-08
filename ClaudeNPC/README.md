@@ -8,8 +8,41 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 2. Genera a Claude con el huevo "Generar a Claude" y al maestro con "Generar a Claude Maestro" (o `/summon claudenpc:claude` y `/summon claudenpc:maestro`).
 3. Para que te ataquen: estar en Supervivencia o Aventura (ya no hace falta activar el PvP o "fuego amigo"; si quieres que lo respeten, pon `COMBATE.respetarPvP = true` en `BP/scripts/config.js`).
 4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes; `/claudenpc:robot` (con trucos) hace que los Claudes más cercanos (hasta 5, con cualquier IQ) construyan el robot ya.
-5. Claude Exponencial Infinito: huevo "Generar a Claude Exponencial Infinito", `/summon claudenpc:exponencial_infinito` o `/claudenpc:infinito [fase]` (con trucos). Ver la sección de la v10.
+5. Claude Exponencial Infinito: huevo "Generar a Claude Exponencial Infinito", `/summon claudenpc:exponencial_infinito` o `/claudenpc:infinito [fase]` (con trucos). Ver las secciones de la v10.1 y la v10.
 6. **Toca a un Claude** (botón "Habilidades" en el celular) para ver qué sabe: cada tema con sus estrellas, la última variante que aprendió y si lo perfecciona o solo lo estudia.
+
+## Novedades de la v10.1: más determinación, pelea más humana y la cinemática de la fase 20
+
+| Antes (v10.0) | Ahora |
+|---|---|
+| La determinación subía con lo que él hacía | **También sube cuando le pegas**: cada punto de daño que le haces le da 0,5 de determinación (× ritmo, y × 1,5 si tiene poca vida). Cuanto más le pegas, más rápido evoluciona. |
+| Al "matarlo" quedaba derribado, pero si el Claude que venía moría o no había dónde hacer aparecer uno, se recuperaba solo; y si moría de verdad, se perdía | Al "matarlo" queda derribado y **siempre viene un Claude a llevárselo**: a los 12 s sale a buscarlo el Claude libre más cercano (a 48 bloques) o aparece uno que llega corriendo; si no hay suelo lejos (mar, Nether, acantilados), aparece a su lado; si no encuentra camino, llega con una perla; y si el que venía muere o se pierde, viene otro. Si algo lo mata de verdad (lava, el vacío, algo que el sensor no paró), **reaparece derribado** con todo lo que sabía y también se lo lleva un Claude. Solo el sello lo elimina (o `/kill`, si de verdad quieres quitarlo). |
+| Encima de la cabeza: nombre, fase, barra y frases | **Solo "DETERMINACIÓN 1234"**. Sus frases salen abajo, en la barra de acción de los que están cerca. |
+| Pelea robótica: retrocedía para guardar distancia y se quedaba quieto | **Pelea como un jugador**: **corre saltando** hacia ti en todas las fases (el NOOB, más torpe); ya cerca **te rodea** cambiando de lado y vuelve a entrar, **sin quedarse quieto**; **ya no retrocede para guardar distancia** (solo da un paso atrás rápido después de golpear, se aleja en algunos combos desde la fase 11 —lava, "alternar distancia", TNT y cristal— y se retira con muy poca vida); te observa como mucho 1,2 s dando vueltas; se cubre con el escudo menos seguido y por menos tiempo; el **arco** solo si estás muy lejos (más de 18 bloques; desde la fase 12, más de 12) y después de dos tiros vuelve a perseguirte; se retira solo con menos del 10-20 % de vida. |
+| La fase 20 tenía un título | **Cinemática de la fase 20** (abajo). |
+
+### Cinemática de la fase 20
+
+Inspirada en la imagen y el video que mandaste (la gráfica del poder que crece de forma exponencial). Dura unos 13 s y la ven todos los jugadores a 48 bloques:
+
+1. **Fundido** y toma por encima de tu hombro: Claude Exponencial Infinito cambia a su **cara estilo Saitama** (calvo, ojos de párpado caído) y tú llevas una **máscara estilo Garou** (blanca, con orejas puntiagudas y colmillos).
+2. **La gráfica**: fondo negro con cuadrícula y ejes verdes **PODER (Y)** y **TIEMPO (X)**. Se dibujan dos curvas blancas con su cara subiendo por la punta: la tuya (la máscara) crece despacio; la del Infinito (Saitama) va por debajo hasta que **se dispara hacia arriba**. Arriba, un **destello blanco** y, a su lado, **"TOP 1" en letras rojas con borde negro, sin marco**.
+3. **Choque de puños** de lado, con energía roja, explosión y temblor de cámara, y otra vez "TOP 1" al lado de su cabeza.
+4. **Fundido** y sigue la pelea (con su aura de la fase 20). Al final sale "INFINITE DETERMINATION".
+
+Mientras dura, el Infinito es intocable y tú no te mueves ni recibes daño. **Tu casco**: mientras llevas la máscara, tu casco se guarda en un hueco libre de tu inventario y al terminar vuelve a tu cabeza (el mismo, con sus encantamientos). Si tu inventario está lleno, no te pone la máscara. Si la cinemática se corta (sales del mundo), al volver se te quita la máscara y tu casco sigue en tu inventario.
+
+Para verla otra vez: cerca de él, `/claudenpc:fase 19` y luego `/claudenpc:fase 20`.
+
+> **Fan-made:** las caras son garabatos propios inspirados en el meme (no son imágenes de One Punch Man ni del video) y el add-on no es oficial ni está afiliado a nadie. Vista previa: `source/vista_v101_cinematica.png` (la toma de la gráfica dibujada con las posiciones reales de las partículas y una cámara de 70°, y la cara y la máscara en el modelo; no es una captura del juego).
+
+> **Sonidos:** la cinemática y el Infinito usan solo sonidos de Minecraft (no se agregó ningún archivo de audio). La música y los sonidos que mandaste antes siguen siendo para tu mundo: si vas a publicar el add-on, cámbialos por sonidos propios o con permiso.
+
+### Estado de la v10.1
+
+- **GENERATED** y **STATICALLY_VALIDATED**: tipos oficiales 2.4.0 sin errores (incluye la máscara con `ItemStack`, el casco y el inventario), validador del kit y auditoría 1.21.132 con 0 errores y 0 advertencias, cruce de referencias igual que antes.
+- **Simulado fuera del juego**: el simulador ahora tiene la Resistencia de las cinemáticas, el inventario y el casco del jugador. **134 comprobaciones**: las de la v10 más que corre saltando en las fases 1, 5, 7 y 12, que no retrocede, que casi nunca se queda quieto (0-5 % del tiempo, sin contar los 2 ticks del W-tap), la determinación al recibir daño, que reaparece derribado si muere de verdad (y con `/kill` no), que si no hay suelo lejos el rescatista aparece a su lado, que si el que venía muere viene otro y se lo lleva, y la cinemática completa (cara, máscara con el casco guardado y devuelto, 80 trazos, caras subiendo, destello, "TOP 1" a la derecha de la cara y arriba, choque, sin daño al jugador y la pelea que sigue). **40 corridas seguidas sin fallas** (dos tandas de 20). Las simulaciones anteriores siguen pasando.
+- **IN_GAME_TESTED: no.** Revisa en el juego: que la gráfica tape toda la pantalla con tu campo de visión (el fondo mide 112 × 56 bloques a 26 bloques de la cámara), que las partículas se vean a esa distancia, la máscara en tu cabeza, y que el movimiento con impulsos se vea fluido.
 
 ## Novedades de la v10.0: Claude Exponencial Infinito (INFINITE DETERMINATION)
 
@@ -106,12 +139,12 @@ Todo lo que coloca (agua, lava, obsidiana, pilares) se quita solo, también si c
   O . . . O
 ```
 
-3. **Rescate**: a los 12 s, el Claude más cercano (o uno que llega corriendo si no hay ninguno a 48 bloques) lo carga al hombro y lo lleva a su casa o a un sitio lejos de los jugadores. Si no encuentra camino, llega con una perla. **Golpea fuerte al rescatista** y lo suelta (vuelve a correr el tiempo para sellarlo). Si nadie llega en 30 s, se recupera ahí mismo.
+3. **Rescate**: a los 12 s, el Claude más cercano (o uno que llega corriendo si no hay ninguno a 48 bloques) lo carga al hombro y lo lleva a su casa o a un sitio lejos de los jugadores. Si no encuentra camino, llega con una perla. **Golpea fuerte al rescatista** y lo suelta (vuelve a correr el tiempo para sellarlo). Si el que venía muere o se pierde, viene otro (desde la v10.1); solo si de verdad no puede venir nadie, se recupera ahí mismo a los 30 s.
 4. **Recuperación**: sentado 30 s, vuelve con toda la vida y **+25 de determinación** (× ritmo). Sigue peleando.
 
 ### Personalidad y presentación
 
-Encima de su cabeza: su nombre (del color de su tramo), la fase, la determinación con una barra hacia la siguiente fase y, de vez en cuando, una frase corta. Observa antes de atacar, celebra un buen combo (con un giro o un festejo), se frustra cuando pierde, se vuelve **más serio y callado** en fases altas. **Cada evolución tiene su presentación**: título con el número y el nombre de la fase, sonido que sube de tono con la fase, gesto de evolución y capas de partículas que crecen con el tramo (anillo, chispas, columna); al cambiar de tramo cambia su aspecto; la fase 20 tiene su propio título y el aura.
+Encima de su cabeza: solo su DETERMINACIÓN (desde la v10.1); sus frases cortas salen en la barra de acción. Observa antes de atacar, celebra un buen combo (con un giro o un festejo), se frustra cuando pierde, se vuelve **más serio y callado** en fases altas. **Cada evolución tiene su presentación**: título con el número y el nombre de la fase, sonido que sube de tono con la fase, gesto de evolución y capas de partículas que crecen con el tramo (anillo, chispas, columna); al cambiar de tramo cambia su aspecto; la fase 20 tiene su propio título y el aura.
 
 ### Rendimiento (celular)
 
@@ -127,6 +160,7 @@ Como mucho 3 Infinitos deciden en el mismo tick; sin nadie cerca decide cada 2 s
 6. `/claudenpc:fase 14`: ataque de maza desde arriba. `/claudenpc:fase 13`: TNT y cristal sin romper bloques.
 7. Derríbalo: mira las marcas rojas, construye el sello o espera al Claude rescatista (pon un Claude a menos de 48 bloques).
 8. Con dos jugadores (fase 4+): cambia al que tiene poca vida o al que más le pegó.
+9. Cinemática de la fase 20: cerca de él, `/claudenpc:fase 19` y luego `/claudenpc:fase 20`.
 
 Fuera del juego: `bash tests/simulador/correr.sh` (o `correr.sh 20` para 20 corridas) prueba la lógica en un simulador; no reemplaza probarlo en Minecraft.
 

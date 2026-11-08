@@ -31,6 +31,7 @@ export const INFINITO_CFG = {
 export const GANANCIA = {
   golpe: 1, critico: 2, combo: 2, bloqueo: 1.5, esquiva: 1, aguante: 3, patron: 4, estrategia: 4,
   remontada: 10, levantarse: 25, victoria: 20, monstruo: 3,
+  herido: 0.5, // por cada punto de daño que recibe: cuanto más le pegas, más determinado se vuelve
 };
 
 export const TAG_INF = {

@@ -171,7 +171,8 @@ export function elegirArma(s, c) {
   const pesos = ESTILOS[s.estilo]?.armas ?? {};
   /** @type {{ cat: string, w: number }[]} */
   const op = [];
-  const lejos = c.d > (puede(s, "alternarDistancia") ? 6.5 : 8);
+  // El arco solo cuando estás lejos de verdad (y no justo después de usarlo): si no, te persigue.
+  const lejos = c.d > (puede(s, "alternarDistancia") ? 12 : 18) && now() >= (s.cd.arco ?? 0);
   if (lejos && disponible(s, "arco")) {
     op.push({ cat: "arco", w: 1 + (c.r.escapista ? 0.6 : 0) });
     if (disponible(s, "ballesta")) op.push({ cat: "ballesta", w: c.rivalQuieto ? 1.7 : 0.8 });
@@ -196,7 +197,7 @@ export function elegirArma(s, c) {
 export function decidirArma(e, s, c) {
   const quiere = elegirArma(s, c);
   if (quiere === s.arma) return false;
-  const fuerte = (esDistancia(s.arma) && c.d < 4.5) || (esCuerpo(s.arma) && c.d > 12) || quiere === "maza"
+  const fuerte = (esDistancia(s.arma) && c.d < 8) || (esCuerpo(s.arma) && c.d > 14) || quiere === "maza"
     || (quiere === "hacha" && c.rivalCubre && puede(s, "aperturas"));
   if (!fuerte && now() - s.armaDesde < mantener(s)) return false;
   equipar(e, s, quiere);

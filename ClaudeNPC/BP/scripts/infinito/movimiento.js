@@ -9,6 +9,8 @@ import { puede } from "./fases.js";
 // pared de dos bloques en el camino, usa la caminata con búsqueda de camino de los Claudes.
 //
 // s.mov = { modo, obj, hasta, lado, radio, punto, correr, saltos, predecir, fin, luego }
+//   presion (obj, ideal): el modo normal de pelea. Corre y salta hacia el rival y, ya cerca,
+//     lo rodea cambiando de lado sin pararse nunca (como un jugador de PvP).
 //   quieto · hacia (obj, hasta) · lejos (obj, hasta) · lado (obj, lado, radio) · punto (punto)
 //
 // Técnicas (Bedrock no tiene las mismas teclas que Java, así que se adaptan):
@@ -87,7 +89,7 @@ export function moverTick(e, s) {
   const m = s.mov;
   if (!m) return;
   if (m.fin !== undefined && now() >= m.fin) {
-    s.mov = m.luego ? { ...m.luego, desde: now() } : { modo: "quieto" };
+    s.mov = m.luego ? { ...m.luego, desde: now() } : m.obj ? presion(s, m.obj) : { modo: "quieto" };
     return;
   }
   if (now() < (m.pausaHasta ?? 0)) {
@@ -109,6 +111,7 @@ export function moverTick(e, s) {
   let rapidez = RAPIDEZ.caminar;
   let meta;
   let dist = 0;
+  let acercandose = false;
   if (m.modo === "hacia") {
     meta = obj.location;
     if (m.predecir) {
@@ -119,7 +122,8 @@ export function moverTick(e, s) {
     const d = flat(e.location, meta);
     dist = d.d;
     if (dist <= (m.hasta ?? 2.6)) {
-      frenar(e, 0.5);
+      // Llegó: no se queda parado, sigue presionando (rodea al rival).
+      s.mov = presion(s, obj);
       mirarA(e, obj.getHeadLocation());
       return;
     }
@@ -129,6 +133,39 @@ export function moverTick(e, s) {
     if (m.zigzag) {
       const lado = Math.sin(now() / 7) > 0 ? 1 : -1;
       dir = norm(d.x - d.z * lado * 0.55, d.z + d.x * lado * 0.55);
+    }
+  } else if (m.modo === "presion") {
+    meta = obj.location;
+    if (m.predecir) {
+      const vo = obj.getVelocity();
+      const t2 = Math.min(10, flat(e.location, meta).d / RAPIDEZ.correr);
+      meta = { x: meta.x + vo.x * t2, y: meta.y, z: meta.z + vo.z * t2 };
+    }
+    const d = flat(e.location, meta);
+    dist = d.d;
+    const ideal = m.ideal ?? 2.6;
+    if (now() >= (m.cambio ?? 0)) {
+      // Cambia de lado de vez en cuando (más seguido e irregular en fases altas).
+      const [a, b] = m.cambioCada ?? [40, 80];
+      if (m.cambio !== undefined) m.lado = -(m.lado ?? 1);
+      m.cambio = now() + a + Math.floor(Math.random() * (b - a + 1));
+    }
+    if (dist > ideal + 0.7) {
+      // Se acerca corriendo (con un vaivén leve desde la fase 9, y zigzag contra arqueros).
+      dir = d;
+      const vaiven = m.zigzag ? 0.55 : m.vaiven ? 0.25 : 0;
+      if (vaiven) {
+        const l = Math.sin(now() / 7) > 0 ? 1 : -1;
+        dir = norm(d.x - d.z * l * vaiven, d.z + d.x * l * vaiven);
+      }
+      rapidez = RAPIDEZ.correr;
+      acercandose = true;
+    } else {
+      // Ya cerca: lo rodea corrigiendo la distancia. Nunca se queda quieto.
+      const lado = m.lado ?? 1;
+      const corr = Math.max(-0.7, Math.min(0.7, (dist - ideal) * 0.9));
+      dir = norm(-d.z * lado + d.x * corr, d.x * lado + d.z * corr);
+      rapidez = m.rapidezLado ?? RAPIDEZ.lado;
     }
   } else if (m.modo === "lejos") {
     const d = flat(obj.location, e.location);
@@ -152,7 +189,7 @@ export function moverTick(e, s) {
     dist = d.d;
     if (dist <= (m.hasta ?? 0.6)) {
       frenar(e);
-      s.mov = m.luego ? { ...m.luego, desde: now() } : { modo: "quieto", obj };
+      s.mov = m.luego ? { ...m.luego, desde: now() } : obj ? presion(s, obj) : { modo: "quieto" };
       return;
     }
     dir = d;
@@ -166,16 +203,16 @@ export function moverTick(e, s) {
   const enAgua = e.isInWater;
   // Obstáculos.
   if (!enAgua && pared(e, dir)) {
-    if (meta && (m.modo === "hacia" || m.modo === "punto")) {
+    if (meta && (m.modo === "hacia" || m.modo === "punto" || (m.modo === "presion" && acercandose))) {
       caminarA(e, meta, rapidez);
       return;
     }
-    if (m.modo === "lado") m.lado = -m.lado;
+    if (m.modo === "lado" || m.modo === "presion") m.lado = -(m.lado ?? 1);
     frenar(e);
     return;
   }
   if (!enAgua && e.isOnGround && !m.permiteCaer && precipicio(e, dir)) {
-    if (m.modo === "lado") m.lado = -m.lado;
+    if (m.modo === "lado" || m.modo === "presion") m.lado = -(m.lado ?? 1);
     frenar(e, 1);
     return;
   }
@@ -189,10 +226,14 @@ export function moverTick(e, s) {
       if (esAgua(blockAt(e.dimension, { x: e.location.x, y: e.location.y + 1.5, z: e.location.z }))) vy = 0.05;
     } else if (e.isOnGround && escalon(e, dir)) {
       vy = 0.42; // sube el escalón saltando, como un jugador
-    } else if (e.isOnGround && m.saltos && dist > 5 && now() >= (s.cd.saltoMov ?? 0)) {
-      vy = 0.42; // sprint-jump para perseguir
-      impulso = 1.25;
-      s.cd.saltoMov = now() + 13;
+    } else if (e.isOnGround && m.saltos && (m.modo !== "presion" || acercandose) && dist > (m.saltoDesde ?? 3.6)
+      && now() >= (s.cd.saltoMov ?? 0)) {
+      // Corre saltando hacia el rival (sprint-jump), como un jugador.
+      s.cd.saltoMov = now() + (m.saltoCada ?? 12);
+      if (Math.random() < (m.saltoProb ?? 1)) {
+        vy = 0.42;
+        impulso = 1.25;
+      }
     }
     impulse(e, { x: dir.x * rapidez * k * impulso - v.x * freno, y: vy, z: dir.z * rapidez * k * impulso - v.z * freno });
   } catch {
@@ -202,19 +243,51 @@ export function moverTick(e, s) {
   if (obj) mirarA(e, obj.getHeadLocation());
   else if (meta) mirarA(e, { x: meta.x, y: e.location.y + 1.6, z: meta.z });
   // Sprint: corriendo hacia el rival 3 ticks seguidos cuenta como golpe corriendo.
-  if (m.modo === "hacia" && m.correr && e.isOnGround) {
+  if (((m.modo === "hacia" && m.correr) || acercandose) && e.isOnGround) {
     if (!s.sprintDesde) s.sprintDesde = now();
     if (now() - s.sprintDesde >= 3) s.sprint = true;
-  } else if (m.modo !== "hacia") {
+  } else if (m.modo !== "hacia" && !acercandose) {
     s.sprintDesde = 0;
   }
+}
+
+// Parámetros de la presión según la fase: el NOOB se pega torpemente (salta a lo loco y casi
+// no rodea); desde la 7 rodea rápido y cambia de lado; desde la 9 es irregular.
+export function opcionesPresion(s) {
+  const n = s.fase;
+  return {
+    ideal: n <= 1 ? 1.4 : n < 7 ? 2.2 : 2.7,
+    rapidezLado: n <= 1 ? 0.06 : n < 7 ? 0.12 : 0.18,
+    saltos: true,
+    saltoDesde: 3.6,
+    saltoProb: n <= 1 ? 0.9 : n < 5 ? 0.95 : 1,
+    saltoCada: n <= 1 ? 14 : 12,
+    predecir: puede(s, "persecucionInteligente"),
+    vaiven: puede(s, "cambiosDireccion"),
+    cambioCada: n < 7 ? [40, 90] : n < 9 ? [24, 50] : [12, 32],
+  };
+}
+
+export function presion(s, obj, extra = {}) {
+  return { modo: "presion", obj, lado: s.lado ?? 1, ...opcionesPresion(s), ...extra, desde: now() };
+}
+
+export function presionar(s, obj, extra = {}) {
+  const m = s.mov;
+  // Si ya está presionando al mismo rival, solo actualiza (no reinicia el cambio de lado).
+  if (m?.modo === "presion" && m.obj === obj && !m.fin) {
+    Object.assign(m, opcionesPresion(s), extra);
+    return;
+  }
+  s.mov = presion(s, obj, extra);
 }
 
 // --- Técnicas ---------------------------------------------------------------------------
 
 export function acercar(s, obj, op = {}) {
-  mover(s, "hacia", { obj, hasta: op.hasta ?? 2.6, correr: op.correr ?? puede(s, "correrAtacar"),
-    saltos: op.saltos ?? puede(s, "perseguir"), predecir: puede(s, "persecucionInteligente"), zigzag: op.zigzag });
+  const o = opcionesPresion(s);
+  mover(s, "hacia", { obj, hasta: op.hasta ?? 2.6, correr: op.correr ?? true, saltos: op.saltos ?? true,
+    saltoDesde: o.saltoDesde, saltoProb: o.saltoProb, saltoCada: o.saltoCada, predecir: o.predecir, zigzag: op.zigzag });
 }
 
 export function perseguir(s, obj) {
@@ -227,14 +300,14 @@ export function retroceder(s, obj, hasta = 9) {
 
 export function strafe(s, obj, lado, ticks = 10, radio) {
   s.lado = lado;
-  mover(s, "lado", { obj, lado, radio, fin: now() + ticks, luego: { modo: "quieto", obj } });
+  mover(s, "lado", { obj, lado, radio, fin: now() + ticks, luego: presion(s, obj) });
 }
 
 // W-tap / sprint reset: frena un momento y vuelve a correr hacia el rival.
 export function wtap(e, s, obj) {
   s.sprint = false;
   s.sprintDesde = 0;
-  mover(s, "hacia", { obj, hasta: 1.2, correr: true, pausaHasta: now() + 2, fin: now() + 7, luego: { modo: "quieto", obj } });
+  mover(s, "hacia", { obj, hasta: 1.2, correr: true, pausaHasta: now() + 2, fin: now() + 7, luego: presion(s, obj) });
 }
 
 // S-tap: un paso atrás justo después del golpe (para no recibir el contragolpe).
@@ -246,7 +319,7 @@ export function stap(e, s, obj) {
   } catch {
     // Sin paso.
   }
-  mover(s, "quieto", { obj, fin: now() + 4, luego: { modo: "hacia", obj, hasta: 2.6, correr: true } });
+  mover(s, "quieto", { obj, fin: now() + 2, luego: presion(s, obj) });
 }
 
 // Jump reset: al recibir un golpe salta en ese mismo tick y frena el empuje horizontal.
@@ -312,7 +385,7 @@ export function reposicionar(e, s, obj) {
       }
     }
     const y = alturaLibre(e, mejor) ?? e.location.y;
-    mover(s, "punto", { obj, punto: { x: mejor.x, y, z: mejor.z }, hasta: 0.8, correr: true, fin: now() + 30, luego: { modo: "quieto", obj } });
+    mover(s, "punto", { obj, punto: { x: mejor.x, y, z: mejor.z }, hasta: 0.8, correr: true, fin: now() + 30, luego: presion(s, obj) });
     return true;
   } catch {
     return false;
@@ -337,7 +410,7 @@ export function buscarAltura(e, s, obj) {
   for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
     const p = { x: Math.floor(e.location.x) + dx + 0.5, z: Math.floor(e.location.z) + dz + 0.5 };
     if (alturaLibre(e, p) === y0 + 1) {
-      mover(s, "punto", { obj, punto: { x: p.x, y: y0 + 1, z: p.z }, hasta: 0.4, fin: now() + 20, luego: { modo: "quieto", obj } });
+      mover(s, "punto", { obj, punto: { x: p.x, y: y0 + 1, z: p.z }, hasta: 0.4, fin: now() + 20, luego: presion(s, obj) });
       return true;
     }
   }

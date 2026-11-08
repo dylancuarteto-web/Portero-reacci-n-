@@ -1,13 +1,11 @@
 import { vida } from "../dano.js";
-import { now } from "../util.js";
+import { avisar, now } from "../util.js";
 import { INFINITO_CFG, NOMBRE_INFINITO } from "./config.js";
-import { progreso } from "./determinacion.js";
-import { fase, tramo } from "./fases.js";
 
 // Personalidad: observa antes de atacar, celebra un buen combo, cambia de actitud cuando va
 // perdiendo, muestra confianza y se vuelve más serio y callado cuanto más alta es su fase.
-// Habla con frases cortas encima de la cabeza, donde también se ven su fase y su
-// determinación.
+// Encima de su cabeza solo se ve la DETERMINACIÓN; sus frases cortas salen en la barra de
+// acción de los jugadores cercanos.
 
 const FRASES = {
   observar: [["Hola... ¿peleamos?", "A ver qué haces."], ["Te estoy mirando.", "Muéstrame qué sabes."], ["Analizando.", "..."]],
@@ -25,7 +23,6 @@ const FRASES = {
 };
 
 const banda = (n) => (n >= 16 ? 2 : n >= 6 ? 1 : 0);
-const COLOR_TRAMO = ["§f", "§e", "§6", "§c", "§4§l"];
 
 export function decir(e, s, situacion, forzar = false) {
   if (!INFINITO_CFG.frases) return;
@@ -39,7 +36,8 @@ export function decir(e, s, situacion, forzar = false) {
   s.frase = txt;
   s.fraseHasta = now() + 50;
   s.cd.frase = now() + (forzar ? 20 : 80);
-  actualizarNombre(e, s, true);
+  // Las frases salen abajo, en la barra de acción de los que están cerca (no encima de él).
+  avisar(e.dimension, e.location, `§c${NOMBRE_INFINITO}: §f${txt}`, 16);
 }
 
 // Actitud según cómo va la pelea.
@@ -64,26 +62,11 @@ export function actitud(e, s) {
   return a;
 }
 
-function barra(p) {
-  const n = Math.round(p * 8);
-  return `§6${"|".repeat(n)}§8${"|".repeat(8 - n)}`;
-}
-
-// Nombre de 2 o 3 líneas: (frase) / nombre / fase y determinación.
+// Encima de la cabeza solo se ve su DETERMINACIÓN (nada más).
 export function actualizarNombre(e, s, ya = false) {
   if (!ya && now() < (s.cd.nombre ?? 0)) return;
   s.cd.nombre = now() + 10;
-  const f = fase(s.fase);
-  const t = tramo(s.fase);
-  const det = Math.floor(s.determinacion);
-  const lineaFase = s.fase >= 20
-    ? `§4§lINFINITE DETERMINATION §r§c${det}`
-    : `§7F${s.fase} §f${f.nombre} §8· §6DET ${det} ${barra(progreso(s))}`;
-  const estado = s.etapa === "derribado" ? "\n§c§lDERRIBADO §r§7(¡séllalo!)"
-    : s.etapa === "cargado" ? "\n§7lo llevan a recuperarse"
-      : s.etapa === "recuperando" ? "\n§7recuperándose..." : "";
-  const frase = now() < s.fraseHasta && s.frase ? `§f«${s.frase}»\n` : "";
-  const texto = `${frase}${COLOR_TRAMO[t]}${NOMBRE_INFINITO}§r\n${lineaFase}${estado}`;
+  const texto = `§c§lDETERMINACIÓN §r§e${Math.floor(s.determinacion)}`;
   if (texto === s.nombre) return;
   s.nombre = texto;
   try {

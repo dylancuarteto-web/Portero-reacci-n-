@@ -9,7 +9,7 @@ import { puede } from "./fases.js";
 import { alcance, cayendo, distanciaA, enAlcance, golpear, impactoMaza, listoParaGolpear } from "./golpe.js";
 import { resultado, rival } from "./memoria.js";
 import {
-  acercar, buscarAltura, esquivar, mover, perseguir, reposicionar, retroceder, saltar, stap, strafe, wtap,
+  acercar, buscarAltura, esquivar, mover, perseguir, presion, presionar, reposicionar, retroceder, saltar, stap, strafe, wtap,
 } from "./movimiento.js";
 import { decir } from "./personalidad.js";
 import {
@@ -50,7 +50,10 @@ accion("golpe", ({ e, s, obj, c, paso }) => {
     acercar(s, obj, { hasta: alcance(s) - 0.4, correr: true });
     return SEGUIR;
   }
-  if (!listoParaGolpear(s)) return SEGUIR;
+  if (!listoParaGolpear(s)) {
+    if (!s.mov || s.mov.modo === "quieto") presionar(s, obj); // espera su golpe moviéndose
+    return SEGUIR;
+  }
   contar(c, golpear(e, s, obj, { tipo: paso.tipo }));
   return listo(1);
 });
@@ -393,7 +396,7 @@ registrarCombo({ id: "cadena_guerrero", nombre: "Cadena del guerrero", fase: 5, 
 registrarCombo({ id: "finta_retrasada", nombre: "Finta y golpe retrasado", fase: 6, rango: [1.5, 4], etiquetas: ["finta", "contra", "tiempo"],
   pasos: ["finta", { a: "esperar", ticks: 5 }, "golpe"] });
 registrarCombo({ id: "intercambio", nombre: "Intercambio y salida", fase: 6, peso: 0.9, rango: [0, 3.5], etiquetas: ["stap", "contra"],
-  pasos: ["golpe", { a: "retroceder", hasta: 4 }, "acercar", "golpe"] });
+  pasos: ["golpe", "stap", { a: "strafe", ticks: 8 }, "golpe"] });
 registrarCombo({ id: "wtap_cadena", nombre: "W-tap en cadena", fase: 7, peso: 1.2, rango: [0, 4], armas: ["espada"], etiquetas: ["wtap", "rapido", "1.8", "espada"],
   pasos: [E, "golpe", "wtap", "golpe", "wtap", "golpe"] });
 registrarCombo({ id: "stap_espaciado", nombre: "S-tap", fase: 7, rango: [0, 3.5], etiquetas: ["stap", "antiSalto", "contra"],
@@ -412,7 +415,7 @@ registrarCombo({ id: "lava_corte", nombre: "Lava de control", fase: 11, peso: 0.
   pasos: ["lava", { a: "retroceder", hasta: 8 }, { a: "disparar", arma: "arco" }] });
 registrarCombo({ id: "ballesta_castigo", nombre: "Ballesta y castigo", fase: 12, rango: [5, 20], armas: ["ballesta", "espada"], etiquetas: ["distancia", "cierre"],
   si: (x) => x.rivalQuieto, pasos: [{ a: "disparar", arma: "ballesta" }, E, "perseguir", "golpe"] });
-registrarCombo({ id: "alternar_distancia", nombre: "Alternar distancia", fase: 12, peso: 0.9, rango: [0, 4], armas: ["arco", "espada"], etiquetas: ["distancia", "stap"],
+registrarCombo({ id: "alternar_distancia", nombre: "Alternar distancia", fase: 12, peso: 0.5, rango: [0, 4], armas: ["arco", "espada"], etiquetas: ["distancia", "stap"],
   pasos: ["golpe", { a: "retroceder", hasta: 8 }, { a: "disparar", arma: "arco" }, E, "perseguir", "golpe"] });
 registrarCombo({ id: "tnt_zona", nombre: "TNT y presión", fase: 13, peso: 0.8, rango: [3, 8], armas: ["tnt", "arco", "espada"], etiquetas: ["explosion", "control"],
   pasos: ["tnt", { a: "retroceder", hasta: 8 }, { a: "disparar", arma: "arco" }, E] });
@@ -528,6 +531,8 @@ export function terminarCombo(e, s, exito) {
   s.tensando = false;
   if (s.escudoArriba && now() >= s.escudoHasta) bajarEscudo(e, s);
   if (!c) return;
+  // Al terminar un combo vuelve a presionar (no se queda alejándose ni quieto).
+  if (c.obj?.isValid && ["lejos", "quieto", "lado", "punto"].includes(s.mov?.modo) && !s.mov.fin) s.mov = presion(s, c.obj);
   // Si el combo terminó al rival, salió bien aunque no llegara al último paso.
   if (!exito && c.aciertos > 0 && murio(c.obj)) exito = true;
   s.cd.combo = now() + Math.max(8, 46 - s.fase * 2);

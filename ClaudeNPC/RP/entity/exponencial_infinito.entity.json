@@ -13,6 +13,7 @@
         "t2": "textures/entity/claudenpc/infinito_2",
         "t3": "textures/entity/claudenpc/infinito_3",
         "t4": "textures/entity/claudenpc/infinito_4",
+        "t5": "textures/entity/claudenpc/infinito_saitama",
         "extra": "textures/entity/claudenpc/infinito_extra"
       },
       "geometry": {

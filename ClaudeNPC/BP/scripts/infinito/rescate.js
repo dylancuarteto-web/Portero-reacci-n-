@@ -25,7 +25,9 @@ import { vfxAlma, vfxCura, vfxEvolucion, vfxMarcas, vfxSello } from "./vfx.js";
 //     para siempre.
 //   - RESCATE: a los 12 s, el Claude más cercano (o uno que llega corriendo si no hay
 //     ninguno a 48 bloques) lo carga al hombro y lo lleva a su casa o a un sitio lejos de los
-//     jugadores. Si golpeas fuerte al rescatista, lo suelta y vuelve a correr el tiempo.
+//     jugadores. Si el que venía muere o se pierde, viene otro. Si golpeas fuerte al
+//     rescatista, lo suelta y vuelve a correr el tiempo. Solo si de verdad no puede venir
+//     nadie, se recupera ahí mismo a los 30 s.
 //   - RECUPERACIÓN: sentado 30 s, vuelve con toda la vida y +25 de determinación.
 
 const TAG_SELLADO = "claudenpc_sellado";
@@ -171,12 +173,19 @@ export function tickEtapa(e, s) {
     const faltan = faltanDelSello(e.dimension, d.base);
     if (!faltan.length) return sellar(e, s);
     if (t % 20 < 10) vfxMarcas(s, e.dimension, faltan);
-    if (!d.llamado && t >= INFINITO_CFG.rescateA) {
-      d.llamado = true;
-      llamarRescatista(e, s);
+    // El que venía ya no está (murió, se descargó o se rindió): que venga otro.
+    if (d.llamado && d.rescatistaId && !enCamino(d.rescatistaId, e.id)) {
+      d.rescatistaId = undefined;
+      d.llamado = false;
     }
-    // Nadie pudo venir (o no llega): se recupera ahí mismo.
-    const tope = d.rescatistaId ? INFINITO_CFG.ventanaSello + 400 : INFINITO_CFG.ventanaSello;
+    if (!d.llamado && t >= INFINITO_CFG.rescateA && now() >= (d.reintento ?? 0) && (d.llamadas ?? 0) < 6) {
+      d.llamadas = (d.llamadas ?? 0) + 1;
+      d.llamado = llamarRescatista(e, s);
+      if (d.llamado) d.alguien = true;
+      else d.reintento = now() + 100; // nadie pudo venir: lo intenta otra vez en 5 s
+    }
+    // Se recupera ahí mismo solo si nadie pudo venir; si viene uno, le da tiempo de sobra.
+    const tope = d.alguien ? INFINITO_CFG.ventanaSello * 4 : INFINITO_CFG.ventanaSello;
     if (t >= tope) empezarRecuperacion(e, s, d.base);
     return;
   }
@@ -230,7 +239,19 @@ function libre(npc) {
   return !s || !(s.fusion || s.robot || s.clase || s.multiObra || s.reparacion || s.plataforma || s.robotObra || s.rescate || s.bote);
 }
 
-// Un Claude que llega corriendo desde lejos (lado contrario al jugador más cercano).
+// ¿El rescatista sigue existiendo y sigue yendo por este Infinito?
+function enCamino(id, infinitoId) {
+  let npc;
+  try {
+    npc = world.getEntity(id);
+  } catch {
+    npc = undefined;
+  }
+  return !!npc?.isValid && estados.get(id)?.rescate?.infinitoId === infinitoId;
+}
+
+// Un Claude que llega corriendo desde lejos (lado contrario al jugador más cercano; si ahí no
+// hay suelo, por los costados o por delante; y si no hay sitio en ningún lado, a su lado).
 function traerRescatista(e) {
   let dir = { x: 1, z: 0 };
   try {
@@ -239,13 +260,28 @@ function traerRescatista(e) {
   } catch {
     // Sin jugadores.
   }
-  for (const k of [22, 16, 10]) {
-    const x = e.location.x + dir.x * k;
-    const z = e.location.z + dir.z * k;
-    const top = superficie(e.dimension, x, z);
-    if (!top || top.isLiquid || Math.abs(top.location.y + 1 - e.location.y) > 12) continue;
+  const dirs = [dir, { x: -dir.z, z: dir.x }, { x: dir.z, z: -dir.x }, { x: -dir.x, z: -dir.z }];
+  for (const v of dirs) {
+    for (const k of [22, 16, 10]) {
+      const x = e.location.x + v.x * k;
+      const z = e.location.z + v.z * k;
+      const top = superficie(e.dimension, x, z);
+      if (!top || top.isLiquid || Math.abs(top.location.y + 1 - e.location.y) > 12) continue;
+      try {
+        const npc = e.dimension.spawnEntity(NPC, { x: Math.floor(x) + 0.5, y: top.location.y + 1, z: Math.floor(z) + 0.5 });
+        burst(npc, PARTICLES.teletransporte);
+        return npc;
+      } catch {
+        // Sin sitio.
+      }
+    }
+  }
+  // Último recurso (Nether, mar, acantilados...): aparece a su lado.
+  for (const [dx, dz] of [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5], [0, 0]]) {
+    const pos = { x: e.location.x + dx, y: e.location.y, z: e.location.z + dz };
     try {
-      const npc = e.dimension.spawnEntity(NPC, { x: Math.floor(x) + 0.5, y: top.location.y + 1, z: Math.floor(z) + 0.5 });
+      if ((dx || dz) && !e.dimension.getBlock(piso(pos))?.isAir) continue;
+      const npc = e.dimension.spawnEntity(NPC, pos);
       burst(npc, PARTICLES.teletransporte);
       return npc;
     } catch {
@@ -341,7 +377,8 @@ function soltar(inf, s, npc) {
   }
   s.etapa = "derribado";
   s.carga = undefined;
-  s.derribo = { t0: now(), base: basePies(inf), rescatistaId: npc?.isValid ? npc.id : undefined, llamado: !!npc?.isValid, recalcular: true };
+  s.derribo = { t0: now(), base: basePies(inf), rescatistaId: npc?.isValid ? npc.id : undefined, llamado: !!npc?.isValid,
+    alguien: !!npc?.isValid, recalcular: true };
   pose(inf, s, "derrota");
   sound(inf, "random.hurt", 0.8, 0.9);
   titulo(inf, "§c¡Lo soltó!", "§7Séllalo ahora, antes de que lo vuelvan a levantar");

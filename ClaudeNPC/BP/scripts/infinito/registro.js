@@ -37,7 +37,7 @@ export function guardar(s) {
   if (s.etapa === "derribado" && s.derribo) t = now() - s.derribo.t0;
   if (s.etapa === "recuperando" && s.recuperacion) t = now() - s.recuperacion.t0;
   const datos = {
-    v: 1, det: Math.round(s.determinacion * 100) / 100, exp: Math.round(s.experiencia), est: s.estadisticas,
+    v: 1, det: s.determinacion, exp: Math.round(s.experiencia), est: s.estadisticas,
     mem: resumen(s), etapa: s.etapa, estilo: s.estilo, t, base: s.derribo?.base ?? s.recuperacion?.base,
   };
   try {
