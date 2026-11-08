@@ -376,7 +376,6 @@ GESTOS_CLAUDE = ("espadazo", "espadazo2", "hachazo", "estocada", "bloqueo", "arc
 
 def entidades(anims):
     pieles = {f"t{i}": f"textures/entity/claudenpc/infinito_{i}" for i in range(5)}
-    pieles["t5"] = "textures/entity/claudenpc/infinito_saitama"  # cara de la cinemática de la fase 20
     claude = json.loads((RP / "entity/claude.entity.json").read_text(encoding="utf-8"))["minecraft:client_entity"]["description"]["animations"]
     animaciones = {k: claude[k] for k in ("mirar", "caminar", "respirar", "parpadeo")}
     animaciones.update({k: claude[k] for k in GESTOS_CLAUDE if k in claude})
@@ -396,13 +395,13 @@ def entidades(anims):
         "spawn_egg": {"base_color": "#2A0A10", "overlay_color": "#FF3048"}}}})
     write_json(RP / "render_controllers/infinito.render_controllers.json", {"format_version": "1.8.0", "render_controllers": {
         "controller.render.claudenpc_infinito": {
-            "arrays": {"textures": {"Array.pieles": [f"Texture.t{i}" for i in range(6)]}},
-            "geometry": "Geometry.default", "textures": ["Array.pieles[query.skin_id == 1 ? 5 : query.variant]"],
+            "arrays": {"textures": {"Array.pieles": [f"Texture.t{i}" for i in range(5)]}},
+            "geometry": "Geometry.default", "textures": ["Array.pieles[query.variant]"],
             "materials": [{"*": "Material.default"}, {"emblema": "Material.glow"}, {"ojos": "Material.glow"}],
             "part_visibility": [{"*": True}, {"herr_*": False}]},
         "controller.render.claudenpc_infinito_extra": {
             "geometry": "Geometry.extra", "textures": ["Texture.extra"], "materials": [{"*": "Material.default"}],
-            "part_visibility": [{"*": True}, {"cinta*": "query.variant >= 1 && query.skin_id != 1"}, {"bufanda*": "query.variant >= 2"},
+            "part_visibility": [{"*": True}, {"cinta*": "query.variant >= 1"}, {"bufanda*": "query.variant >= 2"},
                                 {"hombrera*": "query.variant >= 3"}]},
     }})
     # Comportamiento.
@@ -417,10 +416,6 @@ def entidades(anims):
         eventos[f"claudenpc:aura_{i}"] = {"add": {"component_groups": [f"claudenpc:aura_{i}"]},
                                          "remove": {"component_groups": [f"claudenpc:aura_{1 - i}"]}}
     eventos["minecraft:entity_spawned"] = {"add": {"component_groups": ["claudenpc:nivel_0", "claudenpc:aura_0"]}}
-    # Cara de la cinemática de la fase 20 (query.skin_id 1); sin el grupo, skin_id es 0.
-    grupos["claudenpc:cara_1"] = {"minecraft:skin_id": {"value": 1}}
-    eventos["claudenpc:cara_1"] = {"add": {"component_groups": ["claudenpc:cara_1"]}}
-    eventos["claudenpc:cara_0"] = {"remove": {"component_groups": ["claudenpc:cara_1"]}}
     eventos["claudenpc:bloqueo"] = {}
     eventos["claudenpc:golpe_fatal"] = {}
     trig, f_tag = v9.trig, v9.f_tag
@@ -479,18 +474,17 @@ def textos():
 
 
 # =============================================================================
-# v10.1: cinemática de la fase 20. Arte propio, dibujado aquí con formas simples (estilo
-# garabato del meme de la gráfica de poder): no se copian imágenes de ningún anime.
-#   - cara estilo Saitama para el Infinito (calvo, ojos aburridos);
-#   - máscara estilo Garou para el jugador (máscara blanca con orejas puntiagudas);
-#   - partículas: fondo con cuadrícula y ejes, trazo de las curvas, caras, destello, energía
-#     roja y el texto "TOP 1" rojo con borde negro (sin marco).
+# Cinemática de la fase 20 (v10.1, cabezas reales desde la v10.2). Arte propio, dibujado aquí
+# con formas simples (estilo del meme de la gráfica de poder): no se copian imágenes de ningún
+# anime.
+#   - partículas: fondo con cuadrícula y ejes, trazo de las curvas, destello, energía roja y
+#     el texto "TOP 1" rojo con borde negro (sin marco);
+#   - animaciones de cabeza grande: en la gráfica van las cabezas de verdad del Infinito
+#     (Claude) y del jugador (con su propia skin). La animación agranda la cabeza y la baja
+#     hasta que encierra todo el cuerpo, así solo se ve la cabeza.
 # =============================================================================
 from PIL import ImageDraw, ImageFont, ImageFilter
 
-PIEL_S = (246, 214, 182)
-PIEL_S2 = (222, 184, 150)
-TINTA = (18, 14, 16)
 CINE = {"dg": 20, "db": 26, "w": 16, "h": 9, "bw": 56, "bh": 28}  # los mismos valores que cinematica.js
 
 
@@ -502,162 +496,6 @@ def _fuente(tam):
         except OSError:
             continue
     return ImageFont.load_default()
-
-
-def cara_saitama():
-    img = piel(4).copy()  # el cuerpo de la fase 20
-    px = img.load()
-    # Cabeza (caja 8x8x8 con UV en 0,0): calva y de piel clara en todas sus caras.
-    for y in range(0, 16):
-        for x in range(0, 32):
-            if y < 8 and (x < 8 or x >= 24):
-                continue
-            px[x, y] = PIEL_S + (255,)
-    for x in range(0, 32):
-        px[x, 15] = PIEL_S2 + (255,)  # sombra bajo la barbilla y los lados
-    for (x, y) in ((10, 2), (11, 2), (10, 3)):
-        px[x, y] = (255, 238, 220, 255)  # brillo de la calva
-    for base in (0, 16):  # orejas en los costados
-        for (x, y) in ((3, 11), (4, 11), (3, 12), (4, 12), (3, 13)):
-            px[base + x, y] = PIEL_S2 + (255,)
-    for x in (11, 12):  # boca: una rayita
-        px[x, 14] = TINTA + (255,)
-    # Ojos (cubos de 2x3 delante de la cara; alfa 255 = no brillan): párpado caído y pupila.
-    ou, ov, _, _ = ba.REG["ojo"]
-    for xx in range(2):
-        px[ou + xx, ov] = TINTA + (255,)
-        px[ou + xx, ov + 2] = PIEL_S + (255,)
-    px[ou, ov + 1] = (250, 250, 250, 255)
-    px[ou + 1, ov + 1] = TINTA + (255,)
-    lu, lv = ba.REG["ojo_lado"][:2]
-    px[lu, lv] = PIEL_S + (255,)
-    return img
-
-
-def _mascara_textura():
-    # 128x128 para un modelo de 64x64 unidades (2 píxeles por unidad).
-    img = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    blanco, gris, sombra = (242, 242, 240, 255), (214, 214, 214, 255), (176, 176, 182, 255)
-
-    def caja(u, v, w, h, prof):
-        # Caras de un box UV (u, v en unidades) pintadas de blanco con borde gris.
-        caras = {"up": (u + prof, v, w, prof), "down": (u + prof + w, v, w, prof), "east": (u, v + prof, prof, h),
-                 "north": (u + prof, v + prof, w, h), "west": (u + prof + w, v + prof, prof, h), "south": (u + 2 * prof + w, v + prof, w, h)}
-        for nombre, (x, y, ww, hh) in caras.items():
-            d.rectangle([x * 2, y * 2, (x + ww) * 2 - 1, (y + hh) * 2 - 1], fill=blanco if nombre in ("north", "up") else gris)
-            d.rectangle([x * 2, y * 2, (x + ww) * 2 - 1, (y + hh) * 2 - 1], outline=sombra)
-        return caras
-
-    caras = caja(0, 0, 9, 9, 9)
-    # Frente: ojos negros rasgados (enojados), boca con colmillos y una raya roja en la frente.
-    x0, y0, _, _ = caras["north"]
-    X, Y = x0 * 2, y0 * 2  # esquina superior izquierda en píxeles (18x18 px)
-    d.polygon([(X + 2, Y + 6), (X + 8, Y + 8), (X + 7, Y + 10), (X + 3, Y + 9)], fill=(16, 12, 14, 255))
-    d.polygon([(X + 16, Y + 6), (X + 10, Y + 8), (X + 11, Y + 10), (X + 15, Y + 9)], fill=(16, 12, 14, 255))
-    d.line([(X + 4, Y + 14), (X + 14, Y + 14)], fill=(16, 12, 14, 255), width=1)
-    for k in range(5):
-        cx = X + 5 + k * 2
-        d.polygon([(cx, Y + 14), (cx + 1, Y + 16), (cx + 2, Y + 14)], fill=(16, 12, 14, 255))
-    d.line([(X + 8, Y + 2), (X + 9, Y + 5), (X + 10, Y + 2)], fill=(200, 24, 36, 255), width=1)
-    # Orejas: blanco (40,0) y el interior rosado (44,0).
-    d.rectangle([80, 0, 83, 3], fill=blanco)
-    d.rectangle([88, 0, 91, 3], fill=(236, 150, 160, 255))
-    return img
-
-
-def _oreja(lado):
-    # Tres cubos escalonados: se ve puntiaguda desde cualquier lado.
-    blanco = {"uv": [40, 0], "uv_size": [2, 2]}
-    rosa = {"uv": [44, 0], "uv_size": [2, 2]}
-    cubos = []
-    for (ancho, alto, prof, y) in ((3, 2, 2, 32.5), (2, 1.5, 1.5, 34.5), (1, 1.25, 1, 36)):
-        x = 3 - ancho / 2 if lado > 0 else -3 - ancho / 2
-        caras = {f: dict(blanco) for f in ("north", "south", "east", "west", "up", "down")}
-        if ancho == 3:
-            caras["north"] = dict(rosa)
-        cubos.append({"origin": [x, y, -prof / 2], "size": [ancho, alto, prof], "uv": caras})
-    return cubos
-
-
-def mascara_garou():
-    geo = {"format_version": "1.16.0", "minecraft:geometry": [{
-        "description": {"identifier": "geometry.claudenpc.mascara_garou", "texture_width": 64, "texture_height": 64,
-                        "visible_bounds_width": 2, "visible_bounds_height": 3, "visible_bounds_offset": [0, 1.5, 0]},
-        "bones": [
-            {"name": "head", "pivot": [0, 24, 0]},
-            {"name": "mascara", "parent": "head", "pivot": [0, 24, 0],
-             "cubes": [{"origin": [-4.5, 23.5, -4.5], "size": [9, 9, 9], "uv": [0, 0]}]},
-            {"name": "oreja_der", "parent": "mascara", "pivot": [-3, 32.5, 0], "rotation": [0, 0, 14], "cubes": _oreja(-1)},
-            {"name": "oreja_izq", "parent": "mascara", "pivot": [3, 32.5, 0], "rotation": [0, 0, -14], "cubes": _oreja(1)},
-        ]}]}
-    write_json(RP / "models/entity/mascara_garou.geo.json", geo)
-    (RP / "textures/models/claudenpc").mkdir(parents=True, exist_ok=True)
-    _mascara_textura().save(RP / "textures/models/claudenpc/mascara_garou.png")
-    # Ícono 16x16 (para el inventario si el jugador se queda con ella).
-    ico = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-    d = ImageDraw.Draw(ico)
-    d.polygon([(10, 22), (16, 4), (24, 18)], fill=(242, 242, 240, 255), outline=(30, 30, 34, 255))
-    d.polygon([(54, 22), (48, 4), (40, 18)], fill=(242, 242, 240, 255), outline=(30, 30, 34, 255))
-    d.ellipse([8, 12, 56, 60], fill=(242, 242, 240, 255), outline=(30, 30, 34, 255), width=3)
-    d.polygon([(16, 30), (29, 34), (27, 40), (18, 37)], fill=(16, 12, 14, 255))
-    d.polygon([(48, 30), (35, 34), (37, 40), (46, 37)], fill=(16, 12, 14, 255))
-    d.line([(22, 49), (42, 49)], fill=(16, 12, 14, 255), width=3)
-    ico.resize((16, 16), Image.LANCZOS).save(RP / "textures/items/mascara_garou.png")
-    at = RP / "textures/item_texture.json"
-    datos = json.loads(at.read_text(encoding="utf-8"))
-    datos["texture_data"]["claudenpc_mascara_garou"] = {"textures": "textures/items/mascara_garou"}
-    write_json(at, datos)
-    (RP / "attachables").mkdir(parents=True, exist_ok=True)
-    write_json(RP / "attachables/mascara_garou.attachable.json", {"format_version": "1.10.0", "minecraft:attachable": {"description": {
-        "identifier": "claudenpc:mascara_garou",
-        "materials": {"default": "entity_alphatest"},
-        "textures": {"default": "textures/models/claudenpc/mascara_garou"},
-        "geometry": {"default": "geometry.claudenpc.mascara_garou"},
-        "scripts": {"parent_setup": "variable.helmet_layer_visible = 0.0;"},
-        "render_controllers": ["controller.render.claudenpc_mascara_garou"]}}})
-    write_json(RP / "render_controllers/mascara_garou.render_controllers.json", {"format_version": "1.8.0", "render_controllers": {
-        "controller.render.claudenpc_mascara_garou": {
-            "geometry": "Geometry.default", "materials": [{"*": "Material.default"}], "textures": ["Texture.default"],
-            "part_visibility": [{"*": "!(c.item_slot == 'main_hand' || c.item_slot == 'off_hand')"}]}}})
-    write_json(BP / "items/mascara_garou.json", {"format_version": "1.21.40", "minecraft:item": {
-        "description": {"identifier": "claudenpc:mascara_garou", "menu_category": {"category": "equipment"}},
-        "components": {
-            "minecraft:icon": "claudenpc_mascara_garou",
-            "minecraft:display_name": {"value": "Máscara de Garou"},
-            "minecraft:max_stack_size": 1,
-            "minecraft:wearable": {"slot": "slot.armor.head", "protection": 0}}}})
-
-
-def _cara_doodle(tipo):
-    # Íconos de garabato (256 px y se reducen a 64): blancos con borde negro.
-    S = 256
-    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    negro = (14, 12, 16, 255)
-    if tipo == "s":
-        d.ellipse([58, 22, 198, 236], fill=(255, 255, 255, 255), outline=negro, width=9)
-        for cx in (100, 156):  # ojos aburridos: óvalo, pupila y párpado recto
-            d.ellipse([cx - 17, 104, cx + 17, 148], fill=(255, 255, 255, 255), outline=negro, width=6)
-            d.ellipse([cx - 6, 126, cx + 6, 140], fill=negro)
-            d.line([(cx - 19, 118), (cx + 19, 118)], fill=negro, width=7)
-        d.line([(116, 196), (140, 196)], fill=negro, width=6)
-        d.arc([46, 118, 74, 160], 90, 270, fill=negro, width=6)
-        d.arc([182, 118, 210, 160], 270, 90, fill=negro, width=6)
-    else:
-        d.polygon([(46, 120), (62, 18), (112, 84)], fill=(255, 255, 255, 255), outline=negro)
-        d.polygon([(210, 120), (194, 18), (144, 84)], fill=(255, 255, 255, 255), outline=negro)
-        d.line([(46, 120), (62, 18), (112, 84)], fill=negro, width=8)
-        d.line([(210, 120), (194, 18), (144, 84)], fill=negro, width=8)
-        d.ellipse([40, 60, 216, 240], fill=(255, 255, 255, 255), outline=negro, width=9)
-        d.polygon([(70, 128), (120, 146), (114, 168), (78, 160)], fill=negro)
-        d.polygon([(186, 128), (136, 146), (142, 168), (178, 160)], fill=negro)
-        d.line([(92, 204), (164, 204)], fill=negro, width=7)
-        for k in range(4):
-            x = 104 + k * 16
-            d.polygon([(x, 204), (x + 8, 222), (x + 16, 204)], fill=negro)
-        d.line([(120, 78), (128, 104), (136, 78)], fill=(214, 24, 40, 255), width=7)
-    return img.resize((64, 64), Image.LANCZOS)
 
 
 def _fondo_grafica():
@@ -751,10 +589,6 @@ def _trazo():
 def cine_particulas():
     tex = RP / "textures/particle"
     _fondo_grafica().save(tex / "claudenpc_cine_fondo.png")
-    caras = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
-    caras.alpha_composite(_cara_doodle("s"), (0, 0))
-    caras.alpha_composite(_cara_doodle("g"), (64, 0))
-    caras.save(tex / "claudenpc_cine_caras.png")
     _destello().save(tex / "claudenpc_cine_destello.png")
     _rayos_rojos().save(tex / "claudenpc_cine_rojo.png")
     _top1().save(tex / "claudenpc_cine_top1.png")
@@ -785,9 +619,6 @@ def cine_particulas():
           {"texture_width": 16, "texture_height": 16, "uv": [0, 0], "uv_size": [16, 16]}, facing="lookat_direction",
           extra={"minecraft:emitter_shape_point": {"direction": ["variable.dir.x", "variable.dir.y", "variable.dir.z"]},
                  "minecraft:particle_initial_speed": 0.02})
-    for nombre, u in (("cine_cara_s", 0), ("cine_cara_g", 64)):
-        parti(nombre, "claudenpc_cine_caras", "particles_blend", [f"0.9 * {escala}", f"0.9 * {escala}"],
-              {"texture_width": 128, "texture_height": 64, "uv": [u, 0], "uv_size": [64, 64]}, vida="variable.vida > 0 ? variable.vida : 0.12")
     parti("cine_destello", "claudenpc_cine_destello", "particles_add",
           [f"math.min(9, 1 + variable.particle_age * 26) * {escala}", f"math.min(9, 1 + variable.particle_age * 26) * {escala}"],
           {"texture_width": 256, "texture_height": 256, "uv": [0, 0], "uv_size": [256, 256]},
@@ -803,10 +634,34 @@ def cine_particulas():
           {"texture_width": 256, "texture_height": 128, "uv": [0, 0], "uv_size": [256, 128]}, vida="variable.vida > 0 ? variable.vida : 3")
 
 
+# Cabezas grandes para la gráfica (se ponen con playAnimation en el controlador
+# "claudenpc_cine_cabeza"; las mismas medidas que CABEZA en BP/scripts/infinito/cinematica.js).
+# La cabeza (caja de 8 px con el pivote en el cuello, a 24 px) crece k veces y baja hasta que
+# su centro queda a 15 px de los pies: así encierra todo el cuerpo, los brazos y lo que lleve
+# en las manos, y solo se ve la cabeza con la skin de cada uno. Sirve igual para el jugador
+# (cualquier skin, también las del creador de personajes) y para Claude, que tienen el mismo
+# esqueleto. No son bucles: si algo falla, terminan solas al acabar la toma.
+CENTRO_CABEZA = 15  # px sobre los pies
+CABEZAS = {
+    "cabeza_jugador": (5, 7.6),  # (k, segundos): toda la toma de la gráfica
+    "cabeza_claude": (5, 7.6),
+    "cabeza_claude_top": (7, 3.4),  # al llegar arriba crece un poco más (desde el destello)
+}
+
+
+def cine_cabezas():
+    anims = {}
+    for nombre, (k, largo) in CABEZAS.items():
+        bajar = 24 + 4 * k - CENTRO_CABEZA  # el centro de la cabeza agrandada queda a 15 px
+        anims[f"animation.claudenpc.cine.{nombre}"] = {"animation_length": largo, "bones": {
+            "head": {"scale": [k, k, k], "position": [0, -bajar, 0]}}}
+    anims["animation.claudenpc.cine.cabeza_ninguna"] = {"animation_length": 0.05, "bones": {}}
+    write_json(RP / "animations/cine_cabezas.animation.json", {"format_version": "1.8.0", "animations": anims})
+
+
 def generar():
-    cara_saitama().save(TEX / "infinito_saitama.png")
-    mascara_garou()
     cine_particulas()
+    cine_cabezas()
     for i in range(5):
         piel(i).save(TEX / f"infinito_{i}.png")
     extra_textura().save(TEX / "infinito_extra.png")

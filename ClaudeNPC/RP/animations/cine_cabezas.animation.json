@@ -1,0 +1,60 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.claudenpc.cine.cabeza_jugador": {
+      "animation_length": 7.6,
+      "bones": {
+        "head": {
+          "scale": [
+            5,
+            5,
+            5
+          ],
+          "position": [
+            0,
+            -29,
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.cine.cabeza_claude": {
+      "animation_length": 7.6,
+      "bones": {
+        "head": {
+          "scale": [
+            5,
+            5,
+            5
+          ],
+          "position": [
+            0,
+            -29,
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.cine.cabeza_claude_top": {
+      "animation_length": 3.4,
+      "bones": {
+        "head": {
+          "scale": [
+            7,
+            7,
+            7
+          ],
+          "position": [
+            0,
+            -37,
+            0
+          ]
+        }
+      }
+    },
+    "animation.claudenpc.cine.cabeza_ninguna": {
+      "animation_length": 0.05,
+      "bones": {}
+    }
+  }
+}

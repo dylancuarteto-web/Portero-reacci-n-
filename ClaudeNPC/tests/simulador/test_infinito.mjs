@@ -17,6 +17,7 @@ import { rasgos } from "./scripts/infinito/adaptacion.js";
 import { bloquesPuestos, cuantosTemporales, errores as erroresInf } from "./scripts/infinito/rendimiento.js";
 import { cambiarEstado } from "./scripts/infinito/cerebro.js";
 import { danoMaza } from "./scripts/infinito/golpe.js";
+import { CABEZA, PROP_VUELTA, TIEMPOS_CINE } from "./scripts/infinito/cinematica.js";
 
 const correr = (n, cada) => { for (let t = 0; t < n; t++) { tick(); cada?.(t); } };
 const fallas = [];
@@ -750,8 +751,10 @@ let datosRescate;
   correr(101);
 }
 
-// 18e) Cinemática de la fase 20: cara estilo Saitama, máscara estilo Garou (guardando el casco),
-//      gráfica con curvas y caras, destello, "TOP 1" al lado y el choque de puños.
+// 18e) Cinemática de la fase 20: en la gráfica van la cabeza de Claude y la del jugador (su
+//      propia skin): los dos suben a la gráfica con la cabeza agrandada (una animación que
+//      encierra el cuerpo), cada uno en la punta de su curva; destello, "TOP 1" al lado de
+//      Claude y el choque de puños. El casco del jugador se guarda y se devuelve.
 {
   const p = jugadorEn(6.5, 0.5);
   const casco = new ItemStack("minecraft:diamond_helmet", 1);
@@ -762,53 +765,92 @@ let datosRescate;
   const c0 = (log.cine ?? []).length;
   const com0 = log.comandos.length;
   const tit0 = log.titulos.length;
+  const an0 = log.anims.length;
+  const ev0 = e.eventos.length;
+  const ef0 = log.efectos.length;
+  const inicioJ = { ...p.location };
+  const inicioE = { ...e.location };
   ponerFase(e, s, 20);
   esperar(!!s.cine && p.permisos?.[InputPermissionCategory.Movement] === false, "al llegar a la 20 empieza la cinemática y el jugador queda quieto");
-  correr(6);
-  const cabezaDurante = p.getComponent("minecraft:equippable").getEquipment("Head");
-  const enInventario = p.items?.find((x) => x === casco);
-  esperar(e.eventos.includes("claudenpc:cara_1"), "el Infinito pone su cara estilo Saitama");
-  esperar(cabezaDurante?.typeId === "claudenpc:mascara_garou" && !!enInventario, "el jugador lleva la máscara y su casco queda en el inventario");
+  const c = s.cine;
+  const T = TIEMPOS_CINE;
+  correr(2); // la etiqueta de intocable se pone en el siguiente tick
   const vida0 = p.vida;
   e.inmuneHasta = undefined;
   const v0 = e.vida;
   e.applyDamage(30, { cause: "entityAttack", damagingEntity: p });
   esperar(e.vida === v0, "intocable durante la cinemática");
+  // Hacia la gráfica (profundidad) y a lo ancho (a la derecha de la cámara).
+  const prof = (q) => (q.x - c.C.x) * c.F.x + (q.z - c.C.z) * c.F.z;
+  const lado = (q) => (q.x - c.C.x) * c.R.x + (q.z - c.C.z) * c.R.z;
+  const muestras = [];
+  let durante;
+  let vueltaJ;
+  let vueltaE;
   let vidaMin = p.vida;
   let n = 0;
-  while (s.cine && n++ < 400) { tick(); vidaMin = Math.min(vidaMin, p.vida); }
+  while (s.cine && n++ < 400) {
+    tick();
+    vidaMin = Math.min(vidaMin, p.vida);
+    const t = system.currentTick - c.t0;
+    if (t > T.grafica && t < T.vuelta) {
+      muestras.push({ t, pj: prof(p.location), pe: prof(e.location), lj: lado(p.location), le: lado(e.location), yj: p.location.y, ye: e.location.y, rj: p.rot.y, re: e.rot.y });
+    }
+    if (t === T.grafica + 20) {
+      durante = { cascoPuesto: p.getComponent("minecraft:equippable").getEquipment("Head"), enInventario: !!p.items?.includes(casco),
+        cascoInf: e.equipo["slot.armor.head"], nombre: e.nameTag, prop: p.getDynamicProperty(PROP_VUELTA) };
+    }
+    if (t === T.vuelta + 1) { vueltaJ = { ...p.location }; vueltaE = { ...e.location }; }
+  }
   correr(10);
   const cine = (log.cine ?? []).slice(c0);
   const cuenta = (id) => cine.filter((x) => x.id === id).length;
   const top = cine.filter((x) => x.id === "claudenpc:cine_top1");
-  const fondo = cine.find((x) => x.id === "claudenpc:cine_fondo");
   const camaras = log.camaras.slice(cam0);
-  console.log("CINEMATICA", { fondo: cuenta("claudenpc:cine_fondo"), trazos: cuenta("claudenpc:cine_trazo"), caraS: cuenta("claudenpc:cine_cara_s"),
-    caraG: cuenta("claudenpc:cine_cara_g"), destello: cuenta("claudenpc:cine_destello"), top1: top.length, rojo: cuenta("claudenpc:cine_rojo"),
+  const anims = log.anims.slice(an0).filter((x) => x.ctrl === CABEZA.ctrl);
+  const delJugador = anims.filter((x) => x.quien === "minecraft:player").map((x) => x.a);
+  const delInf = anims.filter((x) => x.quien === INFINITO).map((x) => x.a);
+  const ultima = muestras.at(-1);
+  const primera = muestras[0];
+  console.log("CINEMATICA", { fondo: cuenta("claudenpc:cine_fondo"), trazos: cuenta("claudenpc:cine_trazo"), destello: cuenta("claudenpc:cine_destello"),
+    top1: top.length, rojo: cuenta("claudenpc:cine_rojo"), caras: cuenta("claudenpc:cine_cara_s") + cuenta("claudenpc:cine_cara_g"),
     camaras: camaras.length, temblor: log.comandos.slice(com0).filter((x) => x.startsWith("camerashake")).length,
-    titulo: log.titulos.slice(tit0).map((x) => x.txt) });
+    animJugador: delJugador, animInf: delInf, titulo: log.titulos.slice(tit0).map((x) => x.txt) });
+  console.log("CABEZAS", { muestras: muestras.length, inicio: primera && { lj: primera.lj.toFixed(1), le: primera.le.toFixed(1) },
+    fin: ultima && { lj: ultima.lj.toFixed(1), le: ultima.le.toFixed(1), alturaClaudeSobreJugador: (ultima.ye - ultima.yj).toFixed(1) },
+    profundidad: ultima && { jugador: ultima.pj.toFixed(2), claude: ultima.pe.toFixed(2) }, durante, vueltaJ, vueltaE });
   esperar(cuenta("claudenpc:cine_fondo") === 1 && cuenta("claudenpc:cine_trazo") === 80, "la gráfica: fondo con cuadrícula y dos curvas de 40 trazos");
-  esperar(cuenta("claudenpc:cine_cara_s") > 60 && cuenta("claudenpc:cine_cara_g") > 60, "las caras suben por las curvas");
+  esperar(cuenta("claudenpc:cine_cara_s") + cuenta("claudenpc:cine_cara_g") === 0 && !e.eventos.slice(ev0).includes("claudenpc:cara_1"), "sin caras dibujadas: ni Saitama ni Garou");
+  esperar(delJugador[0] === CABEZA.jugador && delJugador.at(-1) === CABEZA.ninguna, "el jugador sube con su cabeza agrandada (su skin) y al bajar vuelve a la normal");
+  esperar(delInf[0] === CABEZA.claude && delInf.includes(CABEZA.claudeTop) && delInf.at(-1) === CABEZA.ninguna, "Claude sube con su cabeza agrandada y arriba crece un poco más");
+  esperar(muestras.length > 100 && muestras.every((m) => Math.abs(m.pj - 20) < 0.01 && Math.abs(m.pe - 17) < 0.01), "las dos cabezas van en la gráfica (la de Claude, un poco más cerca)");
+  esperar(muestras.every((m) => Math.abs(m.rj - c.giro) < 0.01 && Math.abs(m.re - c.giro) < 0.01), "las dos cabezas miran a la cámara");
+  esperar(primera.lj < -12 && ultima.lj > 12 && primera.le < -10 && ultima.le > 4, "cada cabeza sube por su curva, de izquierda a derecha");
+  esperar(ultima.ye - ultima.yj > 6, "la de Claude se dispara y termina mucho más arriba que la del jugador");
+  esperar(!!durante && durante.cascoPuesto === undefined && durante.enInventario, "en la gráfica el jugador no lleva el casco (se ve su cara); está en su inventario");
+  esperar(!!durante && durante.cascoInf === "minecraft:air" && durante.nombre === "" && typeof durante.prop === "string", "Claude, sin casco ni nombre arriba; el jugador tiene guardado adónde volver");
+  const evs = e.eventos.slice(ev0);
+  esperar(evs.includes("claudenpc:aura_0") && evs.lastIndexOf("claudenpc:aura_1") > evs.indexOf("claudenpc:aura_0"), "sin aura en la gráfica y con aura al volver");
+  const efs = log.efectos.slice(ef0).filter((x) => x.ef === "slow_falling");
+  esperar(efs.some((x) => x.quien === "minecraft:player") && efs.some((x) => x.quien === INFINITO) && !p.activos?.slow_falling, "caída lenta solo mientras están arriba");
+  const cerca = (a, b) => !!a && Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) < 0.5;
+  esperar(cerca(vueltaJ, inicioJ) && cerca(vueltaE, inicioE), "al terminar la gráfica cada uno vuelve a donde estaba");
+  esperar(p.getDynamicProperty(PROP_VUELTA) === undefined, "y se borra el dato de la vuelta");
   esperar(cuenta("claudenpc:cine_destello") === 1 && top.length === 2 && cuenta("claudenpc:cine_rojo") === 1, "destello arriba, TOP 1 dos veces y el choque con energía roja");
-  // El TOP 1 de la gráfica sale a la derecha de la cara del Infinito y arriba.
-  const caraFinal = cine.filter((x) => x.id === "claudenpc:cine_cara_s").at(-1);
-  const camG = camaras.find((x) => x.o.facingLocation && Math.abs(x.o.location.y - fondo.pos.y) < 0.01);
-  if (camG && caraFinal && top[0]) {
-    const F = { x: fondo.pos.x - camG.o.location.x, z: fondo.pos.z - camG.o.location.z };
-    const l = Math.hypot(F.x, F.z); F.x /= l; F.z /= l;
-    const R = { x: -F.z, z: F.x };
-    const derecha = (top[0].pos.x - caraFinal.pos.x) * R.x + (top[0].pos.z - caraFinal.pos.z) * R.z;
-    console.log("TOP1 POSICION", { derecha: derecha.toFixed(2), altura: (top[0].pos.y - camG.o.location.y).toFixed(2) });
-    esperar(derecha > 2 && top[0].pos.y > camG.o.location.y + 4, "TOP 1 al lado de la cara (a la derecha) y arriba de la gráfica");
+  // El TOP 1 de la gráfica sale a la derecha de la cabeza de Claude (en pantalla) y arriba.
+  if (top[0] && ultima) {
+    const derecha = lado(top[0].pos) / prof(top[0].pos) - ultima.le / ultima.pe;
+    console.log("TOP1 POSICION", { derecha: derecha.toFixed(3), altura: (top[0].pos.y - c.C.y).toFixed(2) });
+    esperar(derecha > 0.15 && top[0].pos.y > c.C.y + 4, "TOP 1 al lado de la cabeza de Claude (a la derecha) y arriba de la gráfica");
   } else {
-    esperar(false, "TOP 1 al lado de la cara (a la derecha) y arriba de la gráfica");
+    esperar(false, "TOP 1 al lado de la cabeza de Claude (a la derecha) y arriba de la gráfica");
   }
   esperar(camaras.length >= 5, "cámaras: hombro, gráfica y choque");
   esperar(log.comandos.slice(com0).some((x) => x.startsWith("camerashake")), "temblor de cámara en el choque");
   esperar(!s.cine && p.permisos?.[InputPermissionCategory.Movement] === true, "al terminar el jugador vuelve a moverse");
   const cabezaDespues = p.getComponent("minecraft:equippable").getEquipment("Head");
   esperar(cabezaDespues === casco && cabezaDespues.marca === "mi casco encantado" && !p.items.includes(casco), "le devuelve su mismo casco (con sus encantamientos)");
-  esperar(e.eventos.includes("claudenpc:cara_0"), "el Infinito vuelve a su cara");
+  esperar(e.equipo["slot.armor.head"] === "minecraft:netherite_helmet" && e.nameTag.startsWith("§c§lDETERMINACIÓN"), "Claude recupera su casco y su DETERMINACIÓN encima");
   esperar(vidaMin >= vida0 - 0.001, "el jugador no recibe daño en la cinemática");
   const golpes0 = (p.historial ?? []).filter((h) => h.quien === INFINITO).length;
   correr(160, () => { p.vida = 20; });
@@ -818,20 +860,53 @@ let datosRescate;
   correr(101);
 }
 {
-  // Inventario lleno: no le pone la máscara (para no perder su casco).
+  // Inventario lleno: sube con su casco puesto (no se pierde); si el Infinito desaparece con
+  // el jugador arriba, el jugador baja adonde estaba.
   const p = jugadorEn(6.5, 30.5);
   const casco = new ItemStack("minecraft:netherite_helmet", 1);
   p.getComponent("minecraft:equippable").setEquipment("Head", casco);
   p.items = new Array(36).fill(0).map(() => new ItemStack("minecraft:dirt", 64));
   const { e, s } = nuevo(0.5, 30.5, 19);
+  const inicio = { ...p.location };
   ponerFase(e, s, 20);
-  correr(10);
-  esperar(p.getComponent("minecraft:equippable").getEquipment("Head") === casco, "con el inventario lleno no le cambia el casco");
-  // Si el Infinito desaparece a la mitad, nadie queda congelado.
+  correr(TIEMPOS_CINE.grafica + 25);
+  const arriba = p.location.y - inicio.y;
+  console.log("LLENO", { arriba: arriba.toFixed(1), casco: p.getComponent("minecraft:equippable").getEquipment("Head")?.typeId });
+  esperar(p.getComponent("minecraft:equippable").getEquipment("Head") === casco && arriba > 10, "con el inventario lleno sube a la gráfica con su casco puesto");
   e.remove();
   correr(3);
   esperar(p.permisos?.[InputPermissionCategory.Movement] === true && !s.cine, "si el Infinito desaparece a la mitad, la cinemática se cierra");
+  esperar(Math.hypot(p.location.x - inicio.x, p.location.y - inicio.y, p.location.z - inicio.z) < 0.5 && p.getDynamicProperty(PROP_VUELTA) === undefined,
+    "y el jugador baja de la gráfica adonde estaba");
   sacar(p);
+  correr(101);
+}
+{
+  // Si sale del mundo a media toma: al volver a entrar baja adonde estaba y recupera su casco.
+  const p = jugadorEn(80.5, 0.5);
+  const casco = new ItemStack("minecraft:iron_helmet", 1);
+  p.items = new Array(36).fill(undefined);
+  p.items[7] = casco;
+  p.setDynamicProperty(PROP_VUELTA, JSON.stringify({ dim: "minecraft:overworld", x: 80.5, y: 65, z: 0.5, rx: 0, ry: 90, casco: { hueco: 7, tipo: "minecraft:iron_helmet" } }));
+  p.teleport({ x: 80.5, y: 120, z: 20.5 });
+  emitir("world.after.playerSpawn", { player: p, initialSpawn: true });
+  correr(2);
+  esperar(Math.abs(p.location.y - 65) < 0.01 && Math.abs(p.location.z - 0.5) < 0.01 && p.getDynamicProperty(PROP_VUELTA) === undefined,
+    "si sale del mundo a media toma, al volver baja adonde estaba");
+  esperar(p.getComponent("minecraft:equippable").getEquipment("Head") === casco && !p.items[7], "y recupera su casco");
+  sacar(p);
+}
+{
+  // Si el mundo se cierra con el Infinito arriba en la gráfica, al cargar vuelve a su lugar.
+  const { e, s } = nuevo(90.5, 0.5, 9);
+  s.vuelta = { x: 90.5, y: 65, z: 0.5, ry: 0 };
+  e.teleport({ x: 90.5, y: 110, z: 20.5 });
+  guardar(s);
+  s.vuelta = undefined;
+  const s2 = nuevoEstado(e);
+  cargar(e, s2);
+  esperar(Math.abs(e.location.y - 65) < 0.01 && Math.abs(e.location.z - 0.5) < 0.01, "si el mundo se cierra con el Infinito en la gráfica, al cargar vuelve a su lugar");
+  e.isValid = false;
   correr(101);
 }
 

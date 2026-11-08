@@ -61,11 +61,6 @@
         "minecraft:mark_variant": {
           "value": 1
         }
-      },
-      "claudenpc:cara_1": {
-        "minecraft:skin_id": {
-          "value": 1
-        }
       }
     },
     "components": {
@@ -416,20 +411,6 @@
           "component_groups": [
             "claudenpc:nivel_0",
             "claudenpc:aura_0"
-          ]
-        }
-      },
-      "claudenpc:cara_1": {
-        "add": {
-          "component_groups": [
-            "claudenpc:cara_1"
-          ]
-        }
-      },
-      "claudenpc:cara_0": {
-        "remove": {
-          "component_groups": [
-            "claudenpc:cara_1"
           ]
         }
       },

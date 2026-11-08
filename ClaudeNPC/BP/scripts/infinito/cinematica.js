@@ -1,79 +1,87 @@
-import { EquipmentSlot, ItemStack, system, world } from "@minecraft/server";
+import { EquipmentSlot, system, world } from "@minecraft/server";
 import { desprotegerJugador, protegerJugador } from "../dano.js";
 import { BLANCO, bloquear, camara, fundido, NEGRO, particula, soltar, sonar, vivos } from "../golden/final/comun.js";
 import { enCinematica } from "../robot/cinematica.js";
-import { flat, mirarA, now } from "../util.js";
+import { flat, mirarA, now, run } from "../util.js";
 import { gesto } from "./animacion.js";
-import { bajarEscudo } from "./armas.js";
+import { bajarEscudo, vestirFase } from "./armas.js";
 import { terminarCombo } from "./combos.js";
 import { PART_INF } from "./config.js";
 import { pararTodo } from "./movimiento.js";
+import { actualizarNombre } from "./personalidad.js";
+import { guardar } from "./registro.js";
 
 // Cinemática de la fase 20 (INFINITE DETERMINATION), inspirada en el meme de la gráfica del
-// poder que crece de forma exponencial. El arte es propio (garabatos hechos para el add-on).
-//   1. Fundido; Claude Exponencial Infinito pone su cara estilo Saitama y el jugador al que
-//      enfrenta, una máscara estilo Garou. Toma por encima del hombro del jugador.
+// poder que crece de forma exponencial (el arte es propio).
+//   1. Fundido y toma por encima del hombro del jugador: el Infinito junta su determinación.
 //   2. La gráfica: fondo negro con cuadrícula y ejes PODER (Y) / TIEMPO (X). Se dibujan dos
-//      curvas con su cara subiendo por la punta: la del jugador (máscara) crece despacio y la
-//      del Infinito (Saitama) va por debajo hasta que se dispara hacia arriba; arriba, un
-//      destello blanco y, a su lado, "TOP 1" en letras rojas con borde negro (sin marco).
-//   3. Choque de puños de lado, con energía roja, temblor de cámara y otra vez "TOP 1".
-//   4. Fundido y vuelve la pelea (el jugador recupera su casco; el Infinito, su cara).
+//      curvas y en la punta de cada una sube una cabeza de verdad: la del jugador, con su
+//      propia skin, crece despacio; la de Claude va por debajo hasta que se dispara hacia
+//      arriba. Arriba, un destello y, a su lado, "TOP 1" en letras rojas con borde negro (sin
+//      marco). Para eso el jugador y el Infinito suben a la gráfica y una animación les agranda
+//      la cabeza hasta que encierra el cuerpo: solo se ve la cabeza. Mientras tanto el casco
+//      del jugador se guarda en su inventario (para que se vea su cara).
+//   3. Fundido: cada uno vuelve a su lugar y chocan los puños, de lado, con energía roja,
+//      temblor de cámara y otra vez "TOP 1".
+//   4. Fundido y vuelve la pelea.
 // Mientras dura, el Infinito es intocable y los jugadores no se mueven ni reciben daño.
 
-export const MASCARA = "claudenpc:mascara_garou";
 // Medidas de la gráfica (las mismas que CINE en source/v100_assets.py): la cámara mira la
 // gráfica a "dg" bloques y el fondo está a "db"; la gráfica mide 2w × 2h bloques.
 const CINE = { dg: 20, db: 26, w: 16, h: 9 };
-const T = { cara: 4, tomaA: 6, evolucion: 10, flash: 50, grafica: 56, curvas: 60, finCurvas: 140, destello: 140, top1: 148,
-  finGrafica: 196, choque: 202, impacto: 210, top1b: 214, fin: 262, salida: 268 };
+const T = { tomaA: 6, evolucion: 10, flash: 50, grafica: 56, curvas: 60, finCurvas: 140, destello: 140, top1: 148,
+  finGrafica: 196, vuelta: 200, choque: 202, impacto: 210, top1b: 214, fin: 262, salida: 268 };
 const N = 40; // segmentos de cada curva
 
-const enCurso = new Map(); // id del Infinito → cinemática
+// Cabezas grandes (RP/animations/cine_cabezas.animation.json, de source/v100_assets.py): la
+// cabeza crece y baja hasta que su centro queda a 15 px de los pies, así encierra el cuerpo.
+export const CABEZA = {
+  ctrl: "claudenpc_cine_cabeza",
+  jugador: "animation.claudenpc.cine.cabeza_jugador", // ×5
+  claude: "animation.claudenpc.cine.cabeza_claude", // ×5
+  claudeTop: "animation.claudenpc.cine.cabeza_claude_top", // ×7, desde el destello
+  ninguna: "animation.claudenpc.cine.cabeza_ninguna",
+  centro: 15 / 16, // bloques de los pies al centro de la cabeza grande
+};
+// La cabeza de Claude va 3 bloques más cerca de la cámara: las dos curvas salen del mismo
+// punto y así las cabezas no se cruzan al empezar.
+const CERCA = { jugador: 0, claude: 3 };
+// En el jugador: dónde estaba y dónde quedó su casco, por si sale del mundo a media toma.
+export const PROP_VUELTA = "claudenpc:cine_vuelta";
 
-export function enCinematicaInf(s) {
-  return !!s.cine;
-}
+const enCurso = new Map(); // id del Infinito → estado
 
-// --- Máscara del jugador ---------------------------------------------------------------
-// El casco que tenga se guarda en un hueco libre de su inventario (si se corta la cinemática,
-// lo sigue teniendo ahí). Sin hueco libre no se le pone la máscara.
-function ponerMascara(p) {
+// --- Casco del jugador -------------------------------------------------------------------
+// Se guarda en un hueco libre de su inventario para que se vea su cara (sin hueco libre se
+// queda puesto). Si la toma se corta, lo sigue teniendo en el inventario.
+function guardarCasco(p) {
   try {
     const eq = p.getComponent("minecraft:equippable");
     const inv = p.getComponent("minecraft:inventory")?.container;
-    if (!eq || !inv) return undefined;
-    const casco = eq.getEquipment(EquipmentSlot.Head);
-    let hueco;
-    if (casco) {
-      for (let i = 0; i < inv.size; i++) {
-        if (!inv.getItem(i)) {
-          hueco = i;
-          break;
-        }
-      }
-      if (hueco === undefined) return undefined;
-      inv.setItem(hueco, casco);
+    const casco = eq?.getEquipment(EquipmentSlot.Head);
+    if (!casco || !inv) return undefined;
+    for (let i = 0; i < inv.size; i++) {
+      if (inv.getItem(i)) continue;
+      inv.setItem(i, casco);
+      eq.setEquipment(EquipmentSlot.Head, undefined);
+      return { hueco: i, tipo: casco.typeId };
     }
-    eq.setEquipment(EquipmentSlot.Head, new ItemStack(MASCARA, 1));
-    return { hueco, tipo: casco?.typeId };
   } catch {
-    return undefined;
+    // Jugador no disponible.
   }
+  return undefined;
 }
 
-function quitarMascara(p, info) {
+function devolverCasco(p, info) {
+  if (!info) return;
   try {
     const eq = p.getComponent("minecraft:equippable");
-    if (!eq) return;
-    if (eq.getEquipment(EquipmentSlot.Head)?.typeId === MASCARA) eq.setEquipment(EquipmentSlot.Head, undefined);
-    if (info?.hueco === undefined) return;
     const inv = p.getComponent("minecraft:inventory")?.container;
-    const casco = inv?.getItem(info.hueco);
-    if (casco?.typeId === info.tipo) {
-      inv.setItem(info.hueco, undefined);
-      eq.setEquipment(EquipmentSlot.Head, casco);
-    }
+    if (!eq || !inv || eq.getEquipment(EquipmentSlot.Head)) return;
+    const casco = inv.getItem(info.hueco);
+    if (casco?.typeId !== info.tipo) return;
+    inv.setItem(info.hueco, undefined);
+    eq.setEquipment(EquipmentSlot.Head, casco);
   } catch {
     // Jugador no disponible.
   }
@@ -88,7 +96,7 @@ function punto(c, u, v, cerca = 0) {
   return { x: c.C.x + c.F.x * d + c.R.x * u * CINE.w * k, y: c.C.y + v * CINE.h * k, z: c.C.z + c.F.z * d + c.R.z * u * CINE.w * k };
 }
 
-// Curva del jugador (crece despacio) y del Infinito (va por debajo y se dispara).
+// Curva del jugador (crece despacio) y de Claude (va por debajo y se dispara).
 function curvaG(k) {
   const t = k / N;
   return { u: -0.92 + 1.77 * t, v: -0.88 + (0.75 * (Math.exp(2.2 * t) - 1)) / (Math.exp(2.2) - 1) };
@@ -99,26 +107,123 @@ function curvaS(k) {
   return { u: -0.92 + 1.37 * t, v: -0.9 + (1.82 * (Math.exp(5.5 * t) - 1)) / (Math.exp(5.5) - 1) };
 }
 
-// Altura para la cámara de la gráfica: cielo libre a lo largo de la vista.
-function alturaLibre(dim, M, F) {
+function esAire(dim, q) {
+  try {
+    const b = dim.getBlock(q);
+    return !b || b.isAir;
+  } catch {
+    return true; // sin cargar o fuera del mundo
+  }
+}
+
+// Altura para la cámara de la gráfica: cielo libre a lo largo de la vista y donde van las
+// cabezas (las esquinas de la gráfica y las puntas de las curvas).
+function alturaLibre(dim, M, F, R) {
   const tope = dim.heightRange.max - 4;
+  const muestras = [[0, 0], [-1, -1], [1, -1], [-1, 1], [1, 1], [-0.92, -0.88], [0.85, -0.13], [0.45, 0.92]];
   for (const h of [28, 40, 60, 90]) {
     const y = Math.min(tope, M.y + h);
-    let libre = true;
-    for (const d of [0, 8, 16, 26]) {
-      try {
-        const b = dim.getBlock({ x: M.x + F.x * d, y, z: M.z + F.z * d });
-        if (b && !b.isAir) {
-          libre = false;
-          break;
-        }
-      } catch {
-        // Sin cargar: cuenta como aire.
-      }
-    }
-    if (libre) return y;
+    const c = { C: { x: M.x, y, z: M.z }, F, R };
+    const puntos = [0, 8, 16, 26].map((d) => ({ x: M.x + F.x * d, y, z: M.z + F.z * d }));
+    for (const [u, v] of muestras) puntos.push(punto(c, u, v, 0), punto(c, u, v, CERCA.claude));
+    if (puntos.every((q) => esAire(dim, q))) return y;
   }
   return tope;
+}
+
+// --- Las cabezas en la gráfica --------------------------------------------------------------
+function animarCabeza(x, anim) {
+  try {
+    x.playAnimation(anim, { controller: CABEZA.ctrl, blendOutTime: 0 });
+  } catch {
+    // Paquete de recursos no activo o entidad descargada.
+  }
+}
+
+// Pone a alguien con el centro de su cabeza grande en "centro", mirando hacia la cámara.
+function aLaGrafica(x, centro, giro) {
+  try {
+    x.teleport({ x: centro.x, y: centro.y - CABEZA.centro, z: centro.z }, { rotation: { x: 0, y: giro } });
+  } catch {
+    // Sin teletransporte este tick.
+  }
+}
+
+// Sube al Infinito y al jugador a la gráfica (sin casco, nombre ni aura, para que se vean las caras).
+function subir(e, s, c) {
+  const toma = T.vuelta - T.grafica + 40;
+  s.vuelta = { x: e.location.x, y: e.location.y, z: e.location.z, ry: e.getRotation().y };
+  guardar(s);
+  run(e, "replaceitem entity @s slot.armor.head 0 minecraft:air");
+  try {
+    e.nameTag = "";
+    e.triggerEvent("claudenpc:aura_0");
+    e.addEffect("slow_falling", toma, { amplifier: 0, showParticles: false });
+  } catch {
+    // Entidad descargada.
+  }
+  animarCabeza(e, CABEZA.claude);
+  const p = c.objetivo?.isValid ? c.objetivo : undefined;
+  if (p) {
+    const r = p.getRotation();
+    c.vueltaJugador = { dim: p.dimension.id, x: p.location.x, y: p.location.y, z: p.location.z, rx: r.x, ry: r.y };
+    c.casco = guardarCasco(p);
+    try {
+      p.setDynamicProperty(PROP_VUELTA, JSON.stringify({ ...c.vueltaJugador, casco: c.casco }));
+      p.addEffect("slow_falling", toma, { amplifier: 0, showParticles: false });
+    } catch {
+      // Jugador no disponible.
+    }
+    animarCabeza(p, CABEZA.jugador);
+  }
+  c.enGrafica = true;
+}
+
+// Cada tick: cada cabeza va en la punta de su curva (antes de empezar, en el origen; al
+// terminar, arriba de su curva).
+function moverCabezas(e, c, t) {
+  const k = Math.max(0, Math.min(N, (t - T.curvas) / 2 + 1));
+  const sc = curvaS(k);
+  aLaGrafica(e, punto(c, sc.u, sc.v, CERCA.claude), c.giro);
+  if (c.vueltaJugador && c.objetivo?.isValid) {
+    const g = curvaG(k);
+    aLaGrafica(c.objetivo, punto(c, g.u, g.v, CERCA.jugador), c.giro);
+  }
+}
+
+// Cada uno vuelve a su lugar, con su cabeza normal, su casco, su nombre y su aura.
+function bajar(e, s, c) {
+  if (!c.enGrafica) return;
+  c.enGrafica = false;
+  if (e.isValid) {
+    animarCabeza(e, CABEZA.ninguna);
+    const v = s.vuelta;
+    try {
+      if (v) e.teleport({ x: v.x, y: v.y, z: v.z }, { rotation: { x: 0, y: v.ry ?? 0 } });
+      e.removeEffect("slow_falling");
+      if (s.fase >= 20) e.triggerEvent("claudenpc:aura_1");
+    } catch {
+      // Entidad descargada.
+    }
+    s.armadura = -2; // se vuelve a poner la armadura de su fase (con el casco)
+    vestirFase(e, s);
+    s.nombre = "";
+    actualizarNombre(e, s, true);
+  }
+  s.vuelta = undefined;
+  guardar(s);
+  const p = c.objetivo;
+  const v = c.vueltaJugador;
+  if (!p?.isValid || !v) return;
+  animarCabeza(p, CABEZA.ninguna);
+  try {
+    p.teleport({ x: v.x, y: v.y, z: v.z }, { dimension: world.getDimension(v.dim), rotation: { x: v.rx, y: v.ry } });
+    p.removeEffect("slow_falling");
+    p.setDynamicProperty(PROP_VUELTA, undefined);
+  } catch {
+    // Jugador no disponible.
+  }
+  devolverCasco(p, c.casco);
 }
 
 // --- Inicio y fin ----------------------------------------------------------------------------
@@ -145,8 +250,10 @@ export function iniciarCinematica(e, s) {
   const F = { x: F0.x, y: 0, z: F0.z };
   const R = { x: -F.z, y: 0, z: F.x };
   const M = { x: (e.location.x + objetivo.location.x) / 2, y: (e.location.y + objetivo.location.y) / 2, z: (e.location.z + objetivo.location.z) / 2 };
-  const C = { x: M.x, y: alturaLibre(e.dimension, M, F), z: M.z };
-  s.cine = { t0: now(), jugadores, objetivo, F, R, M, C, mascara: undefined };
+  const C = { x: M.x, y: alturaLibre(e.dimension, M, F, R), z: M.z };
+  // Las cabezas miran hacia la cámara (la gráfica está delante de ella, en la dirección F).
+  const giro = (Math.atan2(F.x, -F.z) * 180) / Math.PI;
+  s.cine = { t0: now(), jugadores, objetivo, F, R, M, C, giro, enGrafica: false };
   enCurso.set(e.id, s);
   s.presentacionHasta = now() + T.salida + 20;
   bloquear(jugadores);
@@ -158,16 +265,11 @@ export function iniciarCinematica(e, s) {
 function terminar(e, s) {
   const c = s.cine;
   if (!c) return;
+  bajar(e, s, c); // si se cortó con ellos arriba, cada uno vuelve a su lugar
   s.cine = undefined;
   enCurso.delete(s.id);
   soltar(vivos(c.jugadores));
   for (const p of vivos(c.jugadores)) desprotegerJugador(p); // sin la Resistencia de la cinemática
-  if (c.objetivo?.isValid) quitarMascara(c.objetivo, c.mascara);
-  try {
-    if (e.isValid) e.triggerEvent("claudenpc:cara_0");
-  } catch {
-    // Entidad descargada.
-  }
   s.presentacionHasta = now() + 10;
   for (const p of vivos(c.jugadores)) {
     try {
@@ -191,17 +293,9 @@ export function tickCinematica(e, s) {
   const dim = e.dimension;
   if (t % 20 === 0) for (const p of jugadores) protegerJugador(p, 40);
   const obj = c.objetivo?.isValid ? c.objetivo : undefined;
-  if (obj) mirarA(e, obj.getHeadLocation());
+  if (obj && !c.enGrafica) mirarA(e, obj.getHeadLocation());
 
-  // 1. Las caras y la toma por encima del hombro.
-  if (t === T.cara) {
-    try {
-      e.triggerEvent("claudenpc:cara_1");
-    } catch {
-      // Sin cara.
-    }
-    if (obj) c.mascara = ponerMascara(obj);
-  }
+  // 1. Toma por encima del hombro del jugador: junta su determinación.
   if (t === T.tomaA && obj) {
     const P = obj.getHeadLocation();
     const desde = sumar(sumar(sumar(P, c.F, -2.8), c.R, 0.9), { x: 0, y: 1, z: 0 }, 0.5);
@@ -215,16 +309,18 @@ export function tickCinematica(e, s) {
   }
   if (t === T.flash) fundido(jugadores, BLANCO, 0.15, 0.1, 0.3);
 
-  // 2. La gráfica.
+  // 2. La gráfica, con la cabeza de Claude y la del jugador (su skin) en las puntas.
   if (t === T.grafica) {
     camara(jugadores, c.C, punto(c, 0, 0));
     particula(dim, "claudenpc:cine_fondo", { x: c.C.x + c.F.x * CINE.db, y: c.C.y, z: c.C.z + c.F.z * CINE.db },
-      { "variable.vida": (T.finGrafica - T.grafica) / 20 + 0.3 });
+      { "variable.vida": (T.vuelta - T.grafica) / 20 + 0.3 });
+    subir(e, s, c);
     sonar(jugadores, "random.orb", 0.5, 0.8);
   }
+  if (c.enGrafica) moverCabezas(e, c, t);
   if (t >= T.curvas && t < T.finCurvas) {
     const paso = (t - T.curvas) / 2;
-    const vida = (T.finGrafica - t) / 20;
+    const vida = (T.vuelta - t) / 20;
     if (Number.isInteger(paso)) {
       for (const curva of [curvaG, curvaS]) {
         const a = curva(paso);
@@ -232,31 +328,26 @@ export function tickCinematica(e, s) {
         trazo(dim, punto(c, a.u, a.v), punto(c, b.u, b.v), vida);
       }
     }
-    // Las caras suben por la punta de cada curva.
-    const g = curvaG(paso + 1);
-    const sx = curvaS(paso + 1);
-    particula(dim, "claudenpc:cine_cara_g", punto(c, g.u, g.v, 0.3), { "variable.vida": 0.12, "variable.escala": 1.5 });
-    particula(dim, "claudenpc:cine_cara_s", punto(c, sx.u, sx.v, 0.3), { "variable.vida": 0.12, "variable.escala": 1.5 });
     if (t % 10 === 0) sonar(jugadores, "note.hat", 0.8 + (t - T.curvas) / 80, 0.5);
   }
   if (t === T.destello) {
     const fin = curvaS(N);
-    const g = curvaG(N);
-    const vida = (T.finGrafica - t) / 20;
+    // Detrás de la cabeza de Claude (que va más cerca de la cámara): brilla a su alrededor.
     particula(dim, "claudenpc:cine_destello", punto(c, fin.u, fin.v, 0.6), { "variable.vida": 1.6 });
-    particula(dim, "claudenpc:cine_cara_s", punto(c, fin.u, fin.v, 0.8), { "variable.vida": vida, "variable.escala": 2 });
-    particula(dim, "claudenpc:cine_cara_g", punto(c, g.u, g.v, 0.3), { "variable.vida": vida, "variable.escala": 1.6 });
+    animarCabeza(e, CABEZA.claudeTop); // llegó arriba: su cabeza crece un poco más
     fundido(jugadores, BLANCO, 0.05, 0.05, 0.35);
     sonar(jugadores, "random.explode", 1.3, 0.6);
     sonar(jugadores, "beacon.activate", 1.2, 1);
   }
   if (t === T.top1) {
     const fin = curvaS(N);
-    particula(dim, "claudenpc:cine_top1", punto(c, fin.u + 0.42, fin.v - 0.06, 0.8), { "variable.vida": (T.finGrafica - t) / 20, "variable.escala": 2 });
+    // A la derecha de la cabeza de Claude (ya agrandada), sin tocarla.
+    particula(dim, "claudenpc:cine_top1", punto(c, fin.u + 0.56, fin.v - 0.06, 0.8), { "variable.vida": (T.vuelta - t) / 20, "variable.escala": 2 });
     sonar(jugadores, "random.anvil_land", 0.6, 0.7);
     sonar(jugadores, "mob.enderdragon.growl", 1.3, 0.5);
   }
   if (t === T.finGrafica) fundido(jugadores, NEGRO, 0.2, 0.15, 0.35);
+  if (t === T.vuelta) bajar(e, s, c); // con la pantalla en negro
 
   // 3. El choque de puños, de lado.
   if (t === T.choque && obj) {
@@ -319,27 +410,51 @@ function trazo(dim, a, b, vida) {
     { "variable.dir": { x: dx / largo, y: dy / largo, z: dz / largo }, "variable.largo": largo, "variable.vida": vida, "variable.grosor": 0.1 });
 }
 
-// Si el Infinito desaparece a mitad de la cinemática, nadie queda congelado ni con la máscara.
+// Si el Infinito desaparece a mitad de la cinemática, nadie queda congelado ni en el cielo.
 world.afterEvents.entityRemove.subscribe(({ removedEntityId }) => {
   const s = enCurso.get(removedEntityId);
   if (!s) return;
   system.run(() => terminar(s.e, s));
 });
 
-// Al entrar al mundo: si quedó con la máscara de una cinemática que se cortó, se la quita (su
-// casco está en su inventario).
-world.afterEvents.playerSpawn.subscribe(({ player }) => {
-  system.runTimeout(() => {
-    if (!player.isValid || enCinematica.has(player.id)) return;
-    for (const s of enCurso.values()) if (s.cine?.objetivo?.id === player.id) return;
+// Al volver a entrar al mundo (o reaparecer) después de una toma cortada: cabeza normal,
+// casco en su sitio y, si entró arriba en la gráfica, de vuelta adonde estaba.
+function volverDeLaGrafica(p, entro) {
+  if (!p.isValid) return;
+  for (const s of enCurso.values()) if (s.cine?.objetivo?.id === p.id) return; // sigue en la cinemática
+  let d;
+  try {
+    const raw = p.getDynamicProperty(PROP_VUELTA);
+    if (typeof raw === "string") d = JSON.parse(raw);
+  } catch {
+    d = undefined;
+  }
+  if (!d) return;
+  try {
+    p.setDynamicProperty(PROP_VUELTA, undefined);
+  } catch {
+    // Jugador no disponible.
+  }
+  animarCabeza(p, CABEZA.ninguna);
+  if (entro && [d.x, d.y, d.z].every(Number.isFinite)) {
     try {
-      const eq = player.getComponent("minecraft:equippable");
-      if (eq?.getEquipment(EquipmentSlot.Head)?.typeId === MASCARA) eq.setEquipment(EquipmentSlot.Head, undefined);
+      p.teleport({ x: d.x, y: d.y, z: d.z }, { dimension: world.getDimension(d.dim), rotation: { x: d.rx ?? 0, y: d.ry ?? 0 } });
     } catch {
-      // Jugador no disponible.
+      // Se queda donde está.
     }
-  }, 40);
+    protegerJugador(p, 60);
+  }
+  try {
+    p.removeEffect("slow_falling");
+  } catch {
+    // Sin efecto.
+  }
+  devolverCasco(p, d.casco);
+}
+
+world.afterEvents.playerSpawn.subscribe(({ player, initialSpawn }) => {
+  system.run(() => volverDeLaGrafica(player, initialSpawn));
 });
 
-// Para las pruebas y /claudenpc:infinito_info.
+// Para las pruebas.
 export const TIEMPOS_CINE = T;

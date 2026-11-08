@@ -8,8 +8,43 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 2. Genera a Claude con el huevo "Generar a Claude" y al maestro con "Generar a Claude Maestro" (o `/summon claudenpc:claude` y `/summon claudenpc:maestro`).
 3. Para que te ataquen: estar en Supervivencia o Aventura (ya no hace falta activar el PvP o "fuego amigo"; si quieres que lo respeten, pon `COMBATE.respetarPvP = true` en `BP/scripts/config.js`).
 4. Comandos (operador): `/claudenpc:clase` hace que el maestro más cercano empiece la clase ya; `/claudenpc:maestro einstein` (o `tesla`, `curie`, `newton`, `lovelace`, `maestro`) trae a ese maestro (con trucos); `/claudenpc:iq 500` o `/claudenpc:iq 1000` (con trucos) pone el IQ de los Claudes cercanos, para probar el robot o la fusión con 5 Claudes; `/claudenpc:robot` (con trucos) hace que los Claudes más cercanos (hasta 5, con cualquier IQ) construyan el robot ya.
-5. Claude Exponencial Infinito: huevo "Generar a Claude Exponencial Infinito", `/summon claudenpc:exponencial_infinito` o `/claudenpc:infinito [fase]` (con trucos). Ver las secciones de la v10.1 y la v10.
+5. Claude Exponencial Infinito: huevo "Generar a Claude Exponencial Infinito", `/summon claudenpc:exponencial_infinito` o `/claudenpc:infinito [fase]` (con trucos). Ver las secciones de la v10.2, la v10.1 y la v10.
 6. **Toca a un Claude** (botón "Habilidades" en el celular) para ver qué sabe: cada tema con sus estrellas, la última variante que aprendió y si lo perfecciona o solo lo estudia.
+
+## Novedades de la v10.2: en la gráfica, la cabeza de Claude y la tuya (con tu skin)
+
+| Antes (v10.1) | Ahora |
+|---|---|
+| Claude cambiaba a una cara estilo Saitama, tú llevabas una máscara estilo Garou y en la gráfica subían dos caras dibujadas | **Nadie se cambia la cara.** En la gráfica suben **las cabezas de verdad**: en lugar de la de Saitama, **la de Claude** (Claude Exponencial Infinito, con sus ojos rojos y su cinta de la fase 20), y en lugar de la de Garou, **la tuya, con tu propia skin** (Steve, Alex, una del Marketplace, una hecha en el creador de personajes o la que uses). Se quitaron la cara de Saitama, la máscara y los dibujos de caras. |
+
+### Cómo es ahora la cinemática de la fase 20
+
+Dura unos 13 s y la ven todos los jugadores a 48 bloques:
+
+1. **Fundido** y toma por encima de tu hombro: Claude junta su determinación (gesto, sonido y destello blanco).
+2. **La gráfica**: fondo negro con cuadrícula y ejes verdes **PODER (Y)** y **TIEMPO (X)**. Se dibujan dos curvas blancas y en la punta de cada una sube una cabeza: **la tuya** crece despacio; **la de Claude** va por debajo hasta que **se dispara hacia arriba**. Al llegar arriba su cabeza crece un poco más, sale un **destello blanco** y, a su lado, **"TOP 1" en letras rojas con borde negro, sin marco**.
+3. **Fundido**: cada uno vuelve a su lugar y **chocan los puños**, de lado, con energía roja, explosión y temblor de cámara, y otra vez "TOP 1" al lado de su cabeza.
+4. **Fundido** y sigue la pelea (con su aura de la fase 20). Al final sale "INFINITE DETERMINATION".
+
+**Cómo sale tu cabeza con tu skin:** Minecraft no deja poner la skin de un jugador en una partícula ni en otro modelo, así que en la gráfica estás **tú de verdad**. Durante esa toma (unos 7 s) subes a la gráfica (la cámara está en otro lado, así que no lo notas) y una animación te **agranda la cabeza hasta que tapa todo tu cuerpo**: solo se ve tu cabeza, con tu skin. A Claude le pasa lo mismo. Cuando termina la toma, con la pantalla en negro, cada uno vuelve **exactamente adonde estaba** y la cabeza vuelve a su tamaño.
+
+- **Tu casco**: mientras estás en la gráfica se guarda en un hueco libre de tu inventario (para que se vea tu cara) y al bajar vuelve a tu cabeza (el mismo, con sus encantamientos). Si tu inventario está lleno, subes con el casco puesto.
+- Arriba tienes caída lenta y la protección de la cinemática: no recibes daño ni te mueves.
+- Claude sube sin casco, sin el "DETERMINACIÓN" de encima y sin aura (para que se vea su cara); al bajar recupera todo.
+- Si sales del mundo a media toma, al volver a entrar bajas adonde estabas y recuperas tu casco. Si el mundo se cierra con Claude arriba, al cargarlo vuelve a su lugar.
+- En multijugador los demás ven la misma toma con tu cabeza (y quizá tu nombre encima de ella).
+
+Para verla otra vez: cerca de él, `/claudenpc:fase 19` y luego `/claudenpc:fase 20`.
+
+> **Fan-made:** inspirada en el meme de la gráfica del poder que crece de forma exponencial; no usa imágenes del anime ni del video, y el add-on no es oficial ni está afiliado a nadie. Vista previa: `source/vista_v102_cinematica.png` (dibujo hecho con las posiciones reales del simulador y una cámara de 70°; la cabeza del jugador lleva una skin de ejemplo hecha aquí; no es una captura del juego).
+
+> **Sonidos:** solo de Minecraft (no se agregó ningún archivo de audio). La música y los sonidos que mandaste antes siguen siendo para tu mundo: si vas a publicar el add-on, cámbialos por sonidos propios o con permiso.
+
+### Estado de la v10.2
+
+- **GENERATED** y **STATICALLY_VALIDATED**: tipos oficiales 2.4.0 sin errores (`playAnimation` con controlador, teletransporte con giro, efectos, propiedades del jugador, casco e inventario), validador del kit y auditoría 1.21.132 con 0 errores y 0 advertencias, cruce de referencias igual que antes.
+- **Simulado fuera del juego**: **148 comprobaciones**, **40 corridas seguidas sin fallas** (dos tandas de 20). Las nuevas: que ya no hay caras dibujadas ni cambio de cara; que tú y Claude suben con la animación de cabeza grande y al bajar vuelve la normal; que cada cabeza va en la punta de su curva, de izquierda a derecha, en el plano de la gráfica (la de Claude, un poco más cerca), mirando a la cámara; que la de Claude termina unos 8 bloques más arriba que la tuya; que tu casco queda en el inventario mientras tanto y vuelve el mismo; que Claude sube sin casco, sin nombre y sin aura y al bajar los recupera; que cada uno vuelve a su lugar y se borra el dato de la vuelta; que "TOP 1" queda a la derecha de su cabeza y arriba; que con el inventario lleno subes con tu casco; que si el Infinito desaparece a la mitad bajas a tu lugar; que al volver a entrar al mundo bajas y recuperas tu casco; y que si el mundo se cierra con Claude arriba, al cargar vuelve a su lugar. Las simulaciones anteriores siguen pasando.
+- **IN_GAME_TESTED: no.** Revisa en el juego: que tu cabeza agrandada tape todo tu cuerpo y lo que tengas en las manos (con skins normales y del creador de personajes debería; una skin con geometría propia puede verse distinta), que Claude también se vea solo como cabeza, que no tiembles allá arriba, que vuelvas a tu sitio con tu casco, y que la gráfica tape toda la pantalla con tu campo de visión.
 
 ## Novedades de la v10.1: más determinación, pelea más humana y la cinemática de la fase 20
 
@@ -19,30 +54,17 @@ NPCs con forma de Claude: personaje naranja con ojos que parpadean y un emblema 
 | Al "matarlo" quedaba derribado, pero si el Claude que venía moría o no había dónde hacer aparecer uno, se recuperaba solo; y si moría de verdad, se perdía | Al "matarlo" queda derribado y **siempre viene un Claude a llevárselo**: a los 12 s sale a buscarlo el Claude libre más cercano (a 48 bloques) o aparece uno que llega corriendo; si no hay suelo lejos (mar, Nether, acantilados), aparece a su lado; si no encuentra camino, llega con una perla; y si el que venía muere o se pierde, viene otro. Si algo lo mata de verdad (lava, el vacío, algo que el sensor no paró), **reaparece derribado** con todo lo que sabía y también se lo lleva un Claude. Solo el sello lo elimina (o `/kill`, si de verdad quieres quitarlo). |
 | Encima de la cabeza: nombre, fase, barra y frases | **Solo "DETERMINACIÓN 1234"**. Sus frases salen abajo, en la barra de acción de los que están cerca. |
 | Pelea robótica: retrocedía para guardar distancia y se quedaba quieto | **Pelea como un jugador**: **corre saltando** hacia ti en todas las fases (el NOOB, más torpe); ya cerca **te rodea** cambiando de lado y vuelve a entrar, **sin quedarse quieto**; **ya no retrocede para guardar distancia** (solo da un paso atrás rápido después de golpear, se aleja en algunos combos desde la fase 11 —lava, "alternar distancia", TNT y cristal— y se retira con muy poca vida); te observa como mucho 1,2 s dando vueltas; se cubre con el escudo menos seguido y por menos tiempo; el **arco** solo si estás muy lejos (más de 18 bloques; desde la fase 12, más de 12) y después de dos tiros vuelve a perseguirte; se retira solo con menos del 10-20 % de vida. |
-| La fase 20 tenía un título | **Cinemática de la fase 20** (abajo). |
+| La fase 20 tenía un título | **Cinemática de la fase 20** (en la v10.2 cambió: ver arriba). |
 
-### Cinemática de la fase 20
+### Cinemática de la fase 20 (v10.1)
 
-Inspirada en la imagen y el video que mandaste (la gráfica del poder que crece de forma exponencial). Dura unos 13 s y la ven todos los jugadores a 48 bloques:
-
-1. **Fundido** y toma por encima de tu hombro: Claude Exponencial Infinito cambia a su **cara estilo Saitama** (calvo, ojos de párpado caído) y tú llevas una **máscara estilo Garou** (blanca, con orejas puntiagudas y colmillos).
-2. **La gráfica**: fondo negro con cuadrícula y ejes verdes **PODER (Y)** y **TIEMPO (X)**. Se dibujan dos curvas blancas con su cara subiendo por la punta: la tuya (la máscara) crece despacio; la del Infinito (Saitama) va por debajo hasta que **se dispara hacia arriba**. Arriba, un **destello blanco** y, a su lado, **"TOP 1" en letras rojas con borde negro, sin marco**.
-3. **Choque de puños** de lado, con energía roja, explosión y temblor de cámara, y otra vez "TOP 1" al lado de su cabeza.
-4. **Fundido** y sigue la pelea (con su aura de la fase 20). Al final sale "INFINITE DETERMINATION".
-
-Mientras dura, el Infinito es intocable y tú no te mueves ni recibes daño. **Tu casco**: mientras llevas la máscara, tu casco se guarda en un hueco libre de tu inventario y al terminar vuelve a tu cabeza (el mismo, con sus encantamientos). Si tu inventario está lleno, no te pone la máscara. Si la cinemática se corta (sales del mundo), al volver se te quita la máscara y tu casco sigue en tu inventario.
-
-Para verla otra vez: cerca de él, `/claudenpc:fase 19` y luego `/claudenpc:fase 20`.
-
-> **Fan-made:** las caras son garabatos propios inspirados en el meme (no son imágenes de One Punch Man ni del video) y el add-on no es oficial ni está afiliado a nadie. Vista previa: `source/vista_v101_cinematica.png` (la toma de la gráfica dibujada con las posiciones reales de las partículas y una cámara de 70°, y la cara y la máscara en el modelo; no es una captura del juego).
-
-> **Sonidos:** la cinemática y el Infinito usan solo sonidos de Minecraft (no se agregó ningún archivo de audio). La música y los sonidos que mandaste antes siguen siendo para tu mundo: si vas a publicar el add-on, cámbialos por sonidos propios o con permiso.
+En la v10.1 la gráfica usaba caras dibujadas (una cara estilo Saitama para él y una máscara estilo Garou para ti). **Desde la v10.2 van las cabezas de verdad** (la de Claude y la tuya con tu skin): ver la sección de la v10.2.
 
 ### Estado de la v10.1
 
-- **GENERATED** y **STATICALLY_VALIDATED**: tipos oficiales 2.4.0 sin errores (incluye la máscara con `ItemStack`, el casco y el inventario), validador del kit y auditoría 1.21.132 con 0 errores y 0 advertencias, cruce de referencias igual que antes.
+- **GENERATED** y **STATICALLY_VALIDATED**: tipos oficiales 2.4.0 sin errores (incluía la máscara, que se quitó en la v10.2, el casco y el inventario), validador del kit y auditoría 1.21.132 con 0 errores y 0 advertencias, cruce de referencias igual que antes.
 - **Simulado fuera del juego**: el simulador ahora tiene la Resistencia de las cinemáticas, el inventario y el casco del jugador. **134 comprobaciones**: las de la v10 más que corre saltando en las fases 1, 5, 7 y 12, que no retrocede, que casi nunca se queda quieto (0-5 % del tiempo, sin contar los 2 ticks del W-tap), la determinación al recibir daño, que reaparece derribado si muere de verdad (y con `/kill` no), que si no hay suelo lejos el rescatista aparece a su lado, que si el que venía muere viene otro y se lo lleva, y la cinemática completa (cara, máscara con el casco guardado y devuelto, 80 trazos, caras subiendo, destello, "TOP 1" a la derecha de la cara y arriba, choque, sin daño al jugador y la pelea que sigue). **40 corridas seguidas sin fallas** (dos tandas de 20). Las simulaciones anteriores siguen pasando.
-- **IN_GAME_TESTED: no.** Revisa en el juego: que la gráfica tape toda la pantalla con tu campo de visión (el fondo mide 112 × 56 bloques a 26 bloques de la cámara), que las partículas se vean a esa distancia, la máscara en tu cabeza, y que el movimiento con impulsos se vea fluido.
+- **IN_GAME_TESTED: no.** Revisa en el juego que el movimiento con impulsos se vea fluido (lo de la cinemática está en la sección de la v10.2).
 
 ## Novedades de la v10.0: Claude Exponencial Infinito (INFINITE DETERMINATION)
 

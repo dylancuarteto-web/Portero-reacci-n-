@@ -7,6 +7,8 @@ import { registrarError } from "./rendimiento.js";
 // Estado de cada Claude Exponencial Infinito y su guardado en la propiedad dinámica
 // "claudenpc:infinito" (determinación, experiencia, estadísticas, lo que recuerda de sus
 // rivales, estilo y etapa: derribado o recuperándose sigue así al volver a abrir el mundo).
+// Si el mundo se cierra mientras está arriba, en la gráfica de la cinemática de la fase 20,
+// "vuelta" guarda dónde estaba y al cargar vuelve ahí.
 
 export const infinitos = new Map(); // id → estado
 
@@ -40,6 +42,7 @@ export function guardar(s) {
     v: 1, det: s.determinacion, exp: Math.round(s.experiencia), est: s.estadisticas,
     mem: resumen(s), etapa: s.etapa, estilo: s.estilo, t, base: s.derribo?.base ?? s.recuperacion?.base,
   };
+  if (s.vuelta) datos.vuelta = s.vuelta;
   try {
     let txt = JSON.stringify(datos);
     if (txt.length > 30000) txt = JSON.stringify({ ...datos, mem: {} });
@@ -64,6 +67,14 @@ export function cargar(e, s) {
   s.estadisticas = d.est && typeof d.est === "object" ? d.est : {};
   s.memoriaGuardada = d.mem && typeof d.mem === "object" ? d.mem : {};
   s.estilo = typeof d.estilo === "string" ? d.estilo : undefined;
+  const v = d.vuelta;
+  if (v && [v.x, v.y, v.z].every(Number.isFinite)) {
+    try {
+      e.teleport({ x: v.x, y: v.y, z: v.z }, { rotation: { x: 0, y: Number(v.ry) || 0 } });
+    } catch {
+      // Sin sitio: se queda donde está.
+    }
+  }
   const base = d.base ?? piso(e.location);
   if (d.etapa === "derribado" || d.etapa === "cargado") {
     // Si lo estaban cargando, queda derribado donde esté (el rescatista se perdió al cerrar).

@@ -9,14 +9,13 @@
             "Texture.t1",
             "Texture.t2",
             "Texture.t3",
-            "Texture.t4",
-            "Texture.t5"
+            "Texture.t4"
           ]
         }
       },
       "geometry": "Geometry.default",
       "textures": [
-        "Array.pieles[query.skin_id == 1 ? 5 : query.variant]"
+        "Array.pieles[query.variant]"
       ],
       "materials": [
         {
@@ -53,7 +52,7 @@
           "*": true
         },
         {
-          "cinta*": "query.variant >= 1 && query.skin_id != 1"
+          "cinta*": "query.variant >= 1"
         },
         {
           "bufanda*": "query.variant >= 2"
