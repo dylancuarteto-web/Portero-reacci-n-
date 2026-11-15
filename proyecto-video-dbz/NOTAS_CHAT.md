@@ -29,6 +29,7 @@
 - Scripts para regenerar en fuentes/ (engine.py, chars.py, scenes.py, render_anim.py, audio2.py, mix.sh).
 - Audio extra (assets/narracion_extra.mp3): "Además de esta hazaña, Vegito no recibió ningún golpe en el canon, siendo este que
   esquivó varios ataques de sus oponentes como Buu o Zamasu." Insertado tras la pelea con Zamasu, con escena propia:
-  contador de golpes bloqueados, esquives con "¡FALLÓ!" y Vegito cargando un 0 gigante en la espalda (golpes recibidos).
-- Vegito bloquea los golpes de Buuhan con la pierna.
+  Vegito (base) recibe un 0 gigante que le cae encima (humo, tiembla), se transforma en SSJ y lo sube poco a poco, y en Blue
+  lo levanta fácilmente (golpes recibidos: 0); luego contador de golpes bloqueados y esquives con "¡FALLÓ!".
+- Vegito bloquea los golpes bajos de Buuhan subiendo la rodilla (espinilla vertical).
 - Tabla "Ranking de fusiones" en la pregunta final: Vegito #1 y luego intercambio con Gogeta #1.

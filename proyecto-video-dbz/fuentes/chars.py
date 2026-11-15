@@ -410,6 +410,7 @@ class Char:
         c.restore()
         c.restore()
         self.headpos = (x, oy + (-LT - NECK - HR * 0.75) * sc)
+        self.fhands = [(x + hands[g][2][0] * sc, oy + hands[g][2][1] * sc) for g in (-1, 1)]
         self.top = oy + (-LT - NECK - HR * 0.75 - 170) * sc
 
     def head_front(self, c, p, t):
@@ -467,6 +468,9 @@ FPOSES = {
     "fcross": dict(a1=22, a2=-128, spread=12, crouch=0, tilt=-3, cross=True),
     "fpower": dict(a1=30, a2=-14, spread=22, crouch=30, tilt=0),
     "fflex": dict(a1=86, a2=96, spread=16, crouch=6, tilt=0),
+    "fhold_low": dict(a1=132, a2=80, spread=28, crouch=62, tilt=0),
+    "fhold_mid": dict(a1=146, a2=52, spread=22, crouch=34, tilt=0),
+    "fhold_up": dict(a1=168, a2=12, spread=14, crouch=0, tilt=0),
 }
 
 

@@ -231,11 +231,11 @@ BUU_FIGHT_V = fly([
     (33.9, {"p": "idle", "x": 330})])
 BUU_FIGHT_B = fly([
     (20.08, {"p": "idle", "x": 800, "expr": "angry"}), (21.0, {"p": "raise", "x": 780}),
-    (21.4, {"p": "dash", "x": 660, "air": AIRB}), (21.6, {"p": "punch", "x": 630, "expr": "shout"}), (21.8, {"p": "idle", "x": 640}),
-    (21.95, {"p": "punch2", "x": 630}), (22.15, {"p": "idle", "x": 640}), (22.3, {"p": "punch", "x": 630}), (22.5, {"p": "idle", "x": 640}),
-    (22.65, {"p": "punch2", "x": 630}), (22.85, {"p": "idle", "x": 640}), (23.0, {"p": "punch", "x": 630}), (23.4, {"p": "idle", "x": 660, "expr": "angry"}),
-    (24.0, {"p": "punch", "x": 630, "expr": "shout"}), (24.2, {"p": "idle", "x": 640}), (24.35, {"p": "punch2", "x": 630}), (24.55, {"p": "idle", "x": 640}),
-    (24.7, {"p": "punch", "x": 630}), (24.9, {"p": "idle", "x": 640}), (25.05, {"p": "punch2", "x": 630}),
+    (21.4, {"p": "dash", "x": 660, "air": AIRB}), (21.6, {"p": "lowpunch", "x": 630, "expr": "shout"}), (21.8, {"p": "idle", "x": 640}),
+    (21.95, {"p": "lowpunch2", "x": 630}), (22.15, {"p": "idle", "x": 640}), (22.3, {"p": "lowpunch", "x": 630}), (22.5, {"p": "idle", "x": 640}),
+    (22.65, {"p": "lowpunch2", "x": 630}), (22.85, {"p": "idle", "x": 640}), (23.0, {"p": "lowpunch", "x": 630}), (23.4, {"p": "idle", "x": 660, "expr": "angry"}),
+    (24.0, {"p": "lowpunch", "x": 630, "expr": "shout"}), (24.2, {"p": "idle", "x": 640}), (24.35, {"p": "lowpunch2", "x": 630}), (24.55, {"p": "idle", "x": 640}),
+    (24.7, {"p": "lowpunch", "x": 630}), (24.9, {"p": "idle", "x": 640}), (25.05, {"p": "lowpunch2", "x": 630}),
     (25.4, {"p": "idle", "x": 680, "expr": "angry"}), (26.3, {"p": "raise", "x": 700}), (26.74, {"p": "slash", "x": 620, "expr": "shout"}),
     (27.4, {"p": "slash", "x": 620}), (27.8, {"p": "idle", "x": 660, "expr": "angry"}), (28.1, {"p": "hurt", "x": 700, "expr": "hurt", "air": AIRB}),
     (28.6, {"p": "idle", "x": 690, "expr": "angry"}), (30.6, {"p": "idle", "x": 700}), (30.9, {"p": "dash", "x": 660, "air": AIRB}),
@@ -538,34 +538,35 @@ def s8(c, t):  # 63.75 - 73.4 face off, zoom, cross-counter
 INS, DINS = 53.17, 9.136122448979592
 TOTAL = DUR + DINS
 # (relative time, attacker, defence)
-REC_EV = [(1.7, "B", "block"), (2.0, "Z", "legblock"), (2.3, "B", "legblock"), (2.6, "Z", "block"), (2.9, "B", "block"),
-          (3.2, "Z", "legblock"), (3.5, "B", "block"), (3.8, "Z", "block"),
-          (4.6, "B", "up"), (5.2, "Z", "down"), (5.8, "B", "up"), (6.4, "Z", "down"), (6.9, "B", "up"), (7.4, "Z", "down")]
-REC_SFX = [(INS + 0.0, "power", .18)] + [(INS + te, (1, 3, 5, 2)[i % 4], .18 if d in ("up", "down") else .24) for i, (te, a, d) in enumerate(REC_EV)] + [(INS + 7.8, "big", .34), (INS + 8.05, "power", .22)]
+REC_EV = [(4.7, "B", "legblock"), (5.0, "Z", "block"), (5.3, "B", "legblock"), (5.6, "Z", "block"), (5.9, "B", "legblock"),
+          (6.3, "Z", "down"), (6.8, "B", "up"), (7.3, "Z", "down"), (7.8, "B", "up")]
+REC_SFX = ([(INS + 0.82, "big", .40), (INS + 1.9, "power", .26), (INS + 3.0, "power", .26), (INS + 4.4, 0, .26)]
+           + [(INS + te, (1, 3, 5, 2)[i % 4], .18 if d in ("up", "down") else .24) for i, (te, a, d) in enumerate(REC_EV)]
+           + [(INS + 8.2, "big", .34)])
 
 
 def rec_kfs():
-    v = [(1.4, {"p": "idle", "x": 540, "expr": "smirk", "form": "blue"})]
-    b = [(1.0, {"p": "dash", "x": -300, "expr": "angry"}), (1.45, {"p": "idle", "x": 110})]
-    z = [(1.0, {"p": "dash", "x": 1400, "expr": "grin", "blade": True}), (1.45, {"p": "idle", "x": 970})]
+    v = [(4.4, {"p": "idle", "x": 540, "expr": "smirk", "form": "blue"})]
+    b = [(4.1, {"p": "dash", "x": -300, "expr": "angry"}), (4.45, {"p": "idle", "x": 110})]
+    z = [(4.1, {"p": "dash", "x": 1400, "expr": "grin", "blade": True}), (4.45, {"p": "idle", "x": 970})]
     for i, (te, who, d) in enumerate(REC_EV):
         if d == "up":
-            dv = {"p": "dodge", "air": AIRB + 170, "x": 560 if who == "B" else 520}
+            dv = {"p": "dodge", "air": AIRB + 170, "x": 560}
         elif d == "down":
-            dv = {"p": "dodge", "air": AIRB - 120, "x": 520 if who == "Z" else 560}
+            dv = {"p": "dodge", "air": AIRB - 120, "x": 520}
         else:
             dv = {"p": d}
-        v += [(te - 0.1, {"p": "idle", "x": 540}), (te, dict(dv)), (te + 0.18, dict(dv))]
+        v += [(te - 0.1, {"p": "idle", "x": 540}), (te, dict(dv)), (te + 0.16, dict(dv))]
         if who == "B":
-            pose = "punch" if i % 2 == 0 else "punch2"
-            b += [(te - 0.22, {"p": "idle", "x": 130}), (te - 0.04, {"p": "dash", "x": 210}), (te, {"p": pose, "x": 235, "expr": "shout"}),
-                  (te + 0.2, {"p": "idle", "x": 190, "expr": "angry"})]
+            pose = ("lowpunch" if i % 2 == 0 else "lowpunch2") if d == "legblock" else ("punch" if i % 2 == 0 else "punch2")
+            b += [(te - 0.2, {"p": "idle", "x": 130}), (te - 0.04, {"p": "dash", "x": 210}), (te, {"p": pose, "x": 235, "expr": "shout"}),
+                  (te + 0.18, {"p": "idle", "x": 190, "expr": "angry"})]
         else:
-            z += [(te - 0.22, {"p": "raise", "x": 950}), (te - 0.04, {"p": "dash", "x": 870}), (te, {"p": "slash", "x": 845, "expr": "shout"}),
-                  (te + 0.2, {"p": "idle", "x": 890, "expr": "grin"})]
-    v += [(7.6, {"p": "idle", "x": 540}), (7.8, {"p": "power", "x": 540, "expr": "shout"}), (8.1, {"p": "cross", "x": 540, "expr": "smirk"}), (9.3, {"p": "cross", "x": 540})]
-    b += [(7.75, {"p": "idle", "x": 180, "expr": "angry"}), (7.85, {"p": "hurt", "x": 170, "expr": "hurt"}), (8.4, {"p": "hurt", "x": -500, "air": AIRB + 300})]
-    z += [(7.75, {"p": "idle", "x": 900}), (7.85, {"p": "hurt", "x": 910, "expr": "hurt"}), (8.4, {"p": "hurt", "x": 1600, "air": AIRB + 300})]
+            z += [(te - 0.2, {"p": "raise", "x": 950}), (te - 0.04, {"p": "dash", "x": 870}), (te, {"p": "slash", "x": 845, "expr": "shout"}),
+                  (te + 0.18, {"p": "idle", "x": 890, "expr": "grin"})]
+    v += [(8.0, {"p": "idle", "x": 540}), (8.2, {"p": "power", "x": 540, "expr": "shout"}), (8.5, {"p": "cross", "x": 540, "expr": "smirk"}), (9.3, {"p": "cross", "x": 540})]
+    b += [(8.15, {"p": "idle", "x": 180, "expr": "angry"}), (8.25, {"p": "hurt", "x": 170, "expr": "hurt"}), (8.8, {"p": "hurt", "x": -500, "air": AIRB + 300})]
+    z += [(8.15, {"p": "idle", "x": 900}), (8.25, {"p": "hurt", "x": 910, "expr": "hurt"}), (8.8, {"p": "hurt", "x": 1600, "air": AIRB + 300})]
     return fly(v), fly(b), fly(z)
 
 
@@ -573,12 +574,12 @@ REC_V, REC_B, REC_Z = rec_kfs()
 
 
 def counter(c, tt):
-    if not (0.4 <= tt < 8.0):
+    if not (4.5 <= tt < 9.3):
         return
     n = sum(1 for te, _, _ in REC_EV if te <= tt)
     last = max([te for te, _, _ in REC_EV if te <= tt], default=-9)
     pop = 1 + 0.25 * max(0, 1 - (tt - last) / 0.2)
-    k = ease((tt - 0.4) / 0.35) * (1 - ease((tt - 7.75) / 0.25))
+    k = ease((tt - 4.5) / 0.3)
     c.save(); c.translate(540, 520); c.scale(k, k)
     r = skia.Rect.MakeXYWH(-330, -70, 660, 140)
     c.drawRoundRect(r, 34, 34, P((18, 14, 36), a=220)); c.drawRoundRect(r, 34, 34, P((255, 206, 40), 6))
@@ -609,52 +610,139 @@ def straps(c, x, py, sc, k):
         c.drawLine(*p0, *p1, P((150, 92, 40), 13 * k))
 
 
+def draw_zero(c, cx, bottom, s=1.0, a=255):
+    rx, ry, th = 128 * s, 172 * s, 64 * s
+    cy = bottom - ry
+    pth = skia.Path()
+    pth.setFillType(skia.PathFillType.kEvenOdd)
+    pth.addOval(skia.Rect.MakeLTRB(cx - rx, cy - ry, cx + rx, cy + ry))
+    pth.addOval(skia.Rect.MakeLTRB(cx - rx + th, cy - ry + th * 0.9, cx + rx - th, cy + ry - th * 0.9))
+    c.drawPath(pth, P((0, 0, 0), blur=14, a=90))
+    sh = skia.GradientShader.MakeLinear([(cx - rx, cy - ry), (cx + rx, cy + ry)], [C(255, 240, 150), C(255, 196, 40), C(200, 120, 20)])
+    c.drawPath(pth, P((255, 200, 40), shader=sh))
+    c.drawPath(pth, P(OUTC, 8))
+    c.drawArc(skia.Rect.MakeLTRB(cx - rx + th * 0.35, cy - ry + th * 0.35, cx + rx - th * 0.35, cy + ry - th * 0.35), 200, 70, False, P((255, 255, 230), 12 * s))
+    return cy - ry
+
+
+def smoke(c, x, y, t01, n=9, R=330, seed=2):
+    if not 0 <= t01 <= 1:
+        return
+    rnd = random.Random(seed)
+    for i in range(n):
+        ang = math.pi + (i + 0.5) * math.pi / n + rnd.uniform(-0.15, 0.15)
+        r = 60 + R * ease(t01) * rnd.uniform(0.7, 1.1)
+        px = x + math.cos(ang) * r
+        py = y + math.sin(ang) * r * 0.35 - 140 * t01 * rnd.uniform(0.5, 1.2)
+        rad = (46 + 60 * t01) * rnd.uniform(0.8, 1.2)
+        a = int(235 * (1 - t01) ** 0.8)
+        c.drawCircle(px, py, rad, P((214, 206, 196), a=a))
+        c.drawCircle(px, py, rad, P(OUTC, 3, a=int(a * 0.7)))
+        c.drawCircle(px - rad * 0.3, py - rad * 0.3, rad * 0.4, P((245, 240, 235), a=a))
+
+
+def sweat(c, x, y, tt):
+    for i in range(2):
+        u = (tt * 1.8 + i * 0.5) % 1
+        sgn = -1 if i == 0 else 1
+        px = x + sgn * (50 + 60 * u); py = y - 40 + 120 * u * u - 60 * u
+        a = int(255 * (1 - u))
+        drop = smooth([(px, py - 16), (px + 9, py), (px, py + 9), (px - 9, py)])
+        c.drawPath(drop, P((120, 200, 255), a=a)); c.drawPath(drop, P(OUTC, 3, a=a))
+
+
+DUMMY = skia.Surface(W, H)
+
+
+def zero_scene(c, tt):
+    bg_waste(c, tt)
+    sc = 1.4
+    # pose timeline
+    kf = [(0.0, {"p": "fstand", "expr": "smirk", "form": "base"}), (0.45, {"p": "fstand", "expr": "smirk"}),
+          (0.7, {"p": "fhold_up", "expr": "shout"}), (0.82, {"p": "fhold_up"}), (0.97, {"p": "fhold_low", "expr": "hurt"}),
+          (1.9, {"p": "fhold_low", "expr": "shout"}), (3.0, {"p": "fhold_mid"}), (3.45, {"p": "fhold_up", "expr": "smirk"}), (4.5, {"p": "fhold_up"})]
+    p = ftrack(kf, tt)
+    form = "base" if tt < 1.9 else ("gold" if tt < 3.0 else "blue")
+    p["form"] = form
+    if 1.9 <= tt < 2.3:
+        p["grow"] = 0.75 + 0.25 * ease((tt - 1.9) / 0.4)
+    if 3.0 <= tt < 3.4:
+        p["grow"] = 0.75 + 0.25 * ease((tt - 3.0) / 0.4)
+    trem = 0.0
+    if 0.82 <= tt < 1.9:
+        trem = 7
+    elif 1.9 <= tt < 3.0:
+        trem = lerp(6, 2, (tt - 1.9) / 1.1)
+    jx = math.sin(tt * 95) * trem
+    if tt >= 0.82:
+        # cracked ground under the feet
+        for k in range(6):
+            ang = math.radians(-170 + k * 34)
+            c.drawLine(540, GY + 6, 540 + math.cos(ang) * 260, GY + 6 + abs(math.sin(ang)) * 60 + 20, P(OUTC, 5))
+    if tt >= 1.9:
+        aura(c, 540 + jx, GY, sc, tt, GOLD if tt < 3.0 else BLUE, 1.15 if tt < 3.45 else 0.8)
+    VEG.draw(c, 540 + jx, GY, sc, p, tt, view="front")
+    hy = min(VEG.fhands[0][1], VEG.fhands[1][1]) - 28
+    if tt >= 0.82:
+        lift = abs(math.sin((tt - 3.45) * 4.0)) * 40 if tt >= 3.45 else 0
+        draw_zero(c, 540 + jx, hy - lift)
+    if tt < 0.82:
+        u = max(0.0, (tt - 0.25) / 0.57)
+        bottom = lerp(-120, hy, u * u)
+        if tt >= 0.25:
+            for i in range(5):
+                c.drawLine(540 - 100 + i * 50, bottom - 520, 540 - 100 + i * 50, bottom - 380, P((255, 255, 255), 6, a=160))
+            draw_zero(c, 540, bottom)
+    if 0.82 <= tt < 2.6:
+        sweat(c, VEG.headpos[0], VEG.headpos[1], tt)
+    smoke(c, 540, GY, (tt - 0.82) / 1.4, 11, 380, 3)
+    smoke(c, 540, hy - 150, (tt - 0.82) / 0.9, 6, 200, 5)
+    ring(c, 540, GY, (tt - 0.82) / 0.6, (255, 255, 255), 600)
+    if tt >= 0.9:
+        a = ease((tt - 0.9) / 0.3)
+        c.save(); c.translate(330, 1490); c.scale(a, a)
+        text(c, "GOLPES RECIBIDOS", 0, 0, 52, (255, 255, 255), 12)
+        c.restore()
+    if 3.6 <= tt < 4.4:
+        text(c, "¡JE!", 760, 620, 70, (255, 255, 255), 12)
+
+
 def recap(c, tt):
+    if tt < 4.4:
+        zero_scene(c, tt)
+        counter(c, tt)
+        return
     wind(c, tt + 200)
-    if tt < 1.45:
-        air = 260 + math.sin(tt * 2.4) * 16
-        p = ftrack([(0, {"p": "fcross", "expr": "smirk", "form": "blue"})], tt)
-        aura(c, 540, GY, 1.35, tt, BLUE, 0.7, air)
-        VEG.draw(c, 540, GY, 1.35, p, tt, air=air, view="front")
-    else:
-        bob = math.sin(tt * 2.4) * 14
-        pb, pz = track(REC_B, tt), track(REC_Z, tt)
-        pb["air"] += bob * 0.7; pz["air"] -= bob * 0.7
-        aura(c, pb["x"], GY, SC, tt, PINK, 0.3, pb["air"])
-        BUU.draw(c, pb["x"], GY, SC, pb, tt, face=1, air=pb["air"])
-        aura(c, pz["x"], GY, SC, tt, PINK, 0.3, pz["air"])
-        ZAM.draw(c, pz["x"], GY, SC, pz, tt, face=-1, air=pz["air"])
-        p = track(REC_V, tt)
-        p["air"] += bob
-        # face the current / next attacker
-        nxt = min(REC_EV, key=lambda e: abs(e[0] - tt))
-        face = -1 if nxt[1] == "B" else 1
-        if tt >= 7.6:
-            face = 1
-        if any(abs(tt - te) < 0.25 for te, _, d in REC_EV if d in ("up", "down")):
-            ghost(c, VEG, REC_V, tt, None, face=face)
-        aura(c, 540, GY, SC, tt, BLUE, 1.4 if 7.8 <= tt < 8.3 else 0.55, p["air"])
-        if tt >= 8.05:
-            pelvis_y = GY - VEG.foot_depth(p) * SC - p["air"]
-            zero_on_back(c, 540, pelvis_y, SC, ease((tt - 8.05) / 0.35) * (1 + 0.12 * max(0, 1 - (tt - 8.05) / 0.3)), tt)
-        VEG.draw(c, 540, GY, SC, p, tt, face=face, air=p["air"])
-        if tt >= 8.05:
-            straps(c, 540, pelvis_y, SC, ease((tt - 8.05) / 0.35))
-        if tt >= 8.05:
-            text(c, "GOLPES RECIBIDOS", 540, GY - p["air"] + 120, 58, (255, 255, 255), 12)
-        for te, who, d in REC_EV:
-            u = (tt - te) / 0.3
-            hx, hy = (BUU.hand if who == "B" else ZAM.hand)
-            if d in ("up", "down"):
-                if 0 <= u < 1.6:
-                    c.save(); c.translate(hx, hy - 40); s_ = 0.6 + 0.4 * ease(u * 2); c.scale(s_, s_)
-                    text(c, "¡FALLÓ!", 0, 0, 54, (255, 80, 80), 10, skew=-0.12)
-                    c.restore()
-            else:
-                burst(c, hx, hy, 55, u)
-                sparks(c, hx, hy, u, R=130, seed=int(te * 10))
-        ring(c, 540, GY - AIRB, (tt - 7.8) / 0.7, (190, 240, 255), 900)
-        sparks(c, 540, GY - AIRB - 250, (tt - 7.8) / 0.7, (190, 240, 255), 26, R=700)
+    bob = math.sin(tt * 2.4) * 14
+    pb, pz = track(REC_B, tt), track(REC_Z, tt)
+    pb["air"] += bob * 0.7; pz["air"] -= bob * 0.7
+    aura(c, pb["x"], GY, SC, tt, PINK, 0.3, pb["air"])
+    BUU.draw(c, pb["x"], GY, SC, pb, tt, face=1, air=pb["air"])
+    aura(c, pz["x"], GY, SC, tt, PINK, 0.3, pz["air"])
+    ZAM.draw(c, pz["x"], GY, SC, pz, tt, face=-1, air=pz["air"])
+    p = track(REC_V, tt)
+    p["air"] += bob
+    nxt = min(REC_EV, key=lambda e: abs(e[0] - tt))
+    face = -1 if nxt[1] == "B" else 1
+    if tt >= 8.0:
+        face = 1
+    if any(abs(tt - te) < 0.25 for te, _, d in REC_EV if d in ("up", "down")):
+        ghost(c, VEG, REC_V, tt, None, face=face)
+    aura(c, 540, GY, SC, tt, BLUE, 1.4 if 8.2 <= tt < 8.7 else 0.55, p["air"])
+    VEG.draw(c, 540, GY, SC, p, tt, face=face, air=p["air"])
+    for te, who, d in REC_EV:
+        u = (tt - te) / 0.3
+        hx, hy = (BUU.hand if who == "B" else ZAM.hand)
+        if d in ("up", "down"):
+            if 0 <= u < 1.6:
+                c.save(); c.translate(hx, hy - 40); s_ = 0.6 + 0.4 * ease(u * 2); c.scale(s_, s_)
+                text(c, "¡FALLÓ!", 0, 0, 54, (255, 80, 80), 10, skew=-0.12)
+                c.restore()
+        else:
+            burst(c, hx, hy, 55, u)
+            sparks(c, hx, hy, u, R=130, seed=int(te * 10))
+    ring(c, 540, GY - AIRB, (tt - 8.2) / 0.7, (190, 240, 255), 900)
+    sparks(c, 540, GY - AIRB - 250, (tt - 8.2) / 0.7, (190, 240, 255), 26, R=700)
     counter(c, tt)
 
 
@@ -741,8 +829,9 @@ def render(c, t):
             u = (tt - ft) / 0.22
             if 0 <= u < 1:
                 c.drawRect(skia.Rect.MakeWH(W, H), P((255, 255, 255), a=int(200 * (1 - u))))
-        u = (tt - 7.8) / 0.25
-        if 0 <= u < 1:
+        for ft in (0.82, 1.9, 3.0, 4.4, 8.2):
+          u = (tt - ft) / 0.25
+          if 0 <= u < 1:
             c.drawRect(skia.Rect.MakeWH(W, H), P((255, 255, 255), a=int(200 * (1 - u))))
         return
     to = t if t < INS else t - DINS
