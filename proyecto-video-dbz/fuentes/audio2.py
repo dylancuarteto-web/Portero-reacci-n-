@@ -1,7 +1,7 @@
 import sys; sys.path.insert(0, sys.argv[3])
 import numpy as np, wave
-from scenes import SFX
-A=sys.argv[1]; O=sys.argv[2]; SR=44100; DUR=73.404
+from scenes import SFX_ALL as SFX
+A=sys.argv[1]; O=sys.argv[2]; SR=44100; DUR=82.5402
 def ld(n):
     w=wave.open(A+"/"+n+".wav"); return np.frombuffer(w.readframes(w.getnframes()),dtype=np.int16)/32768.
 def sv(n,x):

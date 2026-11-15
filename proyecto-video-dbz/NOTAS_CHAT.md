@@ -18,7 +18,7 @@
 - Más imágenes/audios que el usuario enviará.
 
 ## Estado
-- Video final: video_final.mp4, vertical 1080x1920 (YouTube Shorts), 30 fps, 73.4 s (duración exacta de la narración).
+- Video final: video_final.mp4, vertical 1080x1920 (YouTube Shorts), 30 fps, 82.5 s (narración + audio extra insertado en 53.17 s).
 - Estilo animado 2D (como el video de la paloma): Vegito, Buu, Zamasu fusionado y Gogeta dibujados en vectores y animados.
 - Escenas: intro Vegito Blue de frente con las Esferas del Dragón; aterrizaje y combo; Vegito (SSJ) vs Buu con esquives,
   provocación y la escena del caramelo; transformación a Blue; Vegito Blue vs Zamasu fusionado; Vegito y Gogeta de frente
@@ -27,3 +27,8 @@
 - Pelea vs Buuhan en el aire con fondo de viento: Vegito bloquea los golpes y lo provoca; Buuhan delgado; Gogeta con chaleco amarillo.
 - Audio: narración a -16 LUFS, música Saiyajin con limpieza de ruido y ducking bajo la voz, efectos de golpes y power up sincronizados.
 - Scripts para regenerar en fuentes/ (engine.py, chars.py, scenes.py, render_anim.py, audio2.py, mix.sh).
+- Audio extra (assets/narracion_extra.mp3): "Además de esta hazaña, Vegito no recibió ningún golpe en el canon, siendo este que
+  esquivó varios ataques de sus oponentes como Buu o Zamasu." Insertado tras la pelea con Zamasu, con escena propia:
+  contador de golpes bloqueados, esquives con "¡FALLÓ!" y Vegito cargando un 0 gigante en la espalda (golpes recibidos).
+- Vegito bloquea los golpes de Buuhan con la pierna.
+- Tabla "Ranking de fusiones" en la pregunta final: Vegito #1 y luego intercambio con Gogeta #1.

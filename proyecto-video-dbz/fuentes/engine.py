@@ -108,6 +108,7 @@ POSES = {
     "power": dict(lean=4, head=8, fa1=16, fa2=12, ba1=-16, ba2=-12, ft1=30, ft2=-16, bt1=-30, bt2=-10),
     "hurt": dict(lean=-32, head=-22, fa1=125, fa2=40, ba1=155, ba2=30, ft1=50, ft2=-50, bt1=18, bt2=-60),
     "dash": dict(lean=55, head=-30, fa1=75, fa2=60, ba1=20, ba2=90, ft1=-12, ft2=-40, bt1=-34, bt2=-28),
+    "legblock": dict(lean=-12, head=-6, fa1=18, fa2=-112, ba1=30, ba2=62, ft1=98, ft2=66, bt1=-14, bt2=-46),
     "block": dict(lean=6, head=4, fa1=48, fa2=125, ba1=30, ba2=100, ft1=26, ft2=-20, bt1=-24, bt2=-12),
     "raise": dict(lean=-6, head=-6, fa1=160, fa2=15, ba1=20, ba2=100, ft1=24, ft2=-14, bt1=-20, bt2=-10),
     "slash": dict(lean=22, head=4, fa1=70, fa2=-5, ba1=-10, ba2=60, ft1=36, ft2=-14, bt1=-34, bt2=-8),

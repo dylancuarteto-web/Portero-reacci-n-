@@ -26,6 +26,10 @@ C=[(0.12,3.25,"¿Sabías que la fusión extraordinaria entre Goku y Vegeta,"),
 (67.73,69.39,"¿Vegito es más fuerte que Gogeta"),
 (69.60,71.42,"o crees que Gogeta está por encima?"),
 (71.98,73.20,"¡Te leo en los comentarios!")]
+INS, D = 53.17, 9.136122448979592
+ADD = [(0.07, 1.34, "Además de esta hazaña,"), (1.51, 4.12, "Vegito no recibió ningún golpe en el canon,"),
+       (4.46, 8.78, "siendo este que esquivó varios ataques de sus oponentes como Buu o Zamasu.")]
+C = [x for x in C if x[0] < INS] + [(a + INS, b + INS, t) for a, b, t in ADD] + [(a + D, b + D, t) for a, b, t in C if a >= INS]
 W=[]
 for a,b,t in C:
     ws=t.split(); wt=[len(re.sub(r'\W','',w))+1.5 for w in ws]; tot=sum(wt); x=a

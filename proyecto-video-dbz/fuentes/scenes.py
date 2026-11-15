@@ -47,7 +47,7 @@ def shake_at(t):
 
 # ------------------------------------------------------------------ proof picture-in-picture
 PROOF = [(0.4, 20.08, 3, "MANGA · VEGITO BLUE"), (20.08, 41.0, 2, "MANGA · VEGITO vs BUU"),
-         (41.0, 53.54, 4, "MANGA · VEGITO vs ZAMASU"), (53.54, 99, 1, "VEGITO vs GOGETA")]
+         (41.0, 53.54, 4, "MANGA · VEGITO vs ZAMASU"), (53.54, 67.6, 1, "VEGITO vs GOGETA")]
 
 
 def pip(c, t):
@@ -206,7 +206,7 @@ def fly(kfs):
     out = []
     for tm, d in kfs:
         d = dict(d)
-        if d.get("p", "idle") not in ("kick", "hurt", "dash"):
+        if d.get("p", "idle") not in ("kick", "hurt", "dash", "legblock"):
             for k, v in FLY.items():
                 d.setdefault(k, v)
         d.setdefault("air", AIRB)
@@ -215,14 +215,14 @@ def fly(kfs):
 
 
 BUU_FIGHT_V = fly([
-    (20.08, {"p": "idle", "x": 300, "expr": "smirk", "form": "gold"}), (21.3, {"p": "block", "x": 310}),
-    (21.6, {"p": "block", "x": 290}), (21.8, {"p": "block", "x": 305}), (21.95, {"p": "block", "x": 288}), (22.15, {"p": "block", "x": 305}),
-    (22.3, {"p": "block", "x": 288}), (22.5, {"p": "block", "x": 305}), (22.65, {"p": "block", "x": 288}), (22.85, {"p": "block", "x": 305}),
-    (23.0, {"p": "block", "x": 288}), (23.4, {"p": "block", "x": 300, "expr": "smirk"}),
-    (24.0, {"p": "block", "x": 292}), (24.2, {"p": "block", "x": 300}), (24.35, {"p": "block", "x": 292}), (24.55, {"p": "block", "x": 300}),
-    (24.7, {"p": "block", "x": 292}), (24.9, {"p": "block", "x": 300}), (25.05, {"p": "block", "x": 292}),
-    (25.4, {"p": "taunt", "x": 300}), (26.3, {"p": "taunt", "x": 300}), (26.6, {"p": "block", "x": 305}),
-    (26.74, {"p": "block", "x": 300}), (27.4, {"p": "block", "x": 300}),
+    (20.08, {"p": "idle", "x": 300, "expr": "smirk", "form": "gold"}), (21.3, {"p": "legblock", "x": 310}),
+    (21.6, {"p": "legblock", "x": 290}), (21.8, {"p": "legblock", "x": 305}), (21.95, {"p": "legblock", "x": 288}), (22.15, {"p": "legblock", "x": 305}),
+    (22.3, {"p": "legblock", "x": 288}), (22.5, {"p": "legblock", "x": 305}), (22.65, {"p": "legblock", "x": 288}), (22.85, {"p": "legblock", "x": 305}),
+    (23.0, {"p": "legblock", "x": 288}), (23.4, {"p": "legblock", "x": 300, "expr": "smirk"}),
+    (24.0, {"p": "legblock", "x": 292}), (24.2, {"p": "legblock", "x": 300}), (24.35, {"p": "legblock", "x": 292}), (24.55, {"p": "legblock", "x": 300}),
+    (24.7, {"p": "legblock", "x": 292}), (24.9, {"p": "legblock", "x": 300}), (25.05, {"p": "legblock", "x": 292}),
+    (25.4, {"p": "taunt", "x": 300}), (26.3, {"p": "taunt", "x": 300}), (26.6, {"p": "legblock", "x": 305}),
+    (26.74, {"p": "legblock", "x": 300}), (27.4, {"p": "legblock", "x": 300}),
     (27.8, {"p": "dash", "x": 400, "air": AIRB}), (28.1, {"p": "punch", "x": 430, "expr": "grin"}),
     (28.6, {"p": "idle", "x": 310, "expr": "smirk"}), (29.38, {"p": "taunt", "x": 310, "expr": "smirk"}),
     (30.8, {"p": "cross", "x": 310}), (31.0, {"p": "cross", "x": 296}), (31.15, {"p": "cross", "x": 306}),
@@ -524,6 +524,7 @@ def s8(c, t):  # 63.75 - 73.4 face off, zoom, cross-counter
         u = (t - 67.4) / 0.25
         if u < 1:
             c.drawRect(skia.Rect.MakeWH(W, H), P((255, 255, 255), a=int(230 * (1 - u))))
+    ranking(c, t)
     if t >= 71.98:
         k = ease((t - 71.98) / 0.35)
         c.save(); c.translate(330, 1520); c.scale(k * 0.8, k * 0.8)
@@ -533,24 +534,236 @@ def s8(c, t):  # 63.75 - 73.4 face off, zoom, cross-counter
         c.restore()
 
 
+# ================================================================== RECAP (inserted narration, 9.14 s)
+INS, DINS = 53.17, 9.136122448979592
+TOTAL = DUR + DINS
+# (relative time, attacker, defence)
+REC_EV = [(1.7, "B", "block"), (2.0, "Z", "legblock"), (2.3, "B", "legblock"), (2.6, "Z", "block"), (2.9, "B", "block"),
+          (3.2, "Z", "legblock"), (3.5, "B", "block"), (3.8, "Z", "block"),
+          (4.6, "B", "up"), (5.2, "Z", "down"), (5.8, "B", "up"), (6.4, "Z", "down"), (6.9, "B", "up"), (7.4, "Z", "down")]
+REC_SFX = [(INS + 0.0, "power", .18)] + [(INS + te, (1, 3, 5, 2)[i % 4], .18 if d in ("up", "down") else .24) for i, (te, a, d) in enumerate(REC_EV)] + [(INS + 7.8, "big", .34), (INS + 8.05, "power", .22)]
+
+
+def rec_kfs():
+    v = [(1.4, {"p": "idle", "x": 540, "expr": "smirk", "form": "blue"})]
+    b = [(1.0, {"p": "dash", "x": -300, "expr": "angry"}), (1.45, {"p": "idle", "x": 110})]
+    z = [(1.0, {"p": "dash", "x": 1400, "expr": "grin", "blade": True}), (1.45, {"p": "idle", "x": 970})]
+    for i, (te, who, d) in enumerate(REC_EV):
+        if d == "up":
+            dv = {"p": "dodge", "air": AIRB + 170, "x": 560 if who == "B" else 520}
+        elif d == "down":
+            dv = {"p": "dodge", "air": AIRB - 120, "x": 520 if who == "Z" else 560}
+        else:
+            dv = {"p": d}
+        v += [(te - 0.1, {"p": "idle", "x": 540}), (te, dict(dv)), (te + 0.18, dict(dv))]
+        if who == "B":
+            pose = "punch" if i % 2 == 0 else "punch2"
+            b += [(te - 0.22, {"p": "idle", "x": 130}), (te - 0.04, {"p": "dash", "x": 210}), (te, {"p": pose, "x": 235, "expr": "shout"}),
+                  (te + 0.2, {"p": "idle", "x": 190, "expr": "angry"})]
+        else:
+            z += [(te - 0.22, {"p": "raise", "x": 950}), (te - 0.04, {"p": "dash", "x": 870}), (te, {"p": "slash", "x": 845, "expr": "shout"}),
+                  (te + 0.2, {"p": "idle", "x": 890, "expr": "grin"})]
+    v += [(7.6, {"p": "idle", "x": 540}), (7.8, {"p": "power", "x": 540, "expr": "shout"}), (8.1, {"p": "cross", "x": 540, "expr": "smirk"}), (9.3, {"p": "cross", "x": 540})]
+    b += [(7.75, {"p": "idle", "x": 180, "expr": "angry"}), (7.85, {"p": "hurt", "x": 170, "expr": "hurt"}), (8.4, {"p": "hurt", "x": -500, "air": AIRB + 300})]
+    z += [(7.75, {"p": "idle", "x": 900}), (7.85, {"p": "hurt", "x": 910, "expr": "hurt"}), (8.4, {"p": "hurt", "x": 1600, "air": AIRB + 300})]
+    return fly(v), fly(b), fly(z)
+
+
+REC_V, REC_B, REC_Z = rec_kfs()
+
+
+def counter(c, tt):
+    if not (0.4 <= tt < 8.0):
+        return
+    n = sum(1 for te, _, _ in REC_EV if te <= tt)
+    last = max([te for te, _, _ in REC_EV if te <= tt], default=-9)
+    pop = 1 + 0.25 * max(0, 1 - (tt - last) / 0.2)
+    k = ease((tt - 0.4) / 0.35) * (1 - ease((tt - 7.75) / 0.25))
+    c.save(); c.translate(540, 520); c.scale(k, k)
+    r = skia.Rect.MakeXYWH(-330, -70, 660, 140)
+    c.drawRoundRect(r, 34, 34, P((18, 14, 36), a=220)); c.drawRoundRect(r, 34, 34, P((255, 206, 40), 6))
+    text(c, "GOLPES BLOQUEADOS", -60, 16, 44, (255, 255, 255), 0)
+    c.save(); c.translate(230, 0); c.scale(pop, pop)
+    text(c, str(n), 0, 30, 96, (255, 214, 60), 10)
+    c.restore(); c.restore()
+
+
+def zero_on_back(c, x, py, sc, k, t):
+    """giant golden zero carried on the back. py = pelvis y (Vegito faces right, back is on the left)."""
+    if k <= 0:
+        return
+    c.save()
+    c.translate(x - 150 * sc, py - 80 * sc)
+    c.rotate(-14 + math.sin(t * 3) * 2)
+    c.scale(k, k)
+    text(c, "0", 0, 125, 380, (255, 214, 60), 24, skew=-0.06)
+    c.restore()
+
+
+def straps(c, x, py, sc, k):
+    if k <= 0:
+        return
+    for (ax, ay), (bx, by) in (((-95, -112), (52, -84)), ((-90, -44), (46, -24))):
+        p0 = (x + ax * sc, py + ay * sc); p1 = (x + bx * sc, py + by * sc)
+        c.drawLine(*p0, *p1, P(OUTC, 22 * k))
+        c.drawLine(*p0, *p1, P((150, 92, 40), 13 * k))
+
+
+def recap(c, tt):
+    wind(c, tt + 200)
+    if tt < 1.45:
+        air = 260 + math.sin(tt * 2.4) * 16
+        p = ftrack([(0, {"p": "fcross", "expr": "smirk", "form": "blue"})], tt)
+        aura(c, 540, GY, 1.35, tt, BLUE, 0.7, air)
+        VEG.draw(c, 540, GY, 1.35, p, tt, air=air, view="front")
+    else:
+        bob = math.sin(tt * 2.4) * 14
+        pb, pz = track(REC_B, tt), track(REC_Z, tt)
+        pb["air"] += bob * 0.7; pz["air"] -= bob * 0.7
+        aura(c, pb["x"], GY, SC, tt, PINK, 0.3, pb["air"])
+        BUU.draw(c, pb["x"], GY, SC, pb, tt, face=1, air=pb["air"])
+        aura(c, pz["x"], GY, SC, tt, PINK, 0.3, pz["air"])
+        ZAM.draw(c, pz["x"], GY, SC, pz, tt, face=-1, air=pz["air"])
+        p = track(REC_V, tt)
+        p["air"] += bob
+        # face the current / next attacker
+        nxt = min(REC_EV, key=lambda e: abs(e[0] - tt))
+        face = -1 if nxt[1] == "B" else 1
+        if tt >= 7.6:
+            face = 1
+        if any(abs(tt - te) < 0.25 for te, _, d in REC_EV if d in ("up", "down")):
+            ghost(c, VEG, REC_V, tt, None, face=face)
+        aura(c, 540, GY, SC, tt, BLUE, 1.4 if 7.8 <= tt < 8.3 else 0.55, p["air"])
+        if tt >= 8.05:
+            pelvis_y = GY - VEG.foot_depth(p) * SC - p["air"]
+            zero_on_back(c, 540, pelvis_y, SC, ease((tt - 8.05) / 0.35) * (1 + 0.12 * max(0, 1 - (tt - 8.05) / 0.3)), tt)
+        VEG.draw(c, 540, GY, SC, p, tt, face=face, air=p["air"])
+        if tt >= 8.05:
+            straps(c, 540, pelvis_y, SC, ease((tt - 8.05) / 0.35))
+        if tt >= 8.05:
+            text(c, "GOLPES RECIBIDOS", 540, GY - p["air"] + 120, 58, (255, 255, 255), 12)
+        for te, who, d in REC_EV:
+            u = (tt - te) / 0.3
+            hx, hy = (BUU.hand if who == "B" else ZAM.hand)
+            if d in ("up", "down"):
+                if 0 <= u < 1.6:
+                    c.save(); c.translate(hx, hy - 40); s_ = 0.6 + 0.4 * ease(u * 2); c.scale(s_, s_)
+                    text(c, "¡FALLÓ!", 0, 0, 54, (255, 80, 80), 10, skew=-0.12)
+                    c.restore()
+            else:
+                burst(c, hx, hy, 55, u)
+                sparks(c, hx, hy, u, R=130, seed=int(te * 10))
+        ring(c, 540, GY - AIRB, (tt - 7.8) / 0.7, (190, 240, 255), 900)
+        sparks(c, 540, GY - AIRB - 250, (tt - 7.8) / 0.7, (190, 240, 255), 26, R=700)
+    counter(c, tt)
+
+
+def pip_recap(c, tt):
+    img = IMGS[3]
+    w = 330; h = w * img.height() / img.width()
+    u = ease(tt / 0.35)
+    cx, cy = W - 36 - w / 2, H - 70 - h / 2
+    c.save(); c.translate(cx, cy); c.rotate(3 + math.sin(tt * 1.3) * 1.2); c.scale(0.4 + 0.6 * u, 0.4 + 0.6 * u)
+    r = skia.Rect.MakeXYWH(-w / 2, -h / 2, w, h)
+    c.drawRoundRect(r.makeOutset(14, 14).makeOffset(10, 14), 18, 18, P((0, 0, 0), blur=10, a=110))
+    c.drawRoundRect(r.makeOutset(14, 14), 18, 18, P((255, 255, 255)))
+    c.drawRoundRect(r.makeOutset(14, 14), 18, 18, P((255, 206, 40), 6))
+    c.save(); c.clipRRect(skia.RRect.MakeRectXY(r, 8, 8), True)
+    c.drawImageRect(img, r, skia.SamplingOptions(skia.FilterMode.kLinear, skia.MipmapMode.kLinear))
+    c.restore(); c.drawRoundRect(r, 8, 8, P(OUTC, 4)); c.restore()
+
+
+# ================================================================== RANKING (question at the end)
+def mini_head(c, ch, x, y, s, t):
+    c.save(); c.translate(x, y); c.scale(s, s)
+    ch.head_front(c, {"form": "blue", "expr": "smirk", "grow": 1.0}, t)
+    c.restore()
+
+
+def crown(c, x, y, s):
+    c.save(); c.translate(x, y); c.scale(s, s)
+    pth = poly([(-50, 30), (-56, -24), (-26, 4), (0, -36), (26, 4), (56, -24), (50, 30)])
+    fo(c, pth, (255, 210, 50), 5)
+    for px in (-56, 0, 56):
+        circ(c, px, -30 if px else -42, 9, (255, 90, 90), 3)
+    c.restore()
+
+
+def ranking(c, t):
+    t0, t1 = 67.73, 71.75
+    if not (t0 <= t < t1 + 0.3):
+        return
+    k = ease((t - t0) / 0.35) * (1 - ease((t - t1) / 0.3))
+    px, py, pw, ph = 70, 1150, 940, 520
+    off = (1 - k) * 700
+    c.save(); c.translate(0, off)
+    r = skia.Rect.MakeXYWH(px, py, pw, ph)
+    c.drawRoundRect(r.makeOffset(10, 14), 40, 40, P((0, 0, 0), blur=12, a=120))
+    c.drawRoundRect(r, 40, 40, P((20, 16, 44), a=235)); c.drawRoundRect(r, 40, 40, P((255, 206, 40), 7))
+    text(c, "RANKING DE FUSIONES", 540, py + 82, 56, (255, 214, 60), 10)
+    rows = [py + 200, py + 390]
+    # rank badges + crown fixed in place
+    for i, ry in enumerate(rows):
+        col = (255, 206, 40) if i == 0 else (200, 206, 220)
+        circ(c, px + 100, ry, 62, col, 6)
+        text(c, "#%d" % (i + 1), px + 100, ry + 22, 58, (30, 24, 50), 0)
+        c.drawRoundRect(skia.Rect.MakeXYWH(px + 185, ry - 78, pw - 230, 156), 30, 30, P((255, 255, 255), a=28))
+    crown(c, px + 100, rows[0] - 92, 0.8)
+    # swap animation on "o crees que Gogeta está por encima"
+    u = ease((t - 69.62) / 0.7)
+    vy = lerp(rows[0], rows[1], u); gy = lerp(rows[1], rows[0], u)
+    arc = math.sin(u * math.pi) * 120
+    for ch, nm, yy, dx, colr in ((VEG, "VEGITO", vy, arc, (120, 220, 255)), (GOG, "GOGETA", gy, -arc, (255, 214, 60))):
+        c.save(); c.translate(dx, 0)
+        c.save(); c.clipRect(skia.Rect.MakeXYWH(px + 185, yy - 78, 200, 156)); mini_head(c, ch, px + 290, yy + 38, 0.72, t); c.restore()
+        text(c, nm, px + 600, yy + 26, 80, colr, 12, skew=-0.1)
+        c.restore()
+    if t >= 70.3:
+        a = ease((t - 70.3) / 0.3)
+        c.save(); c.translate(px + pw - 70, rows[0]); c.scale(a, a)
+        text(c, "▲", 0, 22, 70, (90, 230, 120), 8)
+        c.restore()
+        c.save(); c.translate(px + pw - 70, rows[1]); c.scale(a, a)
+        text(c, "▼", 0, 22, 70, (255, 80, 80), 8)
+        c.restore()
+    c.restore()
+
+
 SCENES = [(0, s1), (9.54, s2), (20.08, s3), (33.84, s4), (41.0, s5), (43.19, s6), (53.54, s7), (63.75, s8)]
 
 
 def render(c, t):
-    fn = [f for t0, f in SCENES if t >= t0][-1]
-    dx, dy = shake_at(t)
+    if INS <= t < INS + DINS:
+        tt = t - INS
+        recap(c, tt)
+        pip_recap(c, tt)
+        for ft in (0.0, DINS):
+            u = (tt - ft) / 0.22
+            if 0 <= u < 1:
+                c.drawRect(skia.Rect.MakeWH(W, H), P((255, 255, 255), a=int(200 * (1 - u))))
+        u = (tt - 7.8) / 0.25
+        if 0 <= u < 1:
+            c.drawRect(skia.Rect.MakeWH(W, H), P((255, 255, 255), a=int(200 * (1 - u))))
+        return
+    to = t if t < INS else t - DINS
+    fn = [f for t0, f in SCENES if to >= t0][-1]
+    dx, dy = shake_at(to)
     c.save()
     if dx or dy:
         c.translate(dx, dy)
         c.scale(1.03, 1.03); c.translate(-W * 0.015, -H * 0.015)
-    fn(c, t)
+    fn(c, to)
     c.restore()
-    pip(c, t)
+    pip(c, to)
     for ft in FLASH:
-        u = (t - ft) / 0.22
+        u = (to - ft) / 0.22
         if 0 <= u < 1:
             c.drawRect(skia.Rect.MakeWH(W, H), P((255, 255, 255), a=int(200 * (1 - u))))
     if t < 0.35:
         c.drawRect(skia.Rect.MakeWH(W, H), P((0, 0, 0), a=int(255 * (1 - t / 0.35))))
-    if t > DUR - 0.5:
-        c.drawRect(skia.Rect.MakeWH(W, H), P((0, 0, 0), a=int(255 * min(1, (t - (DUR - 0.5)) / 0.5))))
+    if t > TOTAL - 0.5:
+        c.drawRect(skia.Rect.MakeWH(W, H), P((0, 0, 0), a=int(255 * min(1, (t - (TOTAL - 0.5)) / 0.5))))
+
+
+# all sound cues in final (shifted) time
+SFX_ALL = [(t + (DINS if t >= INS else 0), k, g) for t, k, g in SFX] + REC_SFX
