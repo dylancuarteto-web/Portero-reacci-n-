@@ -1,0 +1,208 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+
+[V4+ Styles]
+Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+Style: Default,Inter ExtraBold,80,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,7,3,5,40,40,0,1
+
+[Events]
+Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+Dialogue: 0,0:00:00.12,0:00:00.51,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}¿SABÍAS{\c&HFFFFFF&\fscx100\fscy100} QUE LA
+Dialogue: 0,0:00:00.51,0:00:00.74,Default,,0,0,0,,{\pos(540,300)}¿SABÍAS {\c&H00D7FF&\fscx118\fscy118}QUE{\c&HFFFFFF&\fscx100\fscy100} LA
+Dialogue: 0,0:00:00.74,0:00:00.92,Default,,0,0,0,,{\pos(540,300)}¿SABÍAS QUE {\c&H00D7FF&\fscx118\fscy118}LA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:00.92,0:00:01.31,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}FUSIÓN{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:01.31,0:00:02.11,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}EXTRAORDINARIA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:02.11,0:00:02.45,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ENTRE{\c&HFFFFFF&\fscx100\fscy100} GOKU Y
+Dialogue: 0,0:00:02.45,0:00:02.73,Default,,0,0,0,,{\pos(540,300)}ENTRE {\c&H00D7FF&\fscx118\fscy118}GOKU{\c&HFFFFFF&\fscx100\fscy100} Y
+Dialogue: 0,0:00:02.73,0:00:02.86,Default,,0,0,0,,{\pos(540,300)}ENTRE GOKU {\c&H00D7FF&\fscx118\fscy118}Y{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:02.86,0:00:03.25,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}VEGETA,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:03.43,0:00:04.00,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONOCIDA{\c&HFFFFFF&\fscx100\fscy100} COMO
+Dialogue: 0,0:00:04.00,0:00:04.34,Default,,0,0,0,,{\pos(540,300)}CONOCIDA {\c&H00D7FF&\fscx118\fscy118}COMO{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:04.34,0:00:04.79,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}VEGITO,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:05.20,0:00:05.52,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}TIENE{\c&HFFFFFF&\fscx100\fscy100} UNA DE
+Dialogue: 0,0:00:05.52,0:00:05.75,Default,,0,0,0,,{\pos(540,300)}TIENE {\c&H00D7FF&\fscx118\fscy118}UNA{\c&HFFFFFF&\fscx100\fscy100} DE
+Dialogue: 0,0:00:05.75,0:00:05.92,Default,,0,0,0,,{\pos(540,300)}TIENE UNA {\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:05.92,0:00:06.15,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}LAS{\c&HFFFFFF&\fscx100\fscy100} CURIOSIDADES
+Dialogue: 0,0:00:06.15,0:00:06.82,Default,,0,0,0,,{\pos(540,300)}LAS {\c&H00D7FF&\fscx118\fscy118}CURIOSIDADES{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:06.82,0:00:07.04,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}MÁS{\c&HFFFFFF&\fscx100\fscy100} IMPRESIONANTES
+Dialogue: 0,0:00:07.04,0:00:07.81,Default,,0,0,0,,{\pos(540,300)}MÁS {\c&H00D7FF&\fscx118\fscy118}IMPRESIONANTES{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:07.81,0:00:07.99,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100} TODO DRAGON
+Dialogue: 0,0:00:07.99,0:00:08.26,Default,,0,0,0,,{\pos(540,300)}DE {\c&H00D7FF&\fscx118\fscy118}TODO{\c&HFFFFFF&\fscx100\fscy100} DRAGON
+Dialogue: 0,0:00:08.26,0:00:08.64,Default,,0,0,0,,{\pos(540,300)}DE TODO {\c&H00D7FF&\fscx118\fscy118}DRAGON{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:08.64,0:00:08.91,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}BALL?{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:09.54,0:00:09.66,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}Y{\c&HFFFFFF&\fscx100\fscy100} ES QUE,
+Dialogue: 0,0:00:09.66,0:00:09.83,Default,,0,0,0,,{\pos(540,300)}Y {\c&H00D7FF&\fscx118\fscy118}ES{\c&HFFFFFF&\fscx100\fscy100} QUE,
+Dialogue: 0,0:00:09.83,0:00:10.05,Default,,0,0,0,,{\pos(540,300)}Y ES {\c&H00D7FF&\fscx118\fscy118}QUE,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:10.05,0:00:10.42,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}DENTRO{\c&HFFFFFF&\fscx100\fscy100} DEL MANGA
+Dialogue: 0,0:00:10.42,0:00:10.64,Default,,0,0,0,,{\pos(540,300)}DENTRO {\c&H00D7FF&\fscx118\fscy118}DEL{\c&HFFFFFF&\fscx100\fscy100} MANGA
+Dialogue: 0,0:00:10.64,0:00:10.95,Default,,0,0,0,,{\pos(540,300)}DENTRO DEL {\c&H00D7FF&\fscx118\fscy118}MANGA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:10.95,0:00:11.27,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CANON,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:11.60,0:00:11.98,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}VEGITO{\c&HFFFFFF&\fscx100\fscy100} TIENE UN
+Dialogue: 0,0:00:11.98,0:00:12.30,Default,,0,0,0,,{\pos(540,300)}VEGITO {\c&H00D7FF&\fscx118\fscy118}TIENE{\c&HFFFFFF&\fscx100\fscy100} UN
+Dialogue: 0,0:00:12.30,0:00:12.48,Default,,0,0,0,,{\pos(540,300)}VEGITO TIENE {\c&H00D7FF&\fscx118\fscy118}UN{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:12.48,0:00:13.01,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}HISTORIAL{\c&HFFFFFF&\fscx100\fscy100} DE
+Dialogue: 0,0:00:13.01,0:00:13.19,Default,,0,0,0,,{\pos(540,300)}HISTORIAL {\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:13.19,0:00:13.61,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}COMBATE{\c&HFFFFFF&\fscx100\fscy100} BASTANTE
+Dialogue: 0,0:00:13.61,0:00:14.09,Default,,0,0,0,,{\pos(540,300)}COMBATE {\c&H00D7FF&\fscx118\fscy118}BASTANTE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:14.09,0:00:14.57,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}PECULIAR:{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:15.20,0:00:15.62,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}NINGUNO{\c&HFFFFFF&\fscx100\fscy100} DE SUS
+Dialogue: 0,0:00:15.62,0:00:15.79,Default,,0,0,0,,{\pos(540,300)}NINGUNO {\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100} SUS
+Dialogue: 0,0:00:15.79,0:00:16.01,Default,,0,0,0,,{\pos(540,300)}NINGUNO DE {\c&H00D7FF&\fscx118\fscy118}SUS{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:16.01,0:00:16.42,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}RIVALES{\c&HFFFFFF&\fscx100\fscy100} HA
+Dialogue: 0,0:00:16.42,0:00:16.59,Default,,0,0,0,,{\pos(540,300)}RIVALES {\c&H00D7FF&\fscx118\fscy118}HA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:16.59,0:00:17.16,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONSEGUIDO{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:17.16,0:00:17.67,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}DEMOSTRAR{\c&HFFFFFF&\fscx100\fscy100} UNA
+Dialogue: 0,0:00:17.67,0:00:17.89,Default,,0,0,0,,{\pos(540,300)}DEMOSTRAR {\c&H00D7FF&\fscx118\fscy118}UNA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:17.89,0:00:18.55,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}SUPERIORIDAD{\c&HFFFFFF&\fscx100\fscy100} CLARA
+Dialogue: 0,0:00:18.55,0:00:18.87,Default,,0,0,0,,{\pos(540,300)}SUPERIORIDAD {\c&H00D7FF&\fscx118\fscy118}CLARA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:18.87,0:00:19.19,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}SOBRE{\c&HFFFFFF&\fscx100\fscy100} ÉL.
+Dialogue: 0,0:00:19.19,0:00:19.36,Default,,0,0,0,,{\pos(540,300)}SOBRE {\c&H00D7FF&\fscx118\fscy118}ÉL.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:20.08,0:00:20.37,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CUANDO{\c&HFFFFFF&\fscx100\fscy100} SE ENFRENTA
+Dialogue: 0,0:00:20.37,0:00:20.51,Default,,0,0,0,,{\pos(540,300)}CUANDO {\c&H00D7FF&\fscx118\fscy118}SE{\c&HFFFFFF&\fscx100\fscy100} ENFRENTA
+Dialogue: 0,0:00:20.51,0:00:20.88,Default,,0,0,0,,{\pos(540,300)}CUANDO SE {\c&H00D7FF&\fscx118\fscy118}ENFRENTA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:20.88,0:00:20.98,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}A{\c&HFFFFFF&\fscx100\fscy100} MAJIN BUU,
+Dialogue: 0,0:00:20.98,0:00:21.23,Default,,0,0,0,,{\pos(540,300)}A {\c&H00D7FF&\fscx118\fscy118}MAJIN{\c&HFFFFFF&\fscx100\fscy100} BUU,
+Dialogue: 0,0:00:21.23,0:00:21.41,Default,,0,0,0,,{\pos(540,300)}A MAJIN {\c&H00D7FF&\fscx118\fscy118}BUU,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:21.73,0:00:21.90,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}LA{\c&HFFFFFF&\fscx100\fscy100} DIFERENCIA DE
+Dialogue: 0,0:00:21.90,0:00:22.45,Default,,0,0,0,,{\pos(540,300)}LA {\c&H00D7FF&\fscx118\fscy118}DIFERENCIA{\c&HFFFFFF&\fscx100\fscy100} DE
+Dialogue: 0,0:00:22.45,0:00:22.62,Default,,0,0,0,,{\pos(540,300)}LA DIFERENCIA {\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:22.62,0:00:22.93,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}PODER{\c&HFFFFFF&\fscx100\fscy100} ES TAN
+Dialogue: 0,0:00:22.93,0:00:23.10,Default,,0,0,0,,{\pos(540,300)}PODER {\c&H00D7FF&\fscx118\fscy118}ES{\c&HFFFFFF&\fscx100\fscy100} TAN
+Dialogue: 0,0:00:23.10,0:00:23.31,Default,,0,0,0,,{\pos(540,300)}PODER ES {\c&H00D7FF&\fscx118\fscy118}TAN{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:23.31,0:00:23.67,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}GRANDE{\c&HFFFFFF&\fscx100\fscy100} QUE
+Dialogue: 0,0:00:23.67,0:00:23.89,Default,,0,0,0,,{\pos(540,300)}GRANDE {\c&H00D7FF&\fscx118\fscy118}QUE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:23.89,0:00:24.39,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONVIERTE{\c&HFFFFFF&\fscx100\fscy100} LA
+Dialogue: 0,0:00:24.39,0:00:24.56,Default,,0,0,0,,{\pos(540,300)}CONVIERTE {\c&H00D7FF&\fscx118\fscy118}LA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:24.56,0:00:24.97,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}BATALLA{\c&HFFFFFF&\fscx100\fscy100} EN UN
+Dialogue: 0,0:00:24.97,0:00:25.14,Default,,0,0,0,,{\pos(540,300)}BATALLA {\c&H00D7FF&\fscx118\fscy118}EN{\c&HFFFFFF&\fscx100\fscy100} UN
+Dialogue: 0,0:00:25.14,0:00:25.30,Default,,0,0,0,,{\pos(540,300)}BATALLA EN {\c&H00D7FF&\fscx118\fscy118}UN{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:25.30,0:00:25.81,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}AUTÉNTICO{\c&HFFFFFF&\fscx100\fscy100} JUEGO.
+Dialogue: 0,0:00:25.81,0:00:26.12,Default,,0,0,0,,{\pos(540,300)}AUTÉNTICO {\c&H00D7FF&\fscx118\fscy118}JUEGO.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:26.74,0:00:27.34,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}VEGITO{\c&HFFFFFF&\fscx100\fscy100} ESQUIVA SUS
+Dialogue: 0,0:00:27.34,0:00:28.03,Default,,0,0,0,,{\pos(540,300)}VEGITO {\c&H00D7FF&\fscx118\fscy118}ESQUIVA{\c&HFFFFFF&\fscx100\fscy100} SUS
+Dialogue: 0,0:00:28.03,0:00:28.39,Default,,0,0,0,,{\pos(540,300)}VEGITO ESQUIVA {\c&H00D7FF&\fscx118\fscy118}SUS{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:28.39,0:00:29.08,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ATAQUES,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:29.38,0:00:29.53,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}LO{\c&HFFFFFF&\fscx100\fscy100} PROVOCA Y
+Dialogue: 0,0:00:29.53,0:00:29.91,Default,,0,0,0,,{\pos(540,300)}LO {\c&H00D7FF&\fscx118\fscy118}PROVOCA{\c&HFFFFFF&\fscx100\fscy100} Y
+Dialogue: 0,0:00:29.91,0:00:30.02,Default,,0,0,0,,{\pos(540,300)}LO PROVOCA {\c&H00D7FF&\fscx118\fscy118}Y{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:30.02,0:00:30.47,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}DEMUESTRA{\c&HFFFFFF&\fscx100\fscy100} UNA
+Dialogue: 0,0:00:30.47,0:00:30.67,Default,,0,0,0,,{\pos(540,300)}DEMUESTRA {\c&H00D7FF&\fscx118\fscy118}UNA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:30.67,0:00:31.13,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONFIANZA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:31.13,0:00:31.77,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}IMPRESIONANTE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:31.77,0:00:32.14,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}DURANTE{\c&HFFFFFF&\fscx100\fscy100} TODO EL
+Dialogue: 0,0:00:32.14,0:00:32.38,Default,,0,0,0,,{\pos(540,300)}DURANTE {\c&H00D7FF&\fscx118\fscy118}TODO{\c&HFFFFFF&\fscx100\fscy100} EL
+Dialogue: 0,0:00:32.38,0:00:32.53,Default,,0,0,0,,{\pos(540,300)}DURANTE TODO {\c&H00D7FF&\fscx118\fscy118}EL{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:32.53,0:00:33.21,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ENFRENTAMIENTO.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:33.84,0:00:34.21,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}INCLUSO{\c&HFFFFFF&\fscx100\fscy100} CUANDO BUU
+Dialogue: 0,0:00:34.21,0:00:34.53,Default,,0,0,0,,{\pos(540,300)}INCLUSO {\c&H00D7FF&\fscx118\fscy118}CUANDO{\c&HFFFFFF&\fscx100\fscy100} BUU
+Dialogue: 0,0:00:34.53,0:00:34.73,Default,,0,0,0,,{\pos(540,300)}INCLUSO CUANDO {\c&H00D7FF&\fscx118\fscy118}BUU{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:34.73,0:00:35.14,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONSIGUE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:35.14,0:00:35.68,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONVERTIRLO{\c&HFFFFFF&\fscx100\fscy100} EN UN
+Dialogue: 0,0:00:35.68,0:00:35.84,Default,,0,0,0,,{\pos(540,300)}CONVERTIRLO {\c&H00D7FF&\fscx118\fscy118}EN{\c&HFFFFFF&\fscx100\fscy100} UN
+Dialogue: 0,0:00:35.84,0:00:35.99,Default,,0,0,0,,{\pos(540,300)}CONVERTIRLO EN {\c&H00D7FF&\fscx118\fscy118}UN{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:35.99,0:00:36.40,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CARAMELO,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:36.73,0:00:37.06,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}VEGITO{\c&HFFFFFF&\fscx100\fscy100} SIGUE SIENDO
+Dialogue: 0,0:00:37.06,0:00:37.34,Default,,0,0,0,,{\pos(540,300)}VEGITO {\c&H00D7FF&\fscx118\fscy118}SIGUE{\c&HFFFFFF&\fscx100\fscy100} SIENDO
+Dialogue: 0,0:00:37.34,0:00:37.67,Default,,0,0,0,,{\pos(540,300)}VEGITO SIGUE {\c&H00D7FF&\fscx118\fscy118}SIENDO{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:37.67,0:00:37.95,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CAPAZ{\c&HFFFFFF&\fscx100\fscy100} DE LUCHAR
+Dialogue: 0,0:00:37.95,0:00:38.11,Default,,0,0,0,,{\pos(540,300)}CAPAZ {\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100} LUCHAR
+Dialogue: 0,0:00:38.11,0:00:38.44,Default,,0,0,0,,{\pos(540,300)}CAPAZ DE {\c&H00D7FF&\fscx118\fscy118}LUCHAR{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:38.44,0:00:38.55,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}Y{\c&HFFFFFF&\fscx100\fscy100} MANTENER EL
+Dialogue: 0,0:00:38.55,0:00:38.96,Default,,0,0,0,,{\pos(540,300)}Y {\c&H00D7FF&\fscx118\fscy118}MANTENER{\c&HFFFFFF&\fscx100\fscy100} EL
+Dialogue: 0,0:00:38.96,0:00:39.11,Default,,0,0,0,,{\pos(540,300)}Y MANTENER {\c&H00D7FF&\fscx118\fscy118}EL{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:39.11,0:00:39.48,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONTROL{\c&HFFFFFF&\fscx100\fscy100} DE LA
+Dialogue: 0,0:00:39.48,0:00:39.64,Default,,0,0,0,,{\pos(540,300)}CONTROL {\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100} LA
+Dialogue: 0,0:00:39.64,0:00:39.79,Default,,0,0,0,,{\pos(540,300)}CONTROL DE {\c&H00D7FF&\fscx118\fscy118}LA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:39.79,0:00:40.25,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}SITUACIÓN.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:41.02,0:00:41.26,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}PERO{\c&HFFFFFF&\fscx100\fscy100} SU HISTORIA
+Dialogue: 0,0:00:41.26,0:00:41.41,Default,,0,0,0,,{\pos(540,300)}PERO {\c&H00D7FF&\fscx118\fscy118}SU{\c&HFFFFFF&\fscx100\fscy100} HISTORIA
+Dialogue: 0,0:00:41.41,0:00:41.81,Default,,0,0,0,,{\pos(540,300)}PERO SU {\c&H00D7FF&\fscx118\fscy118}HISTORIA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:41.81,0:00:41.96,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}NO{\c&HFFFFFF&\fscx100\fscy100} TERMINA AHÍ.
+Dialogue: 0,0:00:41.96,0:00:42.33,Default,,0,0,0,,{\pos(540,300)}NO {\c&H00D7FF&\fscx118\fscy118}TERMINA{\c&HFFFFFF&\fscx100\fscy100} AHÍ.
+Dialogue: 0,0:00:42.33,0:00:42.52,Default,,0,0,0,,{\pos(540,300)}NO TERMINA {\c&H00D7FF&\fscx118\fscy118}AHÍ.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:43.19,0:00:43.34,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}EN{\c&HFFFFFF&\fscx100\fscy100} DRAGON BALL
+Dialogue: 0,0:00:43.34,0:00:43.65,Default,,0,0,0,,{\pos(540,300)}EN {\c&H00D7FF&\fscx118\fscy118}DRAGON{\c&HFFFFFF&\fscx100\fscy100} BALL
+Dialogue: 0,0:00:43.65,0:00:43.89,Default,,0,0,0,,{\pos(540,300)}EN DRAGON {\c&H00D7FF&\fscx118\fscy118}BALL{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:43.89,0:00:44.16,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}SUPER,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:44.43,0:00:44.80,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}VEGITO{\c&HFFFFFF&\fscx100\fscy100} VUELVE A
+Dialogue: 0,0:00:44.80,0:00:45.17,Default,,0,0,0,,{\pos(540,300)}VEGITO {\c&H00D7FF&\fscx118\fscy118}VUELVE{\c&HFFFFFF&\fscx100\fscy100} A
+Dialogue: 0,0:00:45.17,0:00:45.30,Default,,0,0,0,,{\pos(540,300)}VEGITO VUELVE {\c&H00D7FF&\fscx118\fscy118}A{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:45.30,0:00:45.77,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}APARECER{\c&HFFFFFF&\fscx100\fscy100} PARA
+Dialogue: 0,0:00:45.77,0:00:46.04,Default,,0,0,0,,{\pos(540,300)}APARECER {\c&H00D7FF&\fscx118\fscy118}PARA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:46.04,0:00:46.66,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ENFRENTARSE{\c&HFFFFFF&\fscx100\fscy100} A
+Dialogue: 0,0:00:46.66,0:00:46.79,Default,,0,0,0,,{\pos(540,300)}ENFRENTARSE {\c&H00D7FF&\fscx118\fscy118}A{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:46.79,0:00:47.16,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ZAMASU{\c&HFFFFFF&\fscx100\fscy100} FUSIONADO.
+Dialogue: 0,0:00:47.16,0:00:47.68,Default,,0,0,0,,{\pos(540,300)}ZAMASU {\c&H00D7FF&\fscx118\fscy118}FUSIONADO.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:48.31,0:00:48.56,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ESTA{\c&HFFFFFF&\fscx100\fscy100} VEZ,
+Dialogue: 0,0:00:48.56,0:00:48.76,Default,,0,0,0,,{\pos(540,300)}ESTA {\c&H00D7FF&\fscx118\fscy118}VEZ,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:48.91,0:00:49.09,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}EL{\c&HFFFFFF&\fscx100\fscy100} COMBATE ES
+Dialogue: 0,0:00:49.09,0:00:49.54,Default,,0,0,0,,{\pos(540,300)}EL {\c&H00D7FF&\fscx118\fscy118}COMBATE{\c&HFFFFFF&\fscx100\fscy100} ES
+Dialogue: 0,0:00:49.54,0:00:49.73,Default,,0,0,0,,{\pos(540,300)}EL COMBATE {\c&H00D7FF&\fscx118\fscy118}ES{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:49.73,0:00:50.07,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}MUCHO{\c&HFFFFFF&\fscx100\fscy100} MÁS EXIGENTE
+Dialogue: 0,0:00:50.07,0:00:50.30,Default,,0,0,0,,{\pos(540,300)}MUCHO {\c&H00D7FF&\fscx118\fscy118}MÁS{\c&HFFFFFF&\fscx100\fscy100} EXIGENTE
+Dialogue: 0,0:00:50.30,0:00:50.80,Default,,0,0,0,,{\pos(540,300)}MUCHO MÁS {\c&H00D7FF&\fscx118\fscy118}EXIGENTE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:50.80,0:00:50.93,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}Y{\c&HFFFFFF&\fscx100\fscy100} SU RIVAL
+Dialogue: 0,0:00:50.93,0:00:51.12,Default,,0,0,0,,{\pos(540,300)}Y {\c&H00D7FF&\fscx118\fscy118}SU{\c&HFFFFFF&\fscx100\fscy100} RIVAL
+Dialogue: 0,0:00:51.12,0:00:51.46,Default,,0,0,0,,{\pos(540,300)}Y SU {\c&H00D7FF&\fscx118\fscy118}RIVAL{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:51.46,0:00:51.96,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CONSIGUE{\c&HFFFFFF&\fscx100\fscy100} PLANTARLE
+Dialogue: 0,0:00:51.96,0:00:52.51,Default,,0,0,0,,{\pos(540,300)}CONSIGUE {\c&H00D7FF&\fscx118\fscy118}PLANTARLE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:52.51,0:00:52.80,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}CARA.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:53.54,0:00:53.80,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}AHORA{\c&HFFFFFF&\fscx100\fscy100} VIENE LO
+Dialogue: 0,0:00:53.80,0:00:54.07,Default,,0,0,0,,{\pos(540,300)}AHORA {\c&H00D7FF&\fscx118\fscy118}VIENE{\c&HFFFFFF&\fscx100\fscy100} LO
+Dialogue: 0,0:00:54.07,0:00:54.21,Default,,0,0,0,,{\pos(540,300)}AHORA VIENE {\c&H00D7FF&\fscx118\fscy118}LO{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:54.21,0:00:54.72,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}INTERESANTE:{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:55.27,0:00:55.56,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ESTA{\c&HFFFFFF&\fscx100\fscy100} ES UNA
+Dialogue: 0,0:00:55.56,0:00:55.74,Default,,0,0,0,,{\pos(540,300)}ESTA {\c&H00D7FF&\fscx118\fscy118}ES{\c&HFFFFFF&\fscx100\fscy100} UNA
+Dialogue: 0,0:00:55.74,0:00:55.97,Default,,0,0,0,,{\pos(540,300)}ESTA ES {\c&H00D7FF&\fscx118\fscy118}UNA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:55.97,0:00:56.36,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}HAZAÑA{\c&HFFFFFF&\fscx100\fscy100} QUE MUCHOS
+Dialogue: 0,0:00:56.36,0:00:56.60,Default,,0,0,0,,{\pos(540,300)}HAZAÑA {\c&H00D7FF&\fscx118\fscy118}QUE{\c&HFFFFFF&\fscx100\fscy100} MUCHOS
+Dialogue: 0,0:00:56.60,0:00:56.99,Default,,0,0,0,,{\pos(540,300)}HAZAÑA QUE {\c&H00D7FF&\fscx118\fscy118}MUCHOS{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:56.99,0:00:57.27,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}FANS{\c&HFFFFFF&\fscx100\fscy100} COMPARAN CON
+Dialogue: 0,0:00:57.27,0:00:57.77,Default,,0,0,0,,{\pos(540,300)}FANS {\c&H00D7FF&\fscx118\fscy118}COMPARAN{\c&HFFFFFF&\fscx100\fscy100} CON
+Dialogue: 0,0:00:57.77,0:00:58.00,Default,,0,0,0,,{\pos(540,300)}FANS COMPARAN {\c&H00D7FF&\fscx118\fscy118}CON{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:58.00,0:00:58.39,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}GOGETA,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:58.73,0:00:58.90,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}LA{\c&HFFFFFF&\fscx100\fscy100} OTRA GRAN
+Dialogue: 0,0:00:58.90,0:00:59.17,Default,,0,0,0,,{\pos(540,300)}LA {\c&H00D7FF&\fscx118\fscy118}OTRA{\c&HFFFFFF&\fscx100\fscy100} GRAN
+Dialogue: 0,0:00:59.17,0:00:59.44,Default,,0,0,0,,{\pos(540,300)}LA OTRA {\c&H00D7FF&\fscx118\fscy118}GRAN{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:00:59.44,0:00:59.81,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}FUSIÓN{\c&HFFFFFF&\fscx100\fscy100} DE GOKU
+Dialogue: 0,0:00:59.81,0:00:59.99,Default,,0,0,0,,{\pos(540,300)}FUSIÓN {\c&H00D7FF&\fscx118\fscy118}DE{\c&HFFFFFF&\fscx100\fscy100} GOKU
+Dialogue: 0,0:00:59.99,0:01:00.26,Default,,0,0,0,,{\pos(540,300)}FUSIÓN DE {\c&H00D7FF&\fscx118\fscy118}GOKU{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:00.26,0:01:00.38,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}Y{\c&HFFFFFF&\fscx100\fscy100} VEGETA,
+Dialogue: 0,0:01:00.38,0:01:00.75,Default,,0,0,0,,{\pos(540,300)}Y {\c&H00D7FF&\fscx118\fscy118}VEGETA,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:01.09,0:01:01.36,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}QUIEN{\c&HFFFFFF&\fscx100\fscy100} TAMBIÉN HA
+Dialogue: 0,0:01:01.36,0:01:01.72,Default,,0,0,0,,{\pos(540,300)}QUIEN {\c&H00D7FF&\fscx118\fscy118}TAMBIÉN{\c&HFFFFFF&\fscx100\fscy100} HA
+Dialogue: 0,0:01:01.72,0:01:01.86,Default,,0,0,0,,{\pos(540,300)}QUIEN TAMBIÉN {\c&H00D7FF&\fscx118\fscy118}HA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:01.86,0:01:02.34,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}DEMOSTRADO{\c&HFFFFFF&\fscx100\fscy100} UN PODER
+Dialogue: 0,0:01:02.34,0:01:02.49,Default,,0,0,0,,{\pos(540,300)}DEMOSTRADO {\c&H00D7FF&\fscx118\fscy118}UN{\c&HFFFFFF&\fscx100\fscy100} PODER
+Dialogue: 0,0:01:02.49,0:01:02.76,Default,,0,0,0,,{\pos(540,300)}DEMOSTRADO UN {\c&H00D7FF&\fscx118\fscy118}PODER{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:02.76,0:01:03.41,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}EXTRAORDINARIO,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:03.75,0:01:04.08,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}AUNQUE{\c&HFFFFFF&\fscx100\fscy100} SUS COMBATES
+Dialogue: 0,0:01:04.08,0:01:04.28,Default,,0,0,0,,{\pos(540,300)}AUNQUE {\c&H00D7FF&\fscx118\fscy118}SUS{\c&HFFFFFF&\fscx100\fscy100} COMBATES
+Dialogue: 0,0:01:04.28,0:01:04.70,Default,,0,0,0,,{\pos(540,300)}AUNQUE SUS {\c&H00D7FF&\fscx118\fscy118}COMBATES{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:04.70,0:01:04.90,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}SON{\c&HFFFFFF&\fscx100\fscy100} DIFERENTES.
+Dialogue: 0,0:01:04.90,0:01:05.41,Default,,0,0,0,,{\pos(540,300)}SON {\c&H00D7FF&\fscx118\fscy118}DIFERENTES.{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:06.16,0:01:06.28,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}Y{\c&HFFFFFF&\fscx100\fscy100} TÚ,
+Dialogue: 0,0:01:06.28,0:01:06.44,Default,,0,0,0,,{\pos(540,300)}Y {\c&H00D7FF&\fscx118\fscy118}TÚ,{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:06.72,0:01:06.91,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}¿QUÉ{\c&HFFFFFF&\fscx100\fscy100} OPINAS?
+Dialogue: 0,0:01:06.91,0:01:07.22,Default,,0,0,0,,{\pos(540,300)}¿QUÉ {\c&H00D7FF&\fscx118\fscy118}OPINAS?{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:07.73,0:01:08.09,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}¿VEGITO{\c&HFFFFFF&\fscx100\fscy100} ES MÁS
+Dialogue: 0,0:01:08.09,0:01:08.25,Default,,0,0,0,,{\pos(540,300)}¿VEGITO {\c&H00D7FF&\fscx118\fscy118}ES{\c&HFFFFFF&\fscx100\fscy100} MÁS
+Dialogue: 0,0:01:08.25,0:01:08.47,Default,,0,0,0,,{\pos(540,300)}¿VEGITO ES {\c&H00D7FF&\fscx118\fscy118}MÁS{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:08.47,0:01:08.82,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}FUERTE{\c&HFFFFFF&\fscx100\fscy100} QUE GOGETA
+Dialogue: 0,0:01:08.82,0:01:09.03,Default,,0,0,0,,{\pos(540,300)}FUERTE {\c&H00D7FF&\fscx118\fscy118}QUE{\c&HFFFFFF&\fscx100\fscy100} GOGETA
+Dialogue: 0,0:01:09.03,0:01:09.39,Default,,0,0,0,,{\pos(540,300)}FUERTE QUE {\c&H00D7FF&\fscx118\fscy118}GOGETA{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:09.60,0:01:09.72,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}O{\c&HFFFFFF&\fscx100\fscy100} CREES QUE
+Dialogue: 0,0:01:09.72,0:01:10.03,Default,,0,0,0,,{\pos(540,300)}O {\c&H00D7FF&\fscx118\fscy118}CREES{\c&HFFFFFF&\fscx100\fscy100} QUE
+Dialogue: 0,0:01:10.03,0:01:10.24,Default,,0,0,0,,{\pos(540,300)}O CREES {\c&H00D7FF&\fscx118\fscy118}QUE{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:10.24,0:01:10.59,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}GOGETA{\c&HFFFFFF&\fscx100\fscy100} ESTÁ POR
+Dialogue: 0,0:01:10.59,0:01:10.85,Default,,0,0,0,,{\pos(540,300)}GOGETA {\c&H00D7FF&\fscx118\fscy118}ESTÁ{\c&HFFFFFF&\fscx100\fscy100} POR
+Dialogue: 0,0:01:10.85,0:01:11.06,Default,,0,0,0,,{\pos(540,300)}GOGETA ESTÁ {\c&H00D7FF&\fscx118\fscy118}POR{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:11.06,0:01:11.42,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}ENCIMA?{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:11.98,0:01:12.13,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}¡TE{\c&HFFFFFF&\fscx100\fscy100} LEO EN
+Dialogue: 0,0:01:12.13,0:01:12.32,Default,,0,0,0,,{\pos(540,300)}¡TE {\c&H00D7FF&\fscx118\fscy118}LEO{\c&HFFFFFF&\fscx100\fscy100} EN
+Dialogue: 0,0:01:12.32,0:01:12.47,Default,,0,0,0,,{\pos(540,300)}¡TE LEO {\c&H00D7FF&\fscx118\fscy118}EN{\c&HFFFFFF&\fscx100\fscy100}
+Dialogue: 0,0:01:12.47,0:01:12.67,Default,,0,0,0,,{\pos(540,300)}{\c&H00D7FF&\fscx118\fscy118}LOS{\c&HFFFFFF&\fscx100\fscy100} COMENTARIOS!
+Dialogue: 0,0:01:12.67,0:01:13.20,Default,,0,0,0,,{\pos(540,300)}LOS {\c&H00D7FF&\fscx118\fscy118}COMENTARIOS!{\c&HFFFFFF&\fscx100\fscy100}

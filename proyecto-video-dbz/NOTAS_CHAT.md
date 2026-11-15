@@ -16,3 +16,9 @@
 ## Pendiente
 - Formato del video (vertical/horizontal, resolución), estilo, subtítulos, música, etc.
 - Más imágenes/audios que el usuario enviará.
+
+## Estado
+- Video final: video_final.mp4 (1080x1920 vertical, 30 fps, 73.4 s = duración exacta de la narración).
+- Música de fondo: soundtrack saga Saiyajin en loop, con ducking bajo la voz, limpieza de ruido y fundidos.
+- Efectos: power up (inicio y "Pero su historia no termina ahí") y golpes DBZ en cortes y combates.
+- Scripts para regenerar en fuentes/.
