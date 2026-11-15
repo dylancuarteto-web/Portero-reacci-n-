@@ -23,6 +23,7 @@
 - Escenas: intro Vegito Blue de frente con las Esferas del Dragón; aterrizaje y combo; Vegito (SSJ) vs Buu con esquives,
   provocación y la escena del caramelo; transformación a Blue; Vegito Blue vs Zamasu fusionado; Vegito y Gogeta de frente
   en estado base -> se transforman a Blue -> se miran, zoom y cross counter (puños a la cara).
-- Las imágenes enviadas aparecen como "PRUEBA REAL" en la esquina inferior derecha según la escena.
+- Las imágenes enviadas aparecen en la esquina inferior derecha según la escena (sin etiqueta).
+- Pelea vs Buuhan en el aire con fondo de viento: Vegito bloquea los golpes y lo provoca; Buuhan delgado; Gogeta con chaleco amarillo.
 - Audio: narración a -16 LUFS, música Saiyajin con limpieza de ruido y ducking bajo la voz, efectos de golpes y power up sincronizados.
 - Scripts para regenerar en fuentes/ (engine.py, chars.py, scenes.py, render_anim.py, audio2.py, mix.sh).

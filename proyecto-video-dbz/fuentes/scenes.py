@@ -13,14 +13,16 @@ BLUE, GOLD, PINK, WHITE = (80, 190, 255), (255, 214, 70), (250, 120, 220), (235,
 # (time, kind, gain)   kind: hit index 0..7, "power", "big"
 SFX = [(0.0, "power", .22),
        (10.25, 0, .36), (11.85, 1, .26), (12.2, 3, .26), (12.55, 5, .28), (13.25, 2, .32), (17.1, "power", .26),
-       (20.08, 0, .34), (22.0, 1, .26), (22.7, 3, .24), (26.74, 2, .34), (28.1, 4, .30), (31.2, 3, .28), (32.7, 0, .40),
+       (20.08, 0, .30), (21.6, 1, .22), (21.95, 3, .20), (22.3, 5, .22), (22.65, 1, .20), (23.0, 3, .22),
+       (24.0, 5, .18), (24.35, 1, .18), (24.7, 3, .18), (25.05, 5, .20), (26.74, 2, .38), (28.1, 4, .30),
+       (31.0, 1, .22), (31.25, 3, .20), (31.5, 5, .22), (32.7, 0, .40),
        (35.2, 6, .30), (37.6, "power", .26), (38.7, 1, .40),
        (41.0, "power", .30), (41.9, 0, .36),
        (43.19, 0, .30), (45.8, 2, .38), (47.4, 5, .34), (49.0, 1, .30), (49.6, 3, .28), (50.2, 4, .30), (50.8, 6, .30), (51.7, "big", .42),
        (55.9, 0, .34), (61.1, "power", .28), (61.9, 0, .34),
        (63.75, 7, .26), (67.4, "big", .48)]
 FLASH = [9.54, 20.08, 33.84, 41.9, 43.19, 53.54, 61.9, 63.75, 67.4]
-SHAKE = [(10.25, 10), (13.25, 8), (17.1, 14), (20.08, 8), (26.74, 12), (28.1, 8), (31.2, 8), (32.7, 18), (37.6, 16), (38.7, 14),
+SHAKE = [(10.25, 10), (13.25, 8), (17.1, 14), (20.08, 8), (21.6, 4), (22.3, 4), (23.0, 4), (26.74, 14), (28.1, 8), (31.0, 5), (31.5, 5), (32.7, 18), (37.6, 16), (38.7, 14),
          (41.0, 10), (41.9, 18), (45.8, 14), (47.4, 10), (49.0, 8), (49.6, 8), (50.2, 8), (50.8, 8), (51.7, 24), (55.9, 12),
          (61.9, 20), (67.4, 30)]
 
@@ -75,12 +77,6 @@ def pip(c, t):
     c.drawImageRect(img, r, skia.SamplingOptions(skia.FilterMode.kLinear, skia.MipmapMode.kLinear))
     c.restore()
     c.drawRoundRect(r, 8, 8, P(OUTC, 4))
-    # sticker
-    c.save(); c.translate(-w / 2 + 70, -h / 2 - 4); c.rotate(-10)
-    st = skia.Rect.MakeXYWH(-92, -30, 184, 56)
-    c.drawRoundRect(st, 28, 28, P((226, 36, 46))); c.drawRoundRect(st, 28, 28, P(OUTC, 4))
-    text(c, "PRUEBA REAL", 0, 9, 28, (255, 255, 255), 0)
-    c.restore()
     c.restore()
     # source tag bottom-left
     a = int(255 * u * out)
@@ -202,53 +198,103 @@ def s2(c, t):  # 9.54 - 20.08  lands, shadow-boxing, rivals silhouettes
     sparks(c, 540, GY - 300, (t - 17.1) / 0.8, (190, 240, 255), 20, R=500)
 
 
-BUU_FIGHT_V = [(20.08, {"p": "idle", "x": 295, "expr": "smirk", "form": "gold"}),
-               (21.75, {"p": "idle", "x": 295}), (22.0, {"p": "dodge", "x": 235}), (22.4, {"p": "idle", "x": 255}),
-               (22.6, {"p": "dodge", "x": 215, "air": 40}), (23.0, {"p": "taunt", "x": 225, "air": 0}),
-               (24.0, {"p": "taunt", "x": 225}), (24.3, {"p": "dodge", "x": 205}), (24.6, {"p": "taunt", "x": 215}),
-               (24.9, {"p": "dodge", "x": 195}), (25.2, {"p": "taunt", "x": 205}), (26.4, {"p": "idle", "x": 225}),
-               (26.74, {"p": "dodge", "x": 215, "air": 280}), (27.4, {"p": "kick", "x": 295, "air": 120}),
-               (27.8, {"p": "idle", "x": 345, "air": 0}), (28.1, {"p": "punch", "x": 395, "expr": "grin"}),
-               (28.6, {"p": "idle", "x": 295, "expr": "smirk"}), (29.38, {"p": "taunt", "x": 295, "expr": "smirk"}),
-               (30.9, {"p": "cross", "x": 295}), (31.2, {"p": "cross", "x": 265, "lean": -22}), (31.7, {"p": "cross", "x": 295}),
-               (32.4, {"p": "idle", "x": 345}), (32.7, {"p": "kick", "x": 445, "expr": "shout"}), (33.3, {"p": "idle", "x": 385, "expr": "smirk"}),
-               (33.9, {"p": "idle", "x": 295})]
-BUU_FIGHT_B = [(20.08, {"p": "idle", "x": 830, "expr": "angry"}), (21.0, {"p": "raise", "x": 840}),
-               (21.6, {"p": "dash", "x": 600}), (22.0, {"p": "punch", "x": 560, "expr": "shout"}), (22.4, {"p": "idle", "x": 570}),
-               (22.7, {"p": "punch2", "x": 540}), (23.2, {"p": "idle", "x": 560, "expr": "angry"}),
-               (24.3, {"p": "punch", "x": 510}), (24.6, {"p": "punch2", "x": 520}), (24.9, {"p": "punch", "x": 500}),
-               (25.3, {"p": "idle", "x": 520}), (26.4, {"p": "raise", "x": 540}), (26.74, {"p": "slash", "x": 480, "expr": "shout"}),
-               (27.4, {"p": "slash", "x": 460}), (27.9, {"p": "idle", "x": 640, "expr": "angry"}),
-               (28.1, {"p": "hurt", "x": 680, "expr": "hurt"}), (28.6, {"p": "idle", "x": 680, "expr": "angry"}),
-               (30.6, {"p": "idle", "x": 660}), (31.0, {"p": "punch", "x": 520, "expr": "shout"}), (31.4, {"p": "punch2", "x": 510}),
-               (31.8, {"p": "idle", "x": 600, "expr": "angry"}), (32.4, {"p": "idle", "x": 620}),
-               (32.7, {"p": "hurt", "x": 720, "expr": "hurt"}), (33.3, {"p": "hurt", "x": 1290, "air": 300}),
-               (33.9, {"p": "hurt", "x": 1290, "air": 300})]
+FLY = dict(ft1=26, ft2=-74, bt1=-14, bt2=-62)
+AIRB = 300
 
 
-def s3(c, t):  # 20.08 - 33.84 Buu fight
-    bg_waste(c, t)
-    ghosting = any(a <= t < b for a, b in ((21.9, 22.5), (22.5, 23.1), (24.2, 25.3), (26.6, 27.5), (31.1, 31.6)))
-    if ghosting:
-        ghost(c, VEG, BUU_FIGHT_V, t, None)
-    side(BUU, BUU_FIGHT_B, t, c, face=-1)
+def fly(kfs):
+    out = []
+    for tm, d in kfs:
+        d = dict(d)
+        if d.get("p", "idle") not in ("kick", "hurt", "dash"):
+            for k, v in FLY.items():
+                d.setdefault(k, v)
+        d.setdefault("air", AIRB)
+        out.append((tm, d))
+    return out
+
+
+BUU_FIGHT_V = fly([
+    (20.08, {"p": "idle", "x": 300, "expr": "smirk", "form": "gold"}), (21.3, {"p": "block", "x": 310}),
+    (21.6, {"p": "block", "x": 290}), (21.8, {"p": "block", "x": 305}), (21.95, {"p": "block", "x": 288}), (22.15, {"p": "block", "x": 305}),
+    (22.3, {"p": "block", "x": 288}), (22.5, {"p": "block", "x": 305}), (22.65, {"p": "block", "x": 288}), (22.85, {"p": "block", "x": 305}),
+    (23.0, {"p": "block", "x": 288}), (23.4, {"p": "block", "x": 300, "expr": "smirk"}),
+    (24.0, {"p": "block", "x": 292}), (24.2, {"p": "block", "x": 300}), (24.35, {"p": "block", "x": 292}), (24.55, {"p": "block", "x": 300}),
+    (24.7, {"p": "block", "x": 292}), (24.9, {"p": "block", "x": 300}), (25.05, {"p": "block", "x": 292}),
+    (25.4, {"p": "taunt", "x": 300}), (26.3, {"p": "taunt", "x": 300}), (26.6, {"p": "block", "x": 305}),
+    (26.74, {"p": "block", "x": 300}), (27.4, {"p": "block", "x": 300}),
+    (27.8, {"p": "dash", "x": 400, "air": AIRB}), (28.1, {"p": "punch", "x": 430, "expr": "grin"}),
+    (28.6, {"p": "idle", "x": 310, "expr": "smirk"}), (29.38, {"p": "taunt", "x": 310, "expr": "smirk"}),
+    (30.8, {"p": "cross", "x": 310}), (31.0, {"p": "cross", "x": 296}), (31.15, {"p": "cross", "x": 306}),
+    (31.25, {"p": "cross", "x": 296}), (31.4, {"p": "cross", "x": 306}), (31.5, {"p": "cross", "x": 296}), (31.9, {"p": "cross", "x": 310}),
+    (32.4, {"p": "idle", "x": 380}), (32.7, {"p": "kick", "x": 460, "expr": "shout", "air": AIRB}), (33.3, {"p": "idle", "x": 400, "expr": "smirk"}),
+    (33.9, {"p": "idle", "x": 330})])
+BUU_FIGHT_B = fly([
+    (20.08, {"p": "idle", "x": 800, "expr": "angry"}), (21.0, {"p": "raise", "x": 780}),
+    (21.4, {"p": "dash", "x": 660, "air": AIRB}), (21.6, {"p": "punch", "x": 630, "expr": "shout"}), (21.8, {"p": "idle", "x": 640}),
+    (21.95, {"p": "punch2", "x": 630}), (22.15, {"p": "idle", "x": 640}), (22.3, {"p": "punch", "x": 630}), (22.5, {"p": "idle", "x": 640}),
+    (22.65, {"p": "punch2", "x": 630}), (22.85, {"p": "idle", "x": 640}), (23.0, {"p": "punch", "x": 630}), (23.4, {"p": "idle", "x": 660, "expr": "angry"}),
+    (24.0, {"p": "punch", "x": 630, "expr": "shout"}), (24.2, {"p": "idle", "x": 640}), (24.35, {"p": "punch2", "x": 630}), (24.55, {"p": "idle", "x": 640}),
+    (24.7, {"p": "punch", "x": 630}), (24.9, {"p": "idle", "x": 640}), (25.05, {"p": "punch2", "x": 630}),
+    (25.4, {"p": "idle", "x": 680, "expr": "angry"}), (26.3, {"p": "raise", "x": 700}), (26.74, {"p": "slash", "x": 620, "expr": "shout"}),
+    (27.4, {"p": "slash", "x": 620}), (27.8, {"p": "idle", "x": 660, "expr": "angry"}), (28.1, {"p": "hurt", "x": 700, "expr": "hurt", "air": AIRB}),
+    (28.6, {"p": "idle", "x": 690, "expr": "angry"}), (30.6, {"p": "idle", "x": 700}), (30.9, {"p": "dash", "x": 660, "air": AIRB}),
+    (31.0, {"p": "punch", "x": 630, "expr": "shout"}), (31.15, {"p": "idle", "x": 640}), (31.25, {"p": "punch2", "x": 630}),
+    (31.4, {"p": "idle", "x": 640}), (31.5, {"p": "punch", "x": 630}), (31.9, {"p": "idle", "x": 680, "expr": "angry"}),
+    (32.4, {"p": "idle", "x": 680}), (32.7, {"p": "hurt", "x": 760, "expr": "hurt", "air": AIRB}), (33.3, {"p": "hurt", "x": 1350, "air": AIRB + 250}),
+    (33.9, {"p": "hurt", "x": 1350, "air": AIRB + 250})])
+B_HITS = [21.6, 21.95, 22.3, 22.65, 23.0, 24.0, 24.35, 24.7, 25.05, 31.0, 31.25, 31.5]
+
+
+def wind(c, t):
+    lin(c, skia.Rect.MakeWH(W, H), [(120, 176, 246), (190, 222, 255), (150, 196, 250)], 0, H)
+    rnd = random.Random(77)
+    for i in range(90):
+        y = rnd.uniform(-20, H + 20)
+        L = rnd.uniform(250, 1000)
+        th = rnd.choice([3, 4, 6, 8, 12, 18, 26])
+        sp = rnd.uniform(2200, 4200)
+        col = rnd.choice([(255, 255, 255), (220, 238, 255), (176, 214, 255), (140, 190, 250)])
+        a = rnd.randint(110, 230)
+        span = W + L + 300
+        x = (rnd.uniform(0, span) - t * sp) % span - L
+        if th >= 18:
+            c.drawLine(x, y, x + L, y, P(col, th * 2, blur=10, a=a // 2))
+        c.drawLine(x, y, x + L, y, P(col, th, a=a))
+
+
+def s3(c, t):  # 20.08 - 33.84 aerial fight vs Buuhan, wind background
+    wind(c, t)
+    bob = math.sin(t * 2.4) * 16
     pb = track(BUU_FIGHT_B, t)
-    if 29.38 <= t < 31.0:
-        steam(c, BUU.headpos[0] - 20, BUU.headpos[1] - 60, t)
+    pb["air"] += bob * 0.8
+    aura(c, pb["x"], GY, SC, t, PINK, 0.35, pb["air"])
+    BUU.draw(c, pb["x"], GY, SC, pb, t, face=-1, air=pb["air"])
+    if 25.3 <= t < 26.4 or 29.38 <= t < 30.9 or 23.3 <= t < 24.0:
+        steam(c, BUU.headpos[0] - 20, BUU.headpos[1] - 70, t)
+    if 29.6 <= t < 30.9:
+        text(c, "¡GRRR!", pb["x"] + 20, BUU.top - 20, 66, (255, 90, 90), 12)
     p = track(BUU_FIGHT_V, t)
-    if 29.38 <= t < 30.9:  # beckon
+    p["air"] += bob
+    if 25.4 <= t < 26.3 or 29.38 <= t < 30.8:
         p["fa2"] += math.sin(t * 16) * 30
-    aura(c, p["x"], GY, SC, t, GOLD, 0.45, p.get("air", 0))
-    VEG.draw(c, p["x"], GY, SC, p, t, air=p.get("air", 0))
-    if 24.0 <= t < 25.4:
-        text(c, "¡JE!", p["x"] + 40, GY - 660, 64, (255, 255, 255), 10)
-    burst(c, 360, GY - 40, 90, (t - 26.74) / 0.45, word="¡FUSH!")
-    burst(c, 600, 840, 80, (t - 28.1) / 0.4, word="¡TOC!")
-    burst(c, 300, 820, 60, (t - 31.2) / 0.3)
-    burst(c, 700, 880, 130, (t - 32.7) / 0.5, word="¡PUM!")
-    sparks(c, 700, 880, (t - 32.7) / 0.6, R=320)
+    aura(c, p["x"], GY, SC, t, GOLD, 0.5, p["air"])
+    if 27.7 <= t < 28.2 or 32.4 <= t < 32.8:
+        ghost(c, VEG, BUU_FIGHT_V, t, None)
+    VEG.draw(c, p["x"], GY, SC, p, t, air=p["air"])
+    if 24.0 <= t < 25.3 or 29.38 <= t < 30.9:
+        text(c, "¡JE!", p["x"] + 30, VEG.top - 10, 64, (255, 255, 255), 10)
+    for ht in B_HITS:
+        burst(c, BUU.hand[0], BUU.hand[1], 60, (t - ht) / 0.25)
+        sparks(c, BUU.hand[0], BUU.hand[1], (t - ht) / 0.3, R=140, seed=int(ht * 10))
+    burst(c, BUU.hand[0], BUU.hand[1], 110, (t - 26.74) / 0.45, word="¡PAF!")
+    sparks(c, BUU.hand[0], BUU.hand[1], (t - 26.74) / 0.5, R=300)
+    if 27.0 <= t < 27.8:
+        text(c, "?!", pb["x"], BUU.top - 20, 90, (255, 255, 255), 12)
+    burst(c, BUU.headpos[0] - 30, BUU.headpos[1], 80, (t - 28.1) / 0.4, word="¡TOC!")
     if 32.7 <= t < 33.6:
-        speedlines(c, t, (255, 255, 255), 100, cx=700, cy=880)
+        burst(c, 760, GY - AIRB - 260, 130, (t - 32.7) / 0.5, word="¡PUM!")
+        speedlines(c, t, (255, 255, 255), 100, cx=760, cy=GY - AIRB - 260)
 
 
 def s4(c, t):  # 33.84 - 41.0 candy

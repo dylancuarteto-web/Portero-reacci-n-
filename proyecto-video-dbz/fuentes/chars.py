@@ -102,7 +102,7 @@ CROWN_FRONT = [(-54, 4), (-52, -40), (0, -66), (52, -40), (54, 4), (34, -24), (0
 STY = {
     "vegito": dict(skin=(252, 206, 168), top=(38, 72, 178), under=(246, 142, 40), pants=(34, 58, 160), sash=(96, 146, 226),
                    glove=(248, 248, 252), boot=(248, 248, 252), toe=(232, 182, 44), earring=(236, 196, 50), eye=(40, 170, 220), gloves=True),
-    "gogeta": dict(skin=(250, 210, 176), top=(30, 34, 62), under=(30, 34, 62), trim=(210, 198, 72), pants=(246, 246, 250), sash=(60, 96, 206),
+    "gogeta": dict(skin=(250, 210, 176), top=(222, 200, 58), under=(30, 34, 62), trim=(32, 36, 70), pants=(246, 246, 250), sash=(60, 96, 206),
                    glove=(250, 210, 176), boot=(36, 38, 64), toe=(200, 40, 40), earring=None, eye=(40, 170, 220), wrist=(30, 30, 46), gloves=False),
     "buu": dict(skin=(246, 152, 188), top=(246, 142, 40), under=(38, 72, 178), pants=(248, 248, 252), sash=(38, 72, 178),
                 glove=(246, 152, 188), boot=(240, 200, 60), toe=(40, 40, 60), earring=None, eye=(200, 30, 40), wrist=(30, 30, 46), gloves=False),
@@ -125,7 +125,7 @@ class Char:
     def __init__(self, kind):
         self.kind = kind
         self.st = STY[kind]
-        self.fat = kind == "buu"
+        self.fat = False
         self.hand = self.headpos = (0, 0)
 
     def hairset(self, p, view):
@@ -215,7 +215,7 @@ class Char:
         else:
             body = smooth([(-34, 4), (40, 4), (74, -LT + 30), (64, -LT + 2), (10, -LT - 8), (-44, -LT + 0), (-62, -LT + 28)])
             fo(c, body, st["top"]); cel(c, body, -1)
-            if self.kind == "vegito":
+            if self.kind in ("vegito", "buu"):
                 fo(c, poly([(-8, -LT - 1), (32, -LT - 1), (14, -LT + 58)]), st["under"], 4)
             elif self.kind == "gogeta":
                 fo(c, poly([(-6, -LT - 1), (30, -LT - 1), (12, -LT + 66)]), st["skin"], 4)
@@ -443,7 +443,7 @@ class Char:
         self.mouth(c, expr, 0, 34)
 
     def draw(self, c, x, gy, sc, p, t, face=1, air=0, alpha=1.0, shadow=True, view="side"):
-        if shadow:
+        if shadow and air < 250:
             sw = 120 * sc * max(0.3, 1 - air / 600)
             c.drawOval(skia.Rect.MakeXYWH(x - sw, gy - 14 * sc, 2 * sw, 28 * sc), P((0, 0, 0), a=int(70 * alpha)))
         if alpha < 1:
