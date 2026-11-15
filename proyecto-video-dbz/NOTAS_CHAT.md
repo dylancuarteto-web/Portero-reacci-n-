@@ -18,7 +18,11 @@
 - Más imágenes/audios que el usuario enviará.
 
 ## Estado
-- Video final: video_final.mp4 (1080x1920 vertical, 30 fps, 73.4 s = duración exacta de la narración).
-- Música de fondo: soundtrack saga Saiyajin en loop, con ducking bajo la voz, limpieza de ruido y fundidos.
-- Efectos: power up (inicio y "Pero su historia no termina ahí") y golpes DBZ en cortes y combates.
-- Scripts para regenerar en fuentes/.
+- Video final: video_final.mp4, vertical 1080x1920 (YouTube Shorts), 30 fps, 73.4 s (duración exacta de la narración).
+- Estilo animado 2D (como el video de la paloma): Vegito, Buu, Zamasu fusionado y Gogeta dibujados en vectores y animados.
+- Escenas: intro Vegito Blue de frente con las Esferas del Dragón; aterrizaje y combo; Vegito (SSJ) vs Buu con esquives,
+  provocación y la escena del caramelo; transformación a Blue; Vegito Blue vs Zamasu fusionado; Vegito y Gogeta de frente
+  en estado base -> se transforman a Blue -> se miran, zoom y cross counter (puños a la cara).
+- Las imágenes enviadas aparecen como "PRUEBA REAL" en la esquina inferior derecha según la escena.
+- Audio: narración a -16 LUFS, música Saiyajin con limpieza de ruido y ducking bajo la voz, efectos de golpes y power up sincronizados.
+- Scripts para regenerar en fuentes/ (engine.py, chars.py, scenes.py, render_anim.py, audio2.py, mix.sh).
