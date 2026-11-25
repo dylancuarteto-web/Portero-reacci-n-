@@ -34,8 +34,8 @@ void loop()
 EJERCICIO Nº2: Encender el Display de 7 segmentos de 0 a 9
 
 // Display de 7 segmentos catodo comun
-// a=2, b=3, c=4, d=5, e=6, f=7, g=8
-int segmentos[7] = {2, 3, 4, 5, 6, 7, 8};
+// a=4, b=5, c=6, d=7, e=8, f=3, g=2
+int segmentos[7] = {4, 5, 6, 7, 8, 3, 2};   // a, b, c, d, e, f, g
 byte numeros[10][7] = {
   {1,1,1,1,1,1,0},  // 0
   {0,1,1,0,0,0,0},  // 1
@@ -71,8 +71,8 @@ void loop()
 EJERCICIO Nº3: Encender el Display de 7 segmentos los números pares
 
 // Display de 7 segmentos catodo comun
-// a=2, b=3, c=4, d=5, e=6, f=7, g=8
-int segmentos[7] = {2, 3, 4, 5, 6, 7, 8};
+// a=4, b=5, c=6, d=7, e=8, f=3, g=2
+int segmentos[7] = {4, 5, 6, 7, 8, 3, 2};   // a, b, c, d, e, f, g
 byte numeros[10][7] = {
   {1,1,1,1,1,1,0},  // 0
   {0,1,1,0,0,0,0},  // 1
@@ -108,8 +108,8 @@ void loop()
 EJERCICIO Nº4: Encender el Display de 7 segmentos los números impares
 
 // Display de 7 segmentos catodo comun
-// a=2, b=3, c=4, d=5, e=6, f=7, g=8
-int segmentos[7] = {2, 3, 4, 5, 6, 7, 8};
+// a=4, b=5, c=6, d=7, e=8, f=3, g=2
+int segmentos[7] = {4, 5, 6, 7, 8, 3, 2};   // a, b, c, d, e, f, g
 byte numeros[10][7] = {
   {1,1,1,1,1,1,0},  // 0
   {0,1,1,0,0,0,0},  // 1
